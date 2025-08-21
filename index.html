@@ -6,16 +6,15 @@
 <title>Savings</title>
 <style>
   :root{
-    --bg:#F2F2F7;
-    --card:#fff;
-    --text:#000;
-    --muted:#6b6b6f;
-    --divider:#E5E5EA;
-    --shadow:0 6px 20px rgba(0,0,0,.08);
+    --bg:#0b0b0b;
+    --card:#121213;
+    --text:#fff;
+    --muted:rgba(255,255,255,.66);
+    --divider:rgba(255,255,255,.14);
+    --shadow:0 10px 30px rgba(0,0,0,.45);
     --radius:16px;
-    --btnDark:#000;
-    --btnLight:#fff;
-    --btnBorder:#d5d5da;
+    --btnDark:#000;     /* used for contrast on light buttons */
+    --btnLight:#fff;    /* light button fill */
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -24,42 +23,52 @@
     font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;line-height:1.4;
   }
-
   .app{max-width:430px;margin:0 auto;min-height:100svh;padding-bottom:28px}
 
   /* Header */
-  .nav{position:sticky;top:0;padding:18px 16px 10px;background:linear-gradient(#F2F2F7,#F2F2F7 70%,rgba(242,242,247,0));z-index:5}
+  .nav{position:sticky;top:0;padding:18px 16px 10px;background:linear-gradient(#0b0b0b,#0b0b0b 70%,rgba(11,11,11,0));z-index:5}
   .title{font-size:34px;font-weight:800;letter-spacing:-.3px;margin:0}
 
   /* Summary Card (no graph) */
   .summary{
     margin:10px 12px 12px;background:var(--card);border-radius:var(--radius);
-    box-shadow:var(--shadow);padding:16px;border:1px solid #eee;
+    box-shadow:var(--shadow);padding:16px;border:1px solid var(--divider);
   }
   .row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
-  .label{color:var(--muted);font-weight:700}
+  .label{color:var(--muted);font-weight:800}
   .balance{font-size:32px;font-weight:900;line-height:1.1;margin-top:4px}
-  .apy{font-weight:900;border-radius:12px;padding:8px 12px;background:#F6F6F8;border:1px solid var(--divider)}
-  .banknote{margin-top:10px;color:#8e8e93;font-size:12px}
+  .apy{font-weight:900;border-radius:12px;padding:8px 12px;background:#1b1b1d;border:1px solid var(--divider)}
+  .banknote{margin-top:10px;color:var(--muted);font-size:12px}
 
   /* Buttons */
-  .actions{display:flex;gap:12px;margin:10px 12px 14px}
+  .actions{display:flex;gap:12px;margin:10px 12px 12px}
   .btn{
-    flex:1;border-radius:14px;padding:14px 16px;font-weight:900;border:1px solid transparent;
-    text-align:center;cursor:pointer;user-select:none
+    flex:1;border-radius:14px;padding:14px 16px;font-weight:900;border:1px solid var(--divider);
+    text-align:center;user-select:none;cursor:pointer
   }
-  .btn.dark{background:var(--btnDark);color:#fff}
-  .btn.light{background:var(--btnLight);color:#000;border-color:var(--btnBorder)}
+  .btn.light{background:#1a1a1c;color:#fff}
+  .btn.primary{background:var(--btnLight);color:#000;border-color:transparent}
+
+  /* Checking button (centered row) */
+  .accountBtn{
+    width:86%;margin:4px auto 18px;padding:14px 16px;border-radius:14px;
+    background:var(--card);border:1px solid var(--divider);box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:space-between;font-weight:900;
+  }
+  .accountBtn .right{opacity:.95}
 
   /* Section header */
-  .sectionTitle{margin:14px 16px 8px;font-weight:900;font-size:20px}
+  .sectionTitle{margin:10px 16px 8px;font-weight:900;font-size:20px}
 
   /* Transactions list */
   .txList{margin:0 12px}
-  .tx{background:var(--card);border:1px solid #eee;border-radius:14px;padding:14px 14px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .tx{
+    background:var(--card);border:1px solid var(--divider);border-radius:14px;padding:14px 14px;
+    box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px
+  }
   .tx .left{min-width:0}
   .tx .merchant{font-weight:900}
-  .tx .sub{color:#7a7a80;font-size:12px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tx .sub{color:var(--muted);font-size:12px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .tx .amt{font-weight:900;white-space:nowrap;margin-left:10px}
 </style>
 </head>
@@ -84,7 +93,13 @@
     <!-- Actions -->
     <div class="actions">
       <div class="btn light">Withdraw</div>
-      <div class="btn dark">Add Money</div>
+      <div class="btn primary">Add Money</div>
+    </div>
+
+    <!-- Centered Checking button with amount -->
+    <div class="accountBtn" role="button" aria-label="Checking account balance">
+      <div>Checking</div>
+      <div class="right">$414.00</div>
     </div>
 
     <!-- Latest Transactions -->
@@ -93,7 +108,7 @@
       <div class="tx" role="listitem">
         <div class="left">
           <div class="merchant">Apple Card</div>
-          <div class="sub">Daily Cash &nbsp;•&nbsp; 7/15/23</div>
+          <div class="sub">Daily Cash • 7/15/23</div>
         </div>
         <div class="amt">$0.99</div>
       </div>
@@ -101,7 +116,7 @@
       <div class="tx" role="listitem">
         <div class="left">
           <div class="merchant">Apple Card</div>
-          <div class="sub">Daily Cash &nbsp;•&nbsp; 7/8/23</div>
+          <div class="sub">Daily Cash • 7/8/23</div>
         </div>
         <div class="amt">$0.20</div>
       </div>
@@ -116,3 +131,4 @@
     </div>
   </div>
 </body>
+</html>
