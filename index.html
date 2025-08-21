@@ -11,7 +11,6 @@
     --tile:rgba(255,255,255,.06); --tileBorder:rgba(255,255,255,.10);
     --radius:18px; --t:.28s cubic-bezier(.2,.8,.2,1);
     --green:#1e7f4b; --green-2:#0f5f37; --red:#b73a3a;
-    --accent:#fff;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -19,7 +18,7 @@
        font:16px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
        -webkit-font-smoothing:antialiased}
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
-  .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
+  .views{display:flex;width:400%;height:100%;transition:transform var(--t)}
   .view{width:100%;height:100%;overflow:auto;padding-bottom:24px;background:linear-gradient(#0b0b0b,#0a0a0a 56%,#090909)}
   .view::-webkit-scrollbar{width:0;height:0}
 
@@ -44,6 +43,8 @@
   .row2{display:flex;gap:16px;margin-top:14px}
   .btn{flex:1;border-radius:18px;padding:16px 18px;border:1px solid var(--border);background:rgba(255,255,255,.06);font-weight:900}
   .btn.primary{background:#fff;color:#000}
+  .fullBtn{display:block;width:100%;margin-top:14px;border-radius:18px;padding:16px 18px;border:1px solid var(--border);
+           background:#fff;color:#000;font-weight:900}
   .tile{background:var(--tile);border:1px solid var(--tileBorder);border-radius:18px;padding:14px 16px}
   .tileRow{display:flex;justify-content:space-between;align-items:center}
   .label{color:var(--muted);font-weight:700}
@@ -66,48 +67,13 @@
   .rSub{color:var(--muted);font-size:12px}
   .rAmt{font-weight:900}
 
-  /* Views positions: 3 views [savings, checking, txnDetails] */
+  /* Views positions: 4 views [savings, checking, transfer, txnDetails] */
   .pos-0 .views{transform:translateX(0)}         /* Savings */
-  .pos-1 .views{transform:translateX(-33.333%)}  /* Checking */
-  .pos-2 .views{transform:translateX(-66.666%)}  /* Txn details */
+  .pos-1 .views{transform:translateX(-25%)}      /* Checking */
+  .pos-2 .views{transform:translateX(-50%)}      /* Pay/Transfer */
+  .pos-3 .views{transform:translateX(-75%)}      /* Txn details */
 
-  /* Bottom sheets (pop ups) */
-  .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:20}
-  .sheet.active{pointer-events:auto}
-  .dim{position:absolute;inset:0;background:rgba(0,0,0,.5);opacity:0;transition:opacity var(--t)}
-  .sheet.active .dim{opacity:1}
-  .panel{width:100%;max-width:430px;margin:0 auto;background:#151515;border:1px solid var(--border);color:#fff;
-         border-radius:24px 24px 0 0;transform:translateY(100%);transition:transform var(--t);box-shadow:0 -18px 40px rgba(0,0,0,.5)}
-  .sheet.active .panel{transform:translateY(0)}
-  .panel .head{padding:14px 18px 8px;font-size:18px;font-weight:900}
-  .panel .body{padding:8px 14px 16px}
-  .field{margin:10px 0}
-  .lab{display:block;margin:0 0 6px;color:var(--muted);font-weight:800}
-  .inp, .select{
-    width:100%;border-radius:14px;border:1px solid var(--tileBorder);background:#161616;color:#fff;
-    padding:14px 16px;font-size:16px
-  }
-  .amtInp{font-size:28px;font-weight:900;text-align:left}
-  .actions{display:flex;gap:10px;margin-top:10px}
-  .btn2{flex:1;border-radius:14px;padding:14px 16px;font-weight:900;border:1px solid var(--border);background:#222}
-  .btn2.primary{background:var(--green);border-color:transparent}
-  .btn2.primary[disabled]{opacity:.5}
-
-  /* Compact “Create transaction” sheet */
-  .ct-panel .panel{border-radius:20px;max-width:430px}
-  .ct-panel .panel .head{padding-top:16px}
-  .ct-panel .panel .body{padding-bottom:18px}
-
-  /* Transfer sheet dropdown */
-  .selectWrap{position:relative}
-  .menu{position:absolute;left:0;right:0;top:calc(100% + 8px);background:#111;border:1px solid var(--tileBorder);
-        border-radius:14px;box-shadow:var(--shadow);max-height:0;overflow:hidden;opacity:0;transform:translateY(-6px);
-        transition:max-height var(--t),opacity var(--t),transform var(--t);z-index:30}
-  .menu.open{max-height:220px;opacity:1;transform:translateY(0)}
-  .menu button{width:100%;text-align:left;background:transparent;border:0;color:#fff;padding:12px 14px;font-weight:800}
-  .menu button + button{border-top:1px solid var(--tileBorder)}
-
-  /* Txn details view */
+  /* Transaction details view */
   .backPill{display:block;margin:14px auto 10px;width:92%;max-width:390px;padding:12px 18px;text-align:center;
             border-radius:999px;border:1px solid var(--tileBorder);background:rgba(255,255,255,.06);font-weight:900}
   .txnHeader{padding:14px 18px 10px;text-align:center}
@@ -118,6 +84,27 @@
         background:var(--tile);border:1px solid var(--tileBorder);border-radius:18px}
   .danger{display:block;width:92%;max-width:390px;margin:14px auto;padding:16px 20px;border-radius:16px;
           background:rgba(183,58,58,.15);border:1px solid rgba(183,58,58,.4);color:#fff;font-weight:900;text-align:center}
+
+  /* Pay/Transfer page */
+  .formCard{background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow)}
+  .lab{display:block;margin:0 0 8px;color:var(--muted);font-weight:800}
+  .dollarWrap{display:flex;align-items:center;gap:8px;border-radius:14px;border:1px solid var(--tileBorder);background:#161616;padding:12px 14px}
+  .dollarWrap span{font-size:28px;font-weight:900}
+  .dollarWrap input{flex:1;background:transparent;border:0;color:#fff;font-size:28px;font-weight:900;outline:none}
+  .selectLine{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--tileBorder);
+              background:#161616;color:#fff;border-radius:12px;padding:12px 14px;font-weight:800}
+  .selectLine.disabled{opacity:.5;pointer-events:none}
+  .menuWrap{position:relative}
+  .menu{position:absolute;left:0;right:0;top:calc(100% + 8px);background:#111;border:1px solid var(--tileBorder);
+        border-radius:14px;box-shadow:var(--shadow);max-height:0;overflow:hidden;opacity:0;transform:translateY(-6px);
+        transition:max-height var(--t),opacity var(--t),transform var(--t);z-index:30}
+  .menu.open{max-height:200px;opacity:1;transform:translateY(0)}
+  .menu button{width:100%;text-align:left;background:transparent;border:0;color:#fff;padding:12px 14px;font-weight:800}
+  .menu button + button{border-top:1px solid var(--tileBorder)}
+  .actions{display:flex;gap:10px;margin-top:14px}
+  .btn2{flex:1;border-radius:14px;padding:14px 16px;font-weight:900;border:1px solid var(--border);background:#222;color:#fff}
+  .btn2.primary{background:var(--green);border-color:transparent}
+  .btn2.primary[disabled]{opacity:.5}
 </style>
 </head>
 <body>
@@ -150,10 +137,8 @@
           <div class="mini"><span>Routing</span><span class="big">072000326</span></div>
         </div>
 
-        <div class="row2">
-          <button class="btn" id="svWithdraw">Withdraw</button>
-          <button class="btn primary" id="svAddMoney">Add Money</button>
-        </div>
+        <!-- NEW: single Send Money button -->
+        <button class="fullBtn" id="svSend">Send Money</button>
 
         <div class="tile" style="margin-top:14px;cursor:pointer" id="toChecking">
           <div class="tileRow">
@@ -195,10 +180,8 @@
           <div class="mini"><span>Routing</span><span class="big">072000326</span></div>
         </div>
 
-        <div class="row2">
-          <button class="btn" id="ckWithdraw">Withdraw</button>
-          <button class="btn primary" id="ckAddMoney">Add Money</button>
-        </div>
+        <!-- NEW: single Send Money button -->
+        <button class="fullBtn" id="ckSend">Send Money</button>
 
         <div class="tile" style="margin-top:14px;cursor:pointer" id="toSavings">
           <div class="tileRow">
@@ -222,6 +205,58 @@
       </div>
     </section>
 
+    <!-- NEW PAY/TRANSFER PAGE -->
+    <section class="view" id="transfer">
+      <div class="nav">
+        <h1>Pay/Transfer</h1>
+        <div class="iconrow"></div>
+      </div>
+      <div class="content">
+        <div class="formCard">
+          <label class="lab">Amount</label>
+          <div class="dollarWrap">
+            <span>$</span>
+            <input class="amtInput" id="ptAmount" inputmode="decimal" placeholder="0.00" />
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="menuWrap">
+            <div class="lab">Transfer from</div>
+            <button class="selectLine" id="fromLine">
+              <span id="fromText">Choose account (from)</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+            <div class="menu" id="fromMenu2">
+              <button data-id="savings">SAVINGS (...9124)</button>
+              <button data-id="checking">CHECKING (...2431)</button>
+            </div>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="menuWrap">
+            <div class="lab">Transfer to</div>
+            <button class="selectLine disabled" id="toLine">
+              <span id="toText">Choose account (to)</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+            <div class="menu" id="toMenu2">
+              <!-- options are injected after "from" is chosen -->
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn2" id="ptCancel">Cancel</button>
+            <button class="btn2 primary" id="ptTransfer" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style="vertical-align:middle;margin-right:6px"><path d="M12 17a2 2 0 002-2v-1h1a3 3 0 000-6h-1V6a3 3 0 10-6 0v2H7a3 3 0 000 6h1v1a2 2 0 002 2h2zm-2-9V6a2 2 0 114 0v2h-4z"/></svg>
+              Transfer
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- TRANSACTION DETAILS (shared) -->
     <section class="view" id="txnView">
       <a class="backPill" id="backTxn">Back</a>
@@ -238,7 +273,7 @@
   </div>
 </div>
 
-<!-- ===== CREATE TRANSACTION SHEET (compact) ===== -->
+<!-- ===== CREATE TRANSACTION SHEET (unchanged) ===== -->
 <div class="sheet ct-panel" id="createSheet" aria-hidden="true">
   <div class="dim"></div>
   <div class="panel" role="dialog" aria-label="Create Transaction">
@@ -250,7 +285,7 @@
       </div>
       <div class="field">
         <label class="lab">Amount</label>
-        <input class="inp amtInp" id="ctAmt" inputmode="decimal" placeholder="0.00" value="0.00">
+        <input class="inp" id="ctAmt" inputmode="decimal" placeholder="0.00" value="0.00" style="font-size:28px;font-weight:900">
       </div>
       <div class="field">
         <label class="lab">Date &amp; time</label>
@@ -272,50 +307,6 @@
   </div>
 </div>
 
-<!-- ===== TRANSFER / ADD MONEY SHEET (unchanged flow) ===== -->
-<div class="sheet" id="transferSheet" aria-hidden="true">
-  <div class="dim"></div>
-  <div class="panel" id="trPanel">
-    <div class="head" id="trTitle">Transfer</div>
-    <div class="body" id="trStep1">
-      <div class="field"><label class="lab">Amount</label>
-        <input class="inp amtInp" id="trAmount" inputmode="decimal" placeholder="0.00" value="0.00">
-        <div id="trAvail" style="margin-top:6px;color:var(--muted);font-weight:700;font-size:13px"></div>
-      </div>
-      <div class="actions">
-        <button class="btn2" id="trCancel1">Cancel</button>
-        <button class="btn2 primary" id="trNext">Next</button>
-      </div>
-    </div>
-
-    <div class="body" id="trStep2" style="display:none">
-      <div class="field">
-        <label class="lab">Transfer from</label>
-        <div class="selectWrap">
-          <button class="inp" id="fromBtn" style="display:block;text-align:left">Choose account (from)</button>
-          <div class="menu" id="fromMenu">
-            <button data-id="checking">CHECKING (...<span>2431</span>)</button>
-            <button data-id="savings">SAVINGS (...<span>9124</span>)</button>
-            <button data-id="total">TOTAL CHECKING (...<span>6750</span>)</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="field" id="toField">
-        <label class="lab">To</label>
-        <div class="inp" id="toFixed" style="display:flex;align-items:center;justify-content:space-between">
-          <span id="toFixedTxt">—</span>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="btn2" id="trCancel2">Cancel</button>
-        <button class="btn2 primary" id="trSubmit" disabled>Transfer</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
 (()=>{
   const app = document.getElementById('app');
@@ -323,11 +314,10 @@
   /* ---------- SIMPLE STATE ---------- */
   const SAV_ACCT = { num: '102979124', last4: '9124' };
   const CK_ACCT  = { num: '501262431', last4: '2431' };
-  const ROUTING  = '072000326';
 
   const money = v=> (Number(v)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
 
-  // persistent balances (not tied to transfers yet)
+  // persistent balances (used for display only here)
   const svState = JSON.parse(localStorage.getItem('sv_state')||'{"bal":70.19}');
   const ckState = JSON.parse(localStorage.getItem('ck_state')||'{"bal":414.00}');
 
@@ -428,7 +418,7 @@
     dTotal.textContent  = `${sign}${money(Math.abs(t.amount))}`;
     dAccount.textContent= which==='savings'?'Savings':'Checking';
     openCtx = {which,id};
-    app.className='app pos-2';
+    app.className='app pos-3';
   }
   backTxn.addEventListener('click', ()=>{
     app.className = (openCtx && openCtx.which==='checking') ? 'app pos-1' : 'app pos-0';
@@ -464,7 +454,7 @@
   document.querySelector('#checking #ckAddTxn').addEventListener('click', ()=>openCreate('checking'));
   createSheet.querySelector('.dim').addEventListener('click', closeCreate);
   ctCancel.addEventListener('click', closeCreate);
-  [ctDesc,ctAmt,ctWhen,ctType].forEach(el=> el.addEventListener('input', ()=>{
+  ;[ctDesc,ctAmt,ctWhen,ctType].forEach(el=> el.addEventListener('input', ()=>{
     ctSave.disabled = !(ctDesc.value.trim() && Number(ctAmt.value)>0 && ctWhen.value && ctType.value);
   }));
   ctSave.addEventListener('click', ()=>{
@@ -479,59 +469,89 @@
     saveAll(); renderTxns(); closeCreate();
   });
 
-  /* ---------- TRANSFER / ADD MONEY SHEET (kept same) ---------- */
-  const trSheet  = document.getElementById('transferSheet');
-  const trTitle  = document.getElementById('trTitle');
-  const trAvail  = document.getElementById('trAvail');
-  const trAmount = document.getElementById('trAmount');
-  const trNext   = document.getElementById('trNext');
-  const trCancel1= document.getElementById('trCancel1');
-  const trCancel2= document.getElementById('trCancel2');
-  const trSubmit = document.getElementById('trSubmit');
-  const trStep1  = document.getElementById('trStep1');
-  const trStep2  = document.getElementById('trStep2');
-  const fromBtn  = document.getElementById('fromBtn');
-  const fromMenu = document.getElementById('fromMenu');
-  const toFixed  = document.getElementById('toFixed');
-  const toFixedTxt= document.getElementById('toFixedTxt');
-  let trCtx = {mode:'add', account:'savings'}; // or {mode:'withdraw', account:'checking'}
+  /* ---------- NEW: PAY/TRANSFER PAGE WIRING ---------- */
+  const svSend = document.getElementById('svSend');
+  const ckSend = document.getElementById('ckSend');
+  let transferOrigin = 'savings'; // where the user came from
 
-  function openTransfer(mode, account){
-    trCtx = {mode, account};
-    trTitle.textContent = mode==='add' ? 'Add Money' : 'Withdraw';
-    trAmount.value='0.00';
-    trAvail.textContent = mode==='withdraw' ? `Available: ${money(account==='savings'?svState.bal:ckState.bal)}` : '';
-    toFixedTxt.textContent = (account==='savings'?'SAVINGS (...'+SAV_ACCT.last4+')':'CHECKING (...'+CK_ACCT.last4+')');
-    fromBtn.textContent = 'Choose account (from)';
-    trSubmit.disabled = true;
-    fromMenu.classList.remove('open');
-    trStep2.style.display='none'; trStep1.style.display='block';
-    trSheet.classList.add('active');
+  const ptAmount = document.getElementById('ptAmount');
+  const fromLine = document.getElementById('fromLine');
+  const toLine   = document.getElementById('toLine');
+  const fromMenu2= document.getElementById('fromMenu2');
+  const toMenu2  = document.getElementById('toMenu2');
+  const fromText = document.getElementById('fromText');
+  const toText   = document.getElementById('toText');
+  const ptCancel = document.getElementById('ptCancel');
+  const ptTransfer = document.getElementById('ptTransfer');
+
+  let fromSel=null, toSel=null;
+
+  function resetPayTransfer(origin){
+    transferOrigin = origin;
+    ptAmount.value='';
+    fromSel = null; toSel = null;
+    fromText.textContent = 'Choose account (from)';
+    toText.textContent   = 'Choose account (to)';
+    toLine.classList.add('disabled');
+    ptTransfer.disabled = true;
+    // close any open menus
+    fromMenu2.classList.remove('open'); toMenu2.classList.remove('open');
   }
-  function closeTransfer(){ trSheet.classList.remove('active'); }
-  trSheet.querySelector('.dim').addEventListener('click', closeTransfer);
-  trCancel1.addEventListener('click', closeTransfer);
-  trCancel2.addEventListener('click', closeTransfer);
-  trNext.addEventListener('click', ()=>{
-    trStep1.style.display='none'; trStep2.style.display='block';
+
+  function validatePT(){
+    const amtOk = Number(ptAmount.value) > 0;
+    ptTransfer.disabled = !(amtOk && fromSel && toSel);
+  }
+
+  function openPT(){ app.className='app pos-2'; }
+  svSend.addEventListener('click', ()=>{ resetPayTransfer('savings'); openPT(); });
+  ckSend.addEventListener('click', ()=>{ resetPayTransfer('checking'); openPT(); });
+
+  ptCancel.addEventListener('click', ()=>{
+    app.className = transferOrigin==='checking' ? 'app pos-1' : 'app pos-0';
   });
-  fromBtn.addEventListener('click', ()=> fromMenu.classList.toggle('open'));
-  fromMenu.querySelectorAll('button').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      fromBtn.textContent = b.textContent;
-      fromMenu.classList.remove('open');
-      trSubmit.disabled = false; // enabled once a source is chosen
+
+  // Menus open/close
+  fromLine.addEventListener('click', ()=> fromMenu2.classList.toggle('open'));
+  toLine.addEventListener('click', ()=>{
+    if(toLine.classList.contains('disabled')) return;
+    toMenu2.classList.toggle('open');
+  });
+  document.addEventListener('click', (e)=>{
+    if(!fromLine.contains(e.target) && !fromMenu2.contains(e.target)) fromMenu2.classList.remove('open');
+    if(!toLine.contains(e.target) && !toMenu2.contains(e.target)) toMenu2.classList.remove('open');
+  });
+
+  // Choose "from"
+  fromMenu2.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      fromSel = btn.dataset.id; // 'savings' | 'checking'
+      fromText.textContent = btn.textContent;
+      fromMenu2.classList.remove('open');
+
+      // Build "to" menu excluding chosen
+      toMenu2.innerHTML = '';
+      [['savings','SAVINGS (...'+SAV_ACCT.last4+')'], ['checking','CHECKING (...'+CK_ACCT.last4+')']]
+        .filter(([id])=> id!==fromSel)
+        .forEach(([id,label])=>{
+          const b=document.createElement('button');
+          b.textContent=label; b.dataset.id=id;
+          b.addEventListener('click', ()=>{
+            toSel=id; toText.textContent=label; toMenu2.classList.remove('open'); validatePT();
+          });
+          toMenu2.appendChild(b);
+        });
+      toSel=null; toText.textContent='Choose account (to)';
+      toLine.classList.remove('disabled');
+      validatePT();
     });
   });
-  trSubmit.addEventListener('click', ()=>{ /* intentionally no functionality yet */ closeTransfer(); });
 
-  // Wire account-specific buttons
-  document.getElementById('svAddMoney').addEventListener('click', ()=>openTransfer('add','savings'));
-  document.getElementById('svWithdraw').addEventListener('click', ()=>openTransfer('withdraw','savings'));
-  document.getElementById('ckAddMoney').addEventListener('click', ()=>openTransfer('add','checking'));
-  document.getElementById('ckWithdraw').addEventListener('click', ()=>openTransfer('withdraw','checking'));
-
-  /* ---------- OPEN TXN FROM LIST (already wired inside renderTxns) ---------- */
+  ptAmount.addEventListener('input', validatePT);
+  ptTransfer.addEventListener('click', ()=>{
+    // no functionality yet — just return to origin page
+    app.className = transferOrigin==='checking' ? 'app pos-1' : 'app pos-0';
+  });
 
 })();
 </script>
