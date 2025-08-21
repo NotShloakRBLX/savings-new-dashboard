@@ -207,7 +207,7 @@
       </div>
 
       <div class="txnHeader">
-        <div class="txnAmount" id="txnAmount">+0.00</div>
+        <div class="txnAmount" id="txnAmount">+$0.00</div>
         <div class="txnMerchant" id="txnMerchant">Merchant</div>
         <div class="txnDate" id="txnDate">MM/DD/YY, 0:00 PM</div>
       </div>
@@ -218,7 +218,7 @@
       </div>
       <div class="rowDetail">
         <h3>Total</h3>
-        <div class="right" id="txnTotal">+0.00</div>
+        <div class="right" id="txnTotal">+$0.00</div>
       </div>
 
       <div class="dangerBtn" id="deleteTxnBtn">Delete Transaction</div>
@@ -246,19 +246,15 @@
           <input id="inDate" type="datetime-local" />
         </div>
         <div class="f">
-          <label for="inStatus">Status</label>
-          <select id="inStatus">
-            <option value="Approved">Approved (add)</option>
-            <option value="Posted">Posted (withdraw)</option>
-            <option value="Refunded">Refunded (withdraw)</option>
+          <label for="inType">Type</label>
+          <select id="inType">
+            <option value="Credit">Credit (+)</option>
+            <option value="Debit">Debit (-)</option>
           </select>
         </div>
       </div>
       <div class="actionsC">
-        <button class="btnC primaryC" id="continueAdd">
-          <!-- simple check icon like ✓ -->
-          Continue
-        </button>
+        <button class="btnC primaryC" id="continueAdd">Continue</button>
       </div>
       <div class="subtle" id="cancelAdd">Cancel</div>
     </div>
@@ -312,7 +308,7 @@
   function rid(){ return 't_'+Math.random().toString(36).slice(2,9) }
   function loadTx(){
     try{ const raw = localStorage.getItem(TXN_KEY); const arr = JSON.parse(raw); if(Array.isArray(arr)) return arr; }catch(e){}
-    return []; // start empty as requested
+    return []; // start empty
   }
   let transactions = loadTx();
   function saveTx(){ try{ localStorage.setItem(TXN_KEY, JSON.stringify(transactions)); }catch(e){} }
@@ -329,11 +325,17 @@
            d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
   };
 
-  // Savings rule: Approved => PLUS, Refunded/Posted => MINUS. No $ symbol anywhere.
-  const isPlus = status => status === 'Approved';
-  function fmtSigned(n, status){
-    const sign = isPlus(status) ? '+' : '-';
-    return sign + Number(Math.abs(n)).toFixed(2);
+  const isCredit = type => (type || '').toLowerCase() === 'credit';
+  function fmtSignedUSD(n, type){
+    const sign = isCredit(type) ? '+' : '-';
+    return sign + '$' + Number(Math.abs(n)).toFixed(2);
+  }
+
+  function getType(t){
+    // Back-compat if older "status" exists
+    if (t.type) return t.type;
+    if (t.status) return (t.status === 'Approved') ? 'Credit' : 'Debit';
+    return 'Credit';
   }
 
   function renderTransactions(){
@@ -343,15 +345,17 @@
       txnListEl.innerHTML = `<div class="txnRow" style="justify-content:center;opacity:.7;cursor:default">No transactions yet</div>`;
       return;
     }
-    txnListEl.innerHTML = transactions.map(t => `
+    txnListEl.innerHTML = transactions.map(t => {
+      const type = getType(t);
+      return `
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
         <div class="txnMain">
-          <div class="txnTitle">${t.merchant}${t.status ? ` <span style="opacity:.6">• ${t.status}</span>` : ''}</div>
+          <div class="txnTitle">${t.merchant}${type ? ` <span style="opacity:.6">• ${type}</span>` : ''}</div>
           <div class="txnSub">${shortDate(t.iso)}</div>
         </div>
-        <div class="txnAmt">${fmtSigned(t.amount, t.status)}</div>
-      </div>
-    `).join('');
+        <div class="txnAmt">${fmtSignedUSD(t.amount, type)}</div>
+      </div>`;
+    }).join('');
 
     txnListEl.querySelectorAll('.txnRow').forEach(row=>{
       const id = row.dataset.id;
@@ -370,11 +374,12 @@
     const t = transactions.find(x=>x.id===id);
     if(!t) return;
     openId = id;
-    document.getElementById('txnAmount').textContent  = fmtSigned(t.amount, t.status);
+    const type = getType(t);
+    document.getElementById('txnAmount').textContent  = fmtSignedUSD(t.amount, type);
     document.getElementById('txnMerchant').textContent= t.merchant;
     document.getElementById('txnDate').textContent    = fullDateTime(t.iso);
     document.getElementById('txnAccount').textContent = 'Savings';
-    document.getElementById('txnTotal').textContent   = fmtSigned(t.amount, t.status);
+    document.getElementById('txnTotal').textContent   = fmtSignedUSD(t.amount, type);
     app.className='app pos-1';
   }
   backBtn.addEventListener('click', ()=>{ app.className='app pos-0'; });
@@ -410,20 +415,21 @@
   document.getElementById('continueAdd').addEventListener('click', ()=>{
     const merchant = (document.getElementById('inMerchant').value || '').trim() || 'Merchant';
     const amount   = parseFloat(document.getElementById('inAmount').value||'0');
-    const iso      = new Date(document.getElementById('inDate').value).toISOString();
-    const status   = document.getElementById('inStatus').value;
+    const isoRaw   = document.getElementById('inDate').value;
+    const iso      = isoRaw ? new Date(isoRaw).toISOString() : new Date().toISOString();
+    const type     = document.getElementById('inType').value;
 
     // stash on dataset for confirm
     confirmSheet.dataset.merchant = merchant;
     confirmSheet.dataset.amount   = String(isFinite(amount)?amount:0);
     confirmSheet.dataset.iso      = iso;
-    confirmSheet.dataset.status   = status;
+    confirmSheet.dataset.type     = type;
 
     document.getElementById('confirmBody').innerHTML = `
       <div class="f"><label>Merchant</label><div style="font-weight:900">${merchant}</div></div>
-      <div class="f"><label>Amount</label><div style="font-weight:900">${fmtSigned(amount, status)}</div></div>
+      <div class="f"><label>Amount</label><div style="font-weight:900">${fmtSignedUSD(amount, type)}</div></div>
       <div class="f"><label>Date &amp; Time</label><div style="font-weight:900">${fullDateTime(iso)}</div></div>
-      <div class="f"><label>Status</label><div style="font-weight:900">${status}</div></div>
+      <div class="f"><label>Type</label><div style="font-weight:900">${type}</div></div>
     `;
     addSheet.classList.remove('active');
     confirmSheet.classList.add('active');
@@ -441,9 +447,9 @@
     const merchant = confirmSheet.dataset.merchant || 'Merchant';
     const amount   = Number(confirmSheet.dataset.amount || '0');
     const iso      = confirmSheet.dataset.iso || new Date().toISOString();
-    const status   = confirmSheet.dataset.status || 'Approved';
+    const type     = confirmSheet.dataset.type || 'Credit';
 
-    transactions.push({ id: rid(), merchant, amount, iso, status });
+    transactions.push({ id: rid(), merchant, amount, iso, type });
     saveTx();
     renderTransactions();
     closeConfirm();
