@@ -105,6 +105,25 @@
   .btn2{flex:1;border-radius:14px;padding:14px 16px;font-weight:900;border:1px solid var(--border);background:#222;color:#fff}
   .btn2.primary{background:var(--green);border-color:transparent}
   .btn2.primary[disabled]{opacity:.5}
+
+  /* ------- Create Transaction SHEET (modal) ------- */
+  .sheet{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:90}
+  .sheet.active{pointer-events:auto}
+  .sheet .dim{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;transition:opacity var(--t)}
+  .sheet.active .dim{opacity:1}
+  .sheet .panel{width:92%;max-width:420px;background:#151515;color:#fff;border:1px solid var(--tileBorder);
+                border-radius:20px;box-shadow:var(--shadow);
+                transform:translateY(18px) scale(.98);opacity:0;
+                transition:transform var(--t),opacity var(--t)}
+  .sheet.active .panel{transform:translateY(0) scale(1);opacity:1}
+  .sheet .head{padding:14px 16px;border-bottom:1px solid var(--tileBorder);font-weight:900;font-size:18px}
+  .sheet .body{padding:14px 16px}
+  .sheet .field{margin-top:12px}
+  .sheet .inp, .sheet .select{width:100%;border-radius:14px;border:1px solid var(--tileBorder);
+                              background:#1a1a1a;color:#fff;padding:12px 14px;font-size:16px;outline:none}
+  .sheet .actions{display:flex;gap:10px;margin-top:16px}
+  .sheet .btn2{background:#222;border-color:var(--tileBorder)}
+  .sheet .btn2.primary{background:var(--green)}
 </style>
 </head>
 <body>
@@ -241,9 +260,7 @@
               <span id="toText">Choose account (to)</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M7 10l5 5 5-5z"/></svg>
             </button>
-            <div class="menu" id="toMenu2">
-              <!-- options are injected after "from" is chosen -->
-            </div>
+            <div class="menu" id="toMenu2"></div>
           </div>
 
           <div class="actions">
@@ -273,7 +290,7 @@
   </div>
 </div>
 
-<!-- ===== CREATE TRANSACTION SHEET (unchanged) ===== -->
+<!-- ===== CREATE TRANSACTION SHEET (modal) ===== -->
 <div class="sheet ct-panel" id="createSheet" aria-hidden="true">
   <div class="dim"></div>
   <div class="panel" role="dialog" aria-label="Create Transaction">
@@ -317,7 +334,7 @@
 
   const money = v=> (Number(v)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
 
-  // persistent balances (used for display only here)
+  // persistent balances (display only)
   const svState = JSON.parse(localStorage.getItem('sv_state')||'{"bal":70.19}');
   const ckState = JSON.parse(localStorage.getItem('ck_state')||'{"bal":414.00}');
 
@@ -494,7 +511,6 @@
     toText.textContent   = 'Choose account (to)';
     toLine.classList.add('disabled');
     ptTransfer.disabled = true;
-    // close any open menus
     fromMenu2.classList.remove('open'); toMenu2.classList.remove('open');
   }
 
