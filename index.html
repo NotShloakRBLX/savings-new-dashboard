@@ -127,6 +127,25 @@
   .detailRow{display:flex;justify-content:space-between;align-items:center;padding:6px 2px}
   .note{color:var(--muted);margin-top:8px}
   .doneBtn{display:block;width:100%;margin-top:14px;border-radius:14px;padding:14px 16px;font-weight:900;border:1px solid var(--tileBorder);background:#222;color:#fff}
+
+  /* ------- Create Transaction SHEET (modal) ------- */
+  .sheet{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:95}
+  .sheet.active{pointer-events:auto}
+  .sheet .dim{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;transition:opacity var(--t)}
+  .sheet.active .dim{opacity:1}
+  .sheet .panel{width:92%;max-width:420px;background:#151515;color:#fff;border:1px solid var(--tileBorder);
+                border-radius:20px;box-shadow:var(--shadow);
+                transform:translateY(18px) scale(.98);opacity:0;
+                transition:transform var(--t),opacity var(--t)}
+  .sheet.active .panel{transform:translateY(0) scale(1);opacity:1}
+  .sheet .head{padding:14px 16px;border-bottom:1px solid var(--tileBorder);font-weight:900;font-size:18px}
+  .sheet .body{padding:14px 16px}
+  .sheet .field{margin-top:12px}
+  .sheet .inp, .sheet .select{width:100%;border-radius:14px;border:1px solid var(--tileBorder);
+                              background:#1a1a1a;color:#fff;padding:12px 14px;font-size:16px;outline:none}
+  .sheet .actions{display:flex;gap:10px;margin-top:16px}
+  .sheet .btn2{background:#222;border-color:var(--tileBorder)}
+  .sheet .btn2.primary{background:var(--green)}
 </style>
 </head>
 <body>
