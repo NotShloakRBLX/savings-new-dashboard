@@ -95,6 +95,23 @@
   .infoNote{margin:12px 12px 0;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.06);
            border:1px solid var(--tileBorder);color:var(--muted);font-weight:800}
 
+  /* Smooth reveal for txn view */
+  #txnView .txnHeader,
+  #txnView .infoNote,
+  #txnView .rowD,
+  #txnView .danger{
+    opacity:0;
+    transform:translateY(10px);
+    transition:opacity var(--t), transform var(--t);
+  }
+  #txnView.reveal .txnHeader,
+  #txnView.reveal .infoNote,
+  #txnView.reveal .rowD,
+  #txnView.reveal .danger{
+    opacity:1;
+    transform:translateY(0);
+  }
+
   /* Pay/Transfer page */
   .formCard{background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow)}
   .lab{display:block;margin:0 0 8px;color:var(--muted);font-weight:800}
@@ -560,6 +577,7 @@ try { const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]'); log.
   const dAccount= document.getElementById('dAccount');
   const delBtn  = document.getElementById('deleteTxn');
   const pendingBox = document.getElementById('pendingBox');
+  const txnViewEl = document.getElementById('txnView');
   let openCtx = null;
 
   function openTxn(which,id){
@@ -574,9 +592,16 @@ try { const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]'); log.
     if (t.status === 'Pending') { pendingBox.style.display='block'; pendingBox.textContent=t.note||'Transfer will be posted in 1–2 business days'; }
     else { pendingBox.style.display='none'; }
     openCtx = {which,id};
-    app.className='app pos-3';
+
+    // Smooth reveal animation
+    txnViewEl.classList.remove('reveal');        // reset state
+    app.className='app pos-3';                   // slide to details
+    requestAnimationFrame(()=>{                  // then reveal contents
+      requestAnimationFrame(()=> txnViewEl.classList.add('reveal'));
+    });
   }
   backTxn.addEventListener('click', ()=>{
+    txnViewEl.classList.remove('reveal');
     app.className = (openCtx && openCtx.which==='checking') ? 'app pos-1' : 'app pos-0';
   });
   delBtn.addEventListener('click', ()=>{
