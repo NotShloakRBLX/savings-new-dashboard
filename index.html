@@ -387,65 +387,6 @@
 </div>
 
 <script>
-
-// === Cross-app ledger listener (same-origin) ===
-const LEDGER_CHANNEL_NAME = 'ledger';
-const LEDGER_LOG_KEY = 'global_event_log';
-const LEDGER_SEEN_KEY = 'global_event_seen';
-const THIS_ACCOUNT_ID = 'checking-123';      // <- match the id you emit
-
-// Optional: if your app already has a helper to add a bank transaction, use it.
-// Otherwise here is a tiny fallback that appends to a localStorage array "bank_txns".
-function addBankTxnFallback({ id, merchant, amount, iso, status = 'Posted' }) {
-  const KEY = 'bank_txns';
-  const list = JSON.parse(localStorage.getItem(KEY) || '[]');
-  list.push({ id, merchant, amount, iso, status, kind: 'deposit' });
-  localStorage.setItem(KEY, JSON.stringify(list));
-  // TODO: re-render your UI if needed.
-}
-
-// Choose your real renderer if available:
-const addBankTxn = (window.addBankTxn || addBankTxnFallback);
-
-function getSeen() {
-  try { return new Set(JSON.parse(localStorage.getItem(LEDGER_SEEN_KEY) || '[]')); }
-  catch { return new Set(); }
-}
-function markSeen(id, seenSet) {
-  seenSet.add(id);
-  localStorage.setItem(LEDGER_SEEN_KEY, JSON.stringify([...seenSet]));
-}
-
-function handleLedgerEvent(evt) {
-  if (!evt || evt.type !== 'cashback_deposit') return;
-  if (evt.toAccountId !== THIS_ACCOUNT_ID) return;
-
-  const seen = getSeen();
-  if (seen.has(evt.id)) return;
-
-  addBankTxn({
-    id: evt.id,
-    merchant: 'Cashback deposited',
-    amount: evt.amount,
-    iso: evt.iso,
-    status: 'Posted'
-  });
-
-  markSeen(evt.id, seen);
-}
-
-// 1) Live updates via BroadcastChannel
-try {
-  const ch = new BroadcastChannel(LEDGER_CHANNEL_NAME);
-  ch.onmessage = (e) => handleLedgerEvent(e.data);
-} catch { /* ignore */ }
-
-// 2) Replay any persisted events on load (so it works even if this tab opens later)
-try {
-  const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]');
-  log.forEach(handleLedgerEvent);
-} catch { /* ignore */ }
-  
 (()=>{
   const app = document.getElementById('app');
 
@@ -453,12 +394,18 @@ try {
   const SAV_ACCT = { num: '102979124', last4: '9124', name: 'SAVINGS' };
   const CK_ACCT  = { num: '501262431', last4: '2431', name: 'CHECKING' };
   const TOT_ACCT = { num: '000006750', last4: '6750', name: 'TOTAL CHECKING' }; // menu-only
+  const ROUTING  = '072000326';
+
+  /* ---------- CROSS-APP LEDGER (same-origin broadcast) ---------- */
+  const LEDGER_CHANNEL_NAME = 'ledger';
+  const LEDGER_LOG_KEY  = 'global_event_log';   // written by the Sapphire page
+  const LEDGER_SEEN_KEY = 'global_event_seen_bank'; // dedupe here
 
   const money = v=> (Number(v)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
 
   /* ---------- SETTINGS VERSION (reset balances by bumping) ---------- */
   const SETTINGS_DEFAULT = {
-    version: 3,         // <— bump this to reset default balances below
+    version: 3,
     savingsBal: 70.19,
     checkingBal: 414.00
   };
@@ -791,7 +738,6 @@ try {
       else { ckTxns.push(creditTxn); ckState.bal = +(ckState.bal + amountNum).toFixed(2); }
     } else {
       // One side is TOTAL CHECKING (external). Create ONE local txn + update ONE local balance.
-      // Local side is whichever is savings/checking.
       const localId = (fromId==='savings' || fromId==='checking') ? fromId : toId;
       const isFromLocal = localId === fromId;
 
@@ -844,8 +790,82 @@ try {
     app.className = transferOrigin==='checking' ? 'app pos-1' : 'app pos-0';
   });
 
+  /* ---------- CASHBACK DEPOSIT LISTENER ---------- */
+
+  function getSeenSet(){
+    try { return new Set(JSON.parse(localStorage.getItem(LEDGER_SEEN_KEY) || '[]')); }
+    catch { return new Set(); }
+  }
+  function markSeen(id, set){
+    set.add(id);
+    localStorage.setItem(LEDGER_SEEN_KEY, JSON.stringify([...set]));
+  }
+
+  // Decide which account to credit based on the event payload
+  function resolveTargetAccount(evt){
+    // Prefer explicit id
+    if (evt.toAccountId === 'checking-123') return 'checking';
+    if (evt.toAccountId === 'savings-456')  return 'savings';
+
+    // Or match by full account or last4 + routing
+    const acct = (evt.accountNumber || '').trim();
+    const last4 = (evt.accountLast4 || '').trim();
+    const routing = (evt.routing || '').trim();
+
+    if (acct === CK_ACCT.num || (last4 === CK_ACCT.last4 && routing === ROUTING)) return 'checking';
+    if (acct === SAV_ACCT.num || (last4 === SAV_ACCT.last4 && routing === ROUTING)) return 'savings';
+
+    return null; // unknown target
+  }
+
+  function handleLedgerEvent(evt){
+    if (!evt || evt.type !== 'cashback_deposit') return;
+
+    const seen = getSeenSet();
+    if (seen.has(evt.id)) return; // dedupe
+
+    const target = resolveTargetAccount(evt);
+    if (!target) return; // not for this dashboard
+
+    const amount = Number(evt.amount)||0;
+    const iso = evt.iso || new Date().toISOString();
+
+    const txn = {
+      id: evt.id,
+      desc: 'Sapphire Reserve cashback',
+      amount,
+      iso,
+      type: 'credit',
+      status: 'Posted'
+    };
+
+    if (target === 'checking') {
+      ckTxns.push(txn);
+      ckState.bal = +(ckState.bal + amount).toFixed(2);
+    } else {
+      svTxns.push(txn);
+      svState.bal = +(svState.bal + amount).toFixed(2);
+    }
+
+    saveAll();
+    renderBalances();
+    renderTxns();
+    markSeen(evt.id, seen);
+  }
+
+  // Live updates via BroadcastChannel
+  try {
+    const ch = new BroadcastChannel(LEDGER_CHANNEL_NAME);
+    ch.onmessage = (e)=> handleLedgerEvent(e.data);
+  } catch { /* ignore */ }
+
+  // Replay persisted events from the global log
+  try {
+    const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]');
+    log.forEach(handleLedgerEvent);
+  } catch { /* ignore */ }
+
 })();
 </script>
 </body>
 </html>
-
