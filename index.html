@@ -387,19 +387,13 @@
 </div>
 
 <script>
-(()=>{
+(() => {
   const app = document.getElementById('app');
 
   /* ---------- ACCOUNT METADATA ---------- */
-  const SAV_ACCT = { num: '102979124', last4: '9124', name: 'SAVINGS' };
-  const CK_ACCT  = { num: '501262431', last4: '2431', name: 'CHECKING' };
+  const SAV_ACCT = { num: '102979124', last4: '9124', name: 'SAVINGS', routing: '072000326' };
+  const CK_ACCT  = { num: '501262431', last4: '2431', name: 'CHECKING', routing: '072000326' };
   const TOT_ACCT = { num: '000006750', last4: '6750', name: 'TOTAL CHECKING' }; // menu-only
-  const ROUTING  = '072000326';
-
-  /* ---------- CROSS-APP LEDGER (same-origin broadcast) ---------- */
-  const LEDGER_CHANNEL_NAME = 'ledger';
-  const LEDGER_LOG_KEY  = 'global_event_log';   // written by the Sapphire page
-  const LEDGER_SEEN_KEY = 'global_event_seen_bank'; // dedupe here
 
   const money = v=> (Number(v)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
 
@@ -414,7 +408,6 @@
   const svState = JSON.parse(localStorage.getItem('sv_state')||'{"bal":70.19}');
   const ckState = JSON.parse(localStorage.getItem('ck_state')||'{"bal":414.00}');
   const storedVer = Number(localStorage.getItem('bank_version')||'0');
-
   if (storedVer !== SETTINGS_DEFAULT.version) {
     svState.bal = SETTINGS_DEFAULT.savingsBal;
     ckState.bal = SETTINGS_DEFAULT.checkingBal;
@@ -521,7 +514,6 @@
     dDate.textContent   = new Date(t.iso).toLocaleString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit',hour:'numeric',minute:'2-digit'});
     dTotal.textContent  = `${sign}${money(Math.abs(t.amount))}`;
     dAccount.textContent= which==='savings'?'Savings':'Checking';
-    // Pending note
     if (t.status === 'Pending') {
       pendingBox.style.display = 'block';
       pendingBox.textContent = t.note || 'Transfer will be posted in 1–2 business days';
@@ -766,7 +758,6 @@
     loadingScreen.classList.add('show');
 
     setTimeout(()=>{
-      // Post both sides (or one, for TOTAL) BEFORE showing confirm, so lists/balances update immediately
       const amt = Number(parseFloat(ptAmount.value).toFixed(2));
       postTransfer(amt, fromSel, toSel);
 
@@ -790,80 +781,83 @@
     app.className = transferOrigin==='checking' ? 'app pos-1' : 'app pos-0';
   });
 
-  /* ---------- CASHBACK DEPOSIT LISTENER ---------- */
+  /* ===================== CASHBACK EVENT INTEGRATION ===================== */
+  const LEDGER_CHANNEL_NAME = 'ledger';
+  const LEDGER_LOG_KEY  = 'global_event_log';
+  const LEDGER_SEEN_KEY = 'bank_seen_events';
 
-  function getSeenSet(){
+  function getSeen() {
     try { return new Set(JSON.parse(localStorage.getItem(LEDGER_SEEN_KEY) || '[]')); }
     catch { return new Set(); }
   }
-  function markSeen(id, set){
-    set.add(id);
-    localStorage.setItem(LEDGER_SEEN_KEY, JSON.stringify([...set]));
+  function markSeen(id, seenSet) {
+    seenSet.add(id);
+    localStorage.setItem(LEDGER_SEEN_KEY, JSON.stringify([...seenSet]));
   }
 
-  // Decide which account to credit based on the event payload
-  function resolveTargetAccount(evt){
-    // Prefer explicit id
+  function routeToAccount(evt){
+    // 1) Legacy hard-coded id
     if (evt.toAccountId === 'checking-123') return 'checking';
-    if (evt.toAccountId === 'savings-456')  return 'savings';
 
-    // Or match by full account or last4 + routing
-    const acct = (evt.accountNumber || '').trim();
-    const last4 = (evt.accountLast4 || '').trim();
-    const routing = (evt.routing || '').trim();
+    // 2) Match by accountNumber or last4 + routing
+    const ac = (evt.accountNumber||'').trim();
+    const l4 = (evt.accountLast4||'').trim();
+    const rt = (evt.routing||'').trim();
 
-    if (acct === CK_ACCT.num || (last4 === CK_ACCT.last4 && routing === ROUTING)) return 'checking';
-    if (acct === SAV_ACCT.num || (last4 === SAV_ACCT.last4 && routing === ROUTING)) return 'savings';
+    const matches = (acct) =>
+      (ac && ac === acct.num && (!rt || rt === acct.routing)) ||
+      (l4 && l4 === acct.last4 && (!rt || rt === acct.routing));
+
+    if (matches(CK_ACCT)) return 'checking';
+    if (matches(SAV_ACCT)) return 'savings';
 
     return null; // unknown target
   }
 
-  function handleLedgerEvent(evt){
-    if (!evt || evt.type !== 'cashback_deposit') return;
-
-    const seen = getSeenSet();
-    if (seen.has(evt.id)) return; // dedupe
-
-    const target = resolveTargetAccount(evt);
-    if (!target) return; // not for this dashboard
-
-    const amount = Number(evt.amount)||0;
-    const iso = evt.iso || new Date().toISOString();
-
-    const txn = {
-      id: evt.id,
-      desc: 'Sapphire Reserve cashback',
-      amount,
-      iso,
-      type: 'credit',
-      status: 'Posted'
+  function creditCashback(which, amount, iso){
+    const desc = 'Sapphire Reserve cashback';
+    const t = {
+      id: 't_'+Math.random().toString(36).slice(2,9),
+      desc, amount: Number(amount),
+      iso, type: 'credit', status: 'Posted'
     };
-
-    if (target === 'checking') {
-      ckTxns.push(txn);
-      ckState.bal = +(ckState.bal + amount).toFixed(2);
-    } else {
-      svTxns.push(txn);
-      svState.bal = +(svState.bal + amount).toFixed(2);
+    if (which === 'checking') {
+      ckTxns.push(t);
+      ckState.bal = +(ckState.bal + t.amount).toFixed(2);
+    } else if (which === 'savings') {
+      svTxns.push(t);
+      svState.bal = +(svState.bal + t.amount).toFixed(2);
     }
-
-    saveAll();
-    renderBalances();
-    renderTxns();
-    markSeen(evt.id, seen);
+    saveAll(); renderBalances(); renderTxns();
   }
 
-  // Live updates via BroadcastChannel
+  function handleLedgerEvent(evt) {
+    if (!evt || evt.type !== 'cashback_deposit') return;
+    const seen = getSeen();
+    if (evt.id && seen.has(evt.id)) return;
+
+    const which = routeToAccount(evt);
+    if (!which) { // not ours—ignore
+      if (evt.id) markSeen(evt.id, seen); // still mark so we don't re-process endlessly
+      return;
+    }
+
+    creditCashback(which, evt.amount, evt.iso || new Date().toISOString());
+    if (evt.id) markSeen(evt.id, seen);
+  }
+
+  // Live updates
   try {
     const ch = new BroadcastChannel(LEDGER_CHANNEL_NAME);
-    ch.onmessage = (e)=> handleLedgerEvent(e.data);
-  } catch { /* ignore */ }
+    ch.onmessage = (e) => handleLedgerEvent(e.data);
+  } catch {}
 
-  // Replay persisted events from the global log
+  // Replay persisted events
   try {
     const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]');
     log.forEach(handleLedgerEvent);
-  } catch { /* ignore */ }
+  } catch {}
+  /* ===================================================================== */
 
 })();
 </script>
