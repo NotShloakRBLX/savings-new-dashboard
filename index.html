@@ -2,838 +2,787 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-<title>Sapphire Reserve</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Bank • Savings & Checking (Demo)</title>
 <style>
   :root{
-    --bg:#0b0b0b;
-    --tile:rgba(255,255,255,.06);
-    --tileBorder:rgba(255,255,255,.10);
-    --text:#fff;
-    --muted:rgba(255,255,255,.62);
-    --shadow:0 14px 40px rgba(0,0,0,.40);
-    --t:.35s cubic-bezier(.2,.8,.2,1);
-    --radiusCard:28px;
-    --radiusTile:8px;
+    --bg:#0b0b0b; --panel:#161616; --panel2:#111; --border:rgba(255,255,255,.12);
+    --muted:rgba(255,255,255,.62); --text:#fff; --shadow:0 16px 40px rgba(0,0,0,.45);
+    --tile:rgba(255,255,255,.06); --tileBorder:rgba(255,255,255,.10);
+    --radius:18px; --t:.28s cubic-bezier(.2,.8,.2,1);
+    --green:#1e7f4b; --green-2:#0f5f37; --red:#b73a3a;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    margin:0;background:#000;color:var(--text);
-    font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased
-  }
+  body{margin:0;background:#000;color:var(--text);
+       font:16px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+       -webkit-font-smoothing:antialiased}
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
-  .views{display:flex;width:200%;height:100%;transition:transform var(--t)}
-  .view{width:100%;height:100%;overflow:auto;padding-bottom:28px;background:linear-gradient(#0b0b0b,#0b0b0b 50%,#0a0a0a)}
+  .views{display:flex;width:400%;height:100%;transition:transform var(--t)}
+  .view{width:100%;height:100%;overflow:auto;padding-bottom:24px;background:linear-gradient(#0b0b0b,#0a0a0a 56%,#090909)}
   .view::-webkit-scrollbar{width:0;height:0}
 
-  .nav{
-    position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
-    padding:14px 14px 10px;
-    background:linear-gradient(180deg,rgba(10,10,10,.95),rgba(10,10,10,.55) 40%,transparent);
-    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)
-  }
-  .nav h1{margin:0;font-size:28px;font-weight:800}
-  .pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:999px;padding:6px 10px;font-weight:700}
-  .iconbtn{
-    width:34px;height:34px;border-radius:999px;background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;transition:transform var(--t)
-  }
-  .iconbtn:active{transform:scale(.96)}
+  /* Top nav */
+  .nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
+       padding:18px 14px 12px;
+       background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(10,10,10,.58) 45%,transparent);
+       -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .nav h1{margin:0;font-size:42px;line-height:.98;font-weight:900;letter-spacing:-.6px}
   .iconrow{display:flex;gap:10px}
+  .iconbtn{width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.06);
+           border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;transition:transform var(--t)}
+  .iconbtn:active{transform:scale(.96)}
+  .content{padding:8px 12px 28px}
 
-  .content{padding:6px 12px 28px}
+  /* Cards & tiles */
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 8px;color:var(--muted);font-size:15px}
+  .balance{font-size:44px;font-weight:900;letter-spacing:-.5px}
+  .apyPill{margin-left:auto;border:1px solid var(--border);background:rgba(255,255,255,.06);
+           border-radius:999px;padding:8px 14px;font-weight:900}
+  .row2{display:flex;gap:16px;margin-top:14px}
+  .btn{flex:1;border-radius:18px;padding:16px 18px;border:1px solid var(--border);background:rgba(255,255,255,.06);font-weight:900}
+  .btn.primary{background:#fff;color:#000}
+  .fullBtn{display:block;width:100%;margin-top:14px;border-radius:18px;padding:16px 18px;border:1px solid var(--border);
+           background:#fff;color:#000;font-weight:900}
+  .tile{background:var(--tile);border:1px solid var(--tileBorder);border-radius:18px;padding:14px 16px}
+  .tileRow{display:flex;justify-content:space-between;align-items:center}
+  .label{color:var(--muted);font-weight:700}
+  .big{font-weight:900}
 
-  /* Sharper credit card corners (still slightly rounded) */
-  .bigCard{
-    height:212px;
-    border-radius:7px;
-    overflow:hidden;box-shadow:var(--shadow);position:relative
+  #svSend
+  #ckSend{
+    font-size: 18px;
+    line-height: 1.1;
+    padding: 18px 20px;
   }
-  .bigCard .visa{right:22px;bottom:18px}
 
-  /* Card gradients (purple/blue) */
-  .grad1{
-    background:
-      radial-gradient(120% 120% at 95% 95%,
-                      rgba(0,0,0,0) 45%,
-                      rgba(0,0,0,0.75) 70%,
-                      #000 100%),
-      linear-gradient(110deg,
-                      #5d00bb 0%,
-                      #5d00bb 55%,
-                      #000 82%,
-                      #000 100%);
-  }
-  
-  .visa{position:absolute;right:29px;bottom:26px}
-  .visa svg{width:150px;height:auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,.35))}
+  /* Account info dropdown */
+  .acctInfo{overflow:hidden;max-height:0;opacity:.0;transition:max-height var(--t),opacity var(--t);margin:0 2px}
+  .acctInfo.open{max-height:180px;opacity:1}
+  .mini{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin-top:10px;
+        border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);font-weight:800}
 
-  /* GRID */
-  .grid{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .tile{background:var(--tile);border:1px solid var(--tileBorder);border-radius:var(--radiusTile);padding:14px 16px;position:relative}
-  .kb{font-size:13px;color:var(--muted);margin:0 0 6px}
-  .val{font-size:26px;font-weight:800;margin:0}
-  .micro{font-size:12px;color:var(--muted);margin-top:4px}
+  /* Transactions list */
+  .sectionTitle{margin:18px 6px 10px;font-size:26px;font-weight:900;letter-spacing:-.2px}
+  .empty{padding:18px;border-radius:18px;border:1px dashed var(--tileBorder);text-align:center;color:var(--muted);background:rgba(255,255,255,.03)}
+  .list .row{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);
+             border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:12px 14px}
+  .list .row + .row{margin-top:10px}
+  .rMain{flex:1}
+  .rTitle{font-weight:900}
+  .rSub{color:var(--muted);font-size:12px}
+  .rAmt{font-weight:900}
 
-  .compact{padding:12px 14px}
-  .compact .kb{margin-bottom:2px}
-  .compact .val{font-size:25px}
-  .compact .micro{margin-top:0}
+  /* Views positions: 4 views [savings, checking, transfer, txnDetails] */
+  .pos-0 .views{transform:translateX(0)}         /* Savings */
+  .pos-1 .views{transform:translateX(-25%)}      /* Checking */
+  .pos-2 .views{transform:translateX(-50%)}      /* Pay/Transfer */
+  .pos-3 .views{transform:translateX(-75%)}      /* Txn details */
 
-  .full{grid-column:1/-1}
+  /* Transaction details view */
+  .backPill{display:block;margin:14px auto 10px;width:92%;max-width:390px;padding:12px 18px;text-align:center;
+            border-radius:999px;border:1px solid var(--tileBorder);background:rgba(255,255,255,.06);font-weight:900}
+  .txnHeader{padding:14px 18px 10px;text-align:center}
+  .txnAmount{font-size:64px;font-weight:900;letter-spacing:-.6px}
+  .txnTitle{color:var(--muted);font-size:24px;font-weight:800;margin-top:4px}
+  .txnDate{color:var(--muted);margin-top:6px}
+  .rowD{margin:14px 12px;display:flex;justify-content:space-between;align-items:center;padding:16px;
+        background:var(--tile);border:1px solid var(--tileBorder);border-radius:18px}
+  .danger{display:block;width:92%;max-width:390px;margin:14px auto;padding:16px 20px;border-radius:16px;
+          background:rgba(183,58,58,.15);border:1px solid rgba(183,58,58,.4);color:#fff;font-weight:900;text-align:center}
+  .infoNote{margin:12px 12px 0;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.06);
+           border:1px solid var(--tileBorder);color:var(--muted);font-weight:800}
 
-  .bars{display:flex;gap:6px;margin-top:6px;align-items:flex-end}
-  .bars i{flex:1;height:20px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.45));opacity:.26}
+  /* Pay/Transfer page */
+  .formCard{background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow)}
+  .lab{display:block;margin:0 0 8px;color:var(--muted);font-weight:800}
+  .dollarWrap{display:flex;align-items:center;gap:8px;border-radius:14px;border:1px solid var(--tileBorder);background:#161616;padding:12px 14px}
+  .dollarWrap span{font-size:28px;font-weight:900}
+  .dollarWrap input{flex:1;background:transparent;border:0;color:#fff;font-size:28px;font-weight:900;outline:none}
+  .selectLine{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--tileBorder);
+              background:#161616;color:#fff;border-radius:12px;padding:12px 14px;font-weight:800}
+  .selectLine.disabled{opacity:.5;pointer-events:none}
+  .menuWrap{position:relative}
+  .menu{position:absolute;left:0;right:0;top:calc(100% + 8px);background:#111;border:1px solid var(--tileBorder);
+        border-radius:14px;box-shadow:var(--shadow);max-height:0;overflow:hidden;opacity:0;transform:translateY(-6px);
+        transition:max-height var(--t),opacity var(--t),transform var(--t);z-index:30}
+  .menu.open{max-height:240px;opacity:1;transform:translateY(0)}
+  .menu button{width:100%;text-align:left;background:transparent;border:0;color:#fff;padding:12px 14px;font-weight:800}
+  .menu button + button{border-top:1px solid var(--tileBorder)}
+  .actions{display:flex;gap:10px;margin-top:14px}
+  .btn2{flex:1;border-radius:14px;padding:14px 16px;font-weight:900;border:1px solid var(--border);background:#222;color:#fff}
+  .btn2.primary{background:var(--green);border-color:transparent}
+  .btn2.primary[disabled]{opacity:.5}
 
-  /* Expanded Payment Due tile */
-  .dueTile{padding:12px 16px 16px}
-  .dueTall{grid-row:span 2;}
-  .dueHeader{margin:0 0 4px;color:var(--muted);font-size:13px}
-  .dueVal{line-height:1}
-  .dueVal .num{display:block;font-size:40px;font-weight:900;letter-spacing:-.3px}
-  .dueVal .unit{display:block;font-size:26px;font-weight:900;margin-top:2px;letter-spacing:-.2px}
-  .payBubble{
-    position:absolute;right:14px;bottom:14px;
-    width:70px;height:70px;border-radius:50%;
-    background:#000;color:#fff;display:grid;place-items:center;
-    font-weight:900;letter-spacing:.2px;
-    border:3px solid #fff;box-shadow:0 12px 30px rgba(0,0,0,.55);
-    transition:transform var(--t),opacity var(--t)
-  }
-  .payBubble:active{transform:scale(.95)}
+  /* Transfer speed (unclickable) */
+  .speedRow{display:flex;gap:10px;margin-top:14px}
+  .speedBtn{flex:1;border-radius:14px;padding:12px 14px;border:1px solid var(--tileBorder);
+            background:#1a1a1a;color:#fff;font-weight:900;text-align:center;pointer-events:none}
+  .speedBtn.selected{background:#fff;color:#000}
 
-  /* Transaction list rows */
-  .txnRow{
-    display:flex;gap:12px;align-items:center;
-    background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.09);
-    border-radius:14px;padding:12px;cursor:pointer;
-  }
-  .txnRow + .txnRow{margin-top:10px}
-  .txnMain{flex:1}
-  .txnTitle{font-weight:800}
-  .txnSub{color:var(--muted);font-size:12px}
-  .txnAmt{font-weight:800}
+  /* Loading + confirmation full-screen overlays (keep style consistent) */
+  .fscreen{position:fixed;inset:0;display:none;place-items:center;z-index:80;background:rgba(0,0,0,.75)}
+  .fscreen.show{display:grid}
+  .fsPanel{width:92%;max-width:420px;background:#151515;border:1px solid var(--tileBorder);border-radius:20px;
+           box-shadow:var(--shadow);padding:18px}
+  .center{display:flex;flex-direction:column;align-items:center;text-align:center}
+  .spinner{width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#fff;animation:spin 1s linear infinite;margin-bottom:12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .checkCircle{width:64px;height:64px;border-radius:50%;background:#1e7f4b;display:grid;place-items:center;margin:6px 0 10px}
+  .checkCircle svg{display:block}
+  .confirmTitle{font-size:18px;font-weight:900;margin:6px 0}
+  .detailList{margin-top:8px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);border-radius:14px;padding:12px}
+  .detailRow{display:flex;justify-content:space-between;align-items:center;padding:6px 2px}
+  .note{color:var(--muted);margin-top:8px}
+  .doneBtn{display:block;width:100%;margin-top:14px;border-radius:14px;padding:14px 16px;font-weight:900;border:1px solid var(--tileBorder);background:#222;color:#fff}
 
-  /* Page positions (2 views) */
-  .pos-0 .views{transform:translateX(0%)}        /* Card */
-  .pos-1 .views{transform:translateX(-50%)}      /* Txn details */
-
-  /* Transaction details */
-  .txnHeader{padding:28px 18px 10px;text-align:center}
-  .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
-  .txnMerchant{color:var(--muted);font-size:22px;font-weight:700;margin-top:6px}
-  .txnDate{color:var(--muted);font-size:16px;margin-top:4px}
-  .block{margin:14px 12px}
-  .row{
-    margin:14px 12px;
-    display:flex;justify-content:space-between;align-items:center;
-    padding:16px;background:var(--tile);border:1px solid var(--tileBorder);
-    border-radius:var(--radiusTile)
-  }
-  .row h3{margin:0;font-size:18px}
-  .row .right{font-weight:900;font-size:18px}
-  .statusLine{font-size:18px;margin-bottom:4px}
-
-  /* Bottom sheet */
-  .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9}
+  /* ------- Create Transaction SHEET (modal) ------- */
+  .sheet{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:95}
   .sheet.active{pointer-events:auto}
-  .dim{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity var(--t)}
+  .sheet .dim{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;transition:opacity var(--t)}
   .sheet.active .dim{opacity:1}
-  .panel{width:100%;max-width:430px;background:#fff;color:#000;border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform var(--t);box-shadow:0 -20px 40px rgba(0,0,0,.35)}
-  .sheet.active .panel{transform:translateY(0)}
-  .panelHead{display:flex;align-items:center;justify-content:center;padding:12px 14px 0;position:relative}
-  .closeX{position:absolute;left:14px;top:8px;width:36px;height:36px;border-radius:10px;border:none;background:#efefef;font-size:20px;font-weight:900;cursor:pointer}
-  .title{font-size:28px;font-weight:900;margin:6px 0 0;text-align:center}
-  .ringWrap{position:relative;width:86%;max-width:360px;aspect-ratio:1;margin:12px auto 12px}
-  .ringWrap svg{width:100%;height:100%}
-  .centerText{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
-  .amt{font-weight:900;font-size:44px}
-  .info{padding:0 14px 8px;text-align:center;font-weight:900;color:#1d1d1d}
-  .info small{display:block;margin-top:4px;color:#6a6a6a;font-weight:600}
-  .actions{display:flex;justify-content:center;padding:0 14px 18px}
-  .btn{border-radius:14px;padding:14px 22px;font-weight:900;border:0}
-  .primary{background:#000;color:#fff;min-width:65%}
-  .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
-
-  /* Payment success pop-up */
-  .success{position:fixed;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .25s var(--t);z-index:10}
-  .success.active{opacity:1;pointer-events:auto}
-  .success .box{
-    width:86%;max-width:360px;background:#111;color:#fff;border:1px solid rgba(255,255,255,.14);
-    border-radius:18px;box-shadow:var(--shadow);padding:18px 18px 16px;text-align:center
-  }
-  .success .check{
-    width:56px;height:56px;border-radius:50%;margin:2px auto 10px;
-    display:grid;place-items:center;font-weight:900;background:#34c759;color:#000;box-shadow:0 8px 20px rgba(0,0,0,.35)
-  }
-  .success .title{font-weight:900;font-size:20px;margin:6px 0 4px}
-  .success .sub{color:var(--muted);font-weight:700}
-
-  /* Card details sheet tiny helper */
-  .cardFields{ padding:6px 12px 20px; }
-
-.visa svg, .visa img{
-  width:55px;
-  height:auto;
-  filter:drop-shadow(0 4px 12px rgba(0,0,0,.35));
-}
-
-.bigCard .visa{
-  right:10px;
-  bottom:12px;
-}
-
-/* ===== Add Transaction sheets & inputs ===== */
-.form{padding:8px 14px 18px}
-.form label{display:block;font-weight:800;margin:12px 0 6px}
-.form input,.form select{
-  width:100%;padding:12px 12px;border-radius:12px;border:1px solid #d9d9d9;
-  font:inherit
-}
-.btn.green{background:#34c759;color:#000;font-weight:900}
-.smallIcon{display:inline-block;vertical-align:-3px;margin-right:8px}
-.summary{padding:0 14px 14px;color:#1d1d1d;font-weight:700}
-.summary b{color:#000}
-
-/* Delete on txn details */
-.deleteWrap{padding:0 12px 24px}
-.deleteBtn{
-  width:100%;border:0;border-radius:14px;padding:14px 18px;font-weight:900;
-  background:#ff3b30;color:#fff
-}
-  
+  .sheet .panel{width:92%;max-width:420px;background:#151515;color:#fff;border:1px solid var(--tileBorder);
+                border-radius:20px;box-shadow:var(--shadow);
+                transform:translateY(18px) scale(.98);opacity:0;
+                transition:transform var(--t),opacity var(--t)}
+  .sheet.active .panel{transform:translateY(0) scale(1);opacity:1}
+  .sheet .head{padding:14px 16px;border-bottom:1px solid var(--tileBorder);font-weight:900;font-size:18px}
+  .sheet .body{padding:14px 16px}
+  .sheet .field{margin-top:12px}
+  .sheet .inp, .sheet .select{width:100%;border-radius:14px;border:1px solid var(--tileBorder);
+                              background:#1a1a1a;color:#fff;padding:12px 14px;font-size:16px;outline:none}
+  .sheet .actions{display:flex;gap:10px;margin-top:16px}
+  .sheet .btn2{background:#222;border-color:var(--tileBorder)}
+  .sheet .btn2.primary{background:var(--green)}
 </style>
 </head>
 <body>
-    
 <div class="app pos-0" id="app">
   <div class="views">
 
-    <!-- Card dashboard (opens by default) -->
-    <section class="view" id="card">
+    <!-- SAVINGS VIEW -->
+    <section class="view" id="savings">
       <div class="nav">
-        <h1>Sapphire Reserve</h1>
+        <h1>Savings</h1>
         <div class="iconrow">
-          <div class="iconbtn" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
-          <div class="iconbtn" id="openAddTxn" aria-label="List"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 4h16v2H4zM4 9h16v2H4zM4 14h11v2H4zM4 19h11v2H4z"/></svg></div>
-          <div class="iconbtn" aria-label="More"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
+          <div class="iconbtn" id="svSearch" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+          <div class="iconbtn" id="svAddTxn" aria-label="Create transaction"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M11 11V6h2v5h5v2h-5v5h-2v-5H6v-2z"/></svg></div>
+          <div class="iconbtn" aria-label="More"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" r="2" cy="5"/><circle cx="12" r="2" cy="12"/><circle cx="12" r="2" cy="19"/></svg></div>
         </div>
       </div>
 
       <div class="content">
-        <div class="bigCard grad1" id="bigCard">
-          <div class="visa">
-            <img src="./my-logo.png" alt="Card Brand">
+        <div class="card accountCard" id="svAcctCard" style="position:relative;cursor:pointer">
+          <div style="display:flex;align-items:center;gap:12px">
+            <h3 style="margin:0">Current Balance</h3>
+            <div class="apyPill">184% APY</div>
+          </div>
+          <div class="balance" id="svBal">$70.19</div>
+        </div>
+
+        <!-- dropdown with account/routing -->
+        <div class="acctInfo" id="svAcctInfo">
+          <div class="mini"><span>Account</span><span class="big" id="svAcctNum">102979124</span></div>
+          <div class="mini"><span>Routing</span><span class="big">072000326</span></div>
+        </div>
+
+        <!-- NEW: single Send Money button -->
+        <button class="fullBtn" id="svSend">Send Money</button>
+
+        <div class="tile" style="margin-top:14px;cursor:pointer" id="toChecking">
+          <div class="tileRow">
+            <div class="label">Checking</div>
+            <div class="big" id="ckBtnBal">$414.00</div>
           </div>
         </div>
 
-        <div class="grid">
-          <div class="tile compact">
-            <div class="kb">Card Balance</div>
-            <p class="val" id="cardBalance">$0.00</p>
-            <p class="micro" id="availableBalance">$0.00 Available</p>
-          </div>
-
-          <!-- EXPANDED Payment Due tile -->
-          <div class="tile dueTile dueTall" id="dueTile">
-            <p class="dueHeader">Payment Due In</p>
-            <div class="dueVal">
-              <span class="num">1</span>
-              <span class="unit">Month</span>
-            </div>
-            <button class="payBubble" id="openPay">Pay</button>
-          </div>
-
-          <!-- REPLACED: Weekly Activity -> Cashback (card balance style, no "available") -->
-          <div class="tile compact">
-            <div class="kb">Cashback</div>
-            <p class="val" id="cashback">$0.00</p>
-          </div>
-
-          <!-- Savings Account -->
-          <div class="tile full">
-            <div class="kb">Savings Account</div>
-            <div class="val">$756.34</div>
-          </div>
-
-          <!-- Transactions -->
-          <div class="tile full" id="txnsTile">
-            <div class="kb" style="margin-bottom:8px">Latest Card Transactions</div>
-            <div id="txnList"></div>
-          </div>
+        <div class="sectionTitle">Latest Transactions</div>
+        <div id="svListWrap">
+          <div class="empty" id="svEmpty">No transactions yet</div>
+          <div class="list" id="svList"></div>
         </div>
       </div>
     </section>
 
-    <!-- Transaction details -->
-    <section class="view" id="txnView">
+    <!-- CHECKING VIEW -->
+    <section class="view" id="checking">
       <div class="nav">
-        <button class="pill" id="backTxn">Back</button>
+        <h1>Checking</h1>
+        <div class="iconrow">
+          <div class="iconbtn" id="ckSearch" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+          <div class="iconbtn" id="ckAddTxn" aria-label="Create transaction"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M11 11V6h2v5h5v2h-5v5h-2v-5H6v-2z"/></svg></div>
+          <div class="iconbtn" aria-label="More"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" r="2" cy="5"/><circle cx="12" r="2" cy="12"/><circle cx="12" r="2" cy="19"/></svg></div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="card accountCard" id="ckAcctCard" style="cursor:pointer">
+          <div style="display:flex;align-items:center;gap:12px">
+            <h3 style="margin:0">Current Balance</h3>
+          </div>
+          <div class="balance" id="ckBal">$414.00</div>
+        </div>
+
+        <!-- Checking account/routing (same routing) -->
+        <div class="acctInfo" id="ckAcctInfo">
+          <div class="mini"><span>Account</span><span class="big" id="ckAcctNum">501262431</span></div>
+          <div class="mini"><span>Routing</span><span class="big">072000326</span></div>
+        </div>
+
+        <!-- NEW: single Send Money button -->
+        <button class="fullBtn" id="ckSend">Send Money</button>
+
+        <div class="tile" style="margin-top:14px;cursor:pointer" id="toSavings">
+          <div class="tileRow">
+            <div class="label">Savings</div>
+            <div class="big" id="svBtnBal">$70.19</div>
+          </div>
+        </div>
+
+        <div class="tile" style="margin-top:12px">
+          <div class="tileRow">
+            <div class="label">Pay over time—</div>
+            <div class="big"></div>
+          </div>
+        </div>
+
+        <div class="sectionTitle">Latest Transactions</div>
+        <div id="ckListWrap">
+          <div class="empty" id="ckEmpty">No transactions yet</div>
+          <div class="list" id="ckList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW PAY/TRANSFER PAGE -->
+    <section class="view" id="transfer">
+      <div class="nav">
+        <h1>Pay/Transfer</h1>
         <div class="iconrow"></div>
       </div>
+      <div class="content">
+        <div class="formCard">
+          <label class="lab">Amount</label>
+          <div class="dollarWrap">
+            <span>$</span>
+            <input class="amtInput" id="ptAmount" inputmode="decimal" placeholder="0.00" />
+          </div>
 
-      <div class="txnHeader">
-        <div class="txnAmount" id="txnAmount">$0.00</div>
-        <div class="txnMerchant" id="txnMerchant">Merchant</div>
-        <div class="txnDate" id="txnDate">MM/DD/YY, 0:00 PM</div>
-      </div>
+          <div style="height:10px"></div>
 
-      <div class="tile block">
-        <div class="statusLine" id="txnStatus"><strong>Status: Approved</strong></div>
-        <div class="micro" id="txnCard">Sapphire Reserve</div>
-      </div>
+          <div class="menuWrap">
+            <div class="lab">Transfer from</div>
+            <button class="selectLine" id="fromLine">
+              <span id="fromText">Choose account (from)</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+            <div class="menu" id="fromMenu2">
+              <button data-id="savings">SAVINGS (...9124)</button>
+              <button data-id="checking">CHECKING (...2431)</button>
+              <button data-id="total">TOTAL CHECKING (...6750)</button>
+            </div>
+          </div>
 
-      <div class="row">
-        <h3>Total</h3>
-        <div class="right" id="txnTotal">$0.00</div>
-      </div>
+          <div style="height:10px"></div>
 
-      <div class="deleteWrap">
-        <button class="deleteBtn" id="deleteTxnBtn">Delete Transaction</button>
+          <div class="menuWrap">
+            <div class="lab">Transfer to</div>
+            <button class="selectLine disabled" id="toLine">
+              <span id="toText">Choose account (to)</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+            <div class="menu" id="toMenu2"></div>
+          </div>
+
+          <!-- Speed (auto-selected; unclickable) -->
+          <div class="speedRow" id="speedRow">
+            <div class="speedBtn" id="speedInstant">Instant (~1–2m)</div>
+            <div class="speedBtn" id="speedBiz">1–2 business days</div>
+          </div>
+
+          <div class="actions">
+            <button class="btn2" id="ptCancel">Cancel</button>
+            <button class="btn2 primary" id="ptTransfer" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style="vertical-align:middle;margin-right:6px"><path d="M12 17a2 2 0 002-2v-1h1a3 3 0 000-6h-1V6a3 3 0 10-6 0v2H7a3 3 0 000 6h1v1a2 2 0 002 2h2zm-2-9V6a2 2 0 114 0v2h-4z"/></svg>
+              Transfer
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
+    <!-- TRANSACTION DETAILS (shared) -->
+    <section class="view" id="txnView">
+      <a class="backPill" id="backTxn">Back</a>
+      <div class="txnHeader">
+        <div class="txnAmount" id="dAmount">+$0.00</div>
+        <div class="txnTitle" id="dTitle">Description</div>
+        <div class="txnDate" id="dDate">MM/DD/YY, 0:00 PM</div>
+      </div>
+      <div class="infoNote" id="pendingBox" style="display:none">Transfer will be posted in 1–2 business days</div>
+      <div class="rowD"><div>Account</div><div id="dAccount" style="font-weight:900">Savings</div></div>
+      <div class="rowD"><div>Total</div><div id="dTotal" style="font-weight:900">+$0.00</div></div>
+      <button class="danger" id="deleteTxn">Delete Transaction</button>
+    </section>
+
   </div>
+</div>
 
-  <!-- Payment sheet -->
-  <div class="sheet" id="sheet">
-    <div class="dim" id="dim"></div>
-    <div class="panel">
-      <div class="panelHead"><button class="closeX" id="closeSheet" aria-label="Close">×</button></div>
-      <div class="title">Choose Amount</div>
-
-      <div class="ringWrap" id="ringWrap">
-        <svg viewBox="0 0 320 320" id="ringSvg" aria-hidden="true">
-          <defs>
-            <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#51c0ff"/><stop offset="100%" stop-color="#0a84ff"/></linearGradient>
-            <linearGradient id="gradGreen" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#b8ffb9"/><stop offset="100%" stop-color="#34c759"/></linearGradient>
-            <linearGradient id="gradGray"  x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#e9ecef"/><stop offset="100%" stop-color="#cfd8dc"/></linearGradient>
-          </defs>
-          <circle cx="160" cy="160" r="120" stroke="#e9e9ef" stroke-opacity=".65" stroke-width="26" fill="none"/>
-          <circle id="progress" cx="160" cy="160" r="120" stroke="url(#gradGray)" stroke-width="26" fill="none"
-                  stroke-linecap="round" transform="rotate(-90 160 160)" />
-          <circle id="handle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
-        </svg>
-
-        <div class="centerText" aria-live="polite" aria-atomic="true">
-          <div class="amt" id="amountLabel">$0.00</div>
-        </div>
+<!-- ===== CREATE TRANSACTION SHEET (modal) ===== -->
+<div class="sheet ct-panel" id="createSheet" aria-hidden="true">
+  <div class="dim"></div>
+  <div class="panel" role="dialog" aria-label="Create Transaction">
+    <div class="head">Create Transaction</div>
+    <div class="body">
+      <div class="field">
+        <label class="lab">Description</label>
+        <input class="inp" id="ctDesc" placeholder="e.g., Interest earned, ATM, etc.">
       </div>
-
-      <div class="info" id="payInfo">
-        Pay June Balance
-        <small>Paying your monthly balance is recommended to help keep you financially healthy and avoid interest charges.</small>
+      <div class="field">
+        <label class="lab">Amount</label>
+        <input class="inp" id="ctAmt" inputmode="decimal" placeholder="0.00" value="0.00" style="font-size:28px;font-weight:900">
       </div>
-
-      <div class="actions">
-        <button class="btn primary" id="payNowBtn">Pay $0.00</button>
+      <div class="field">
+        <label class="lab">Date &amp; time</label>
+        <input class="inp" id="ctWhen" type="datetime-local">
       </div>
-      <div class="other" id="otherAmountBtn">Other Amount</div>
-    </div>
-  </div>
-
-  <!-- Success popup -->
-  <div class="success" id="paySuccess" aria-live="polite" aria-atomic="true">
-    <div class="box">
-      <div class="check">✓</div>
-      <div class="title">Payment Successful</div>
-      <div class="sub" id="paySuccessMsg">$0.00 has been applied to your card.</div>
-    </div>
-  </div>
-
-  <!-- Card details sheet -->
-  <div class="sheet" id="cardSheet" aria-hidden="true">
-    <div class="dim" id="cardDim"></div>
-    <div class="panel">
-      <div class="panelHead">
-        <button class="closeX" id="closeCardSheet" aria-label="Close">×</button>
-      </div>
-      <div class="title">Card Details</div>
-      <div class="cardFields">
-        <div class="row">
-          <h3>Card Number</h3>
-          <div class="right" id="cdNumber">0000 0000 0000 0000</div>
-        </div>
-        <div class="row">
-          <h3>Expiry</h3>
-          <div class="right" id="cdExpiry">MM/YY</div>
-        </div>
-        <div class="row">
-          <h3>Security Code</h3>
-          <div class="right" id="cdCvv">000</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Add Transaction sheet -->
-  <div class="sheet" id="addTxnSheet" aria-hidden="true">
-    <div class="dim" id="addTxnDim"></div>
-    <div class="panel">
-      <div class="panelHead"><button class="closeX" id="closeAddTxn" aria-label="Close">×</button></div>
-      <div class="title">Add Transaction</div>
-      <div class="form">
-        <label for="txMerchant">Merchant</label>
-        <input id="txMerchant" type="text" placeholder="e.g., Starbucks" />
-
-        <label for="txAmount">Amount</label>
-        <input id="txAmount" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
-
-        <label for="txWhen">Date &amp; Time</label>
-        <input id="txWhen" type="datetime-local" />
-
-        <label for="txStatus">Status</label>
-        <select id="txStatus">
-          <option>Approved</option>
-          <option>Refunded</option>
-          <option>Posted</option>
+      <div class="field">
+        <label class="lab">Type</label>
+        <select class="select" id="ctType">
+          <option value="" selected>Choose type</option>
+          <option value="credit">Credit (+)</option>
+          <option value="debit">Debit (−)</option>
         </select>
       </div>
       <div class="actions">
-        <button class="btn green" id="txContinue">
-          <span class="smallIcon">✔︎</span>Continue
-        </button>
+        <button class="btn2" id="ctCancel">Cancel</button>
+        <button class="btn2 primary" id="ctSave" disabled>Save</button>
       </div>
-      <div class="other" id="txCancelFromForm">Cancel</div>
     </div>
   </div>
+</div>
 
-  <!-- Confirm Transaction sheet -->
-  <div class="sheet" id="confirmTxnSheet" aria-hidden="true">
-    <div class="dim" id="confirmDim"></div>
-    <div class="panel">
-      <div class="panelHead"><button class="closeX" id="closeConfirm" aria-label="Close">×</button></div>
-      <div class="title">Confirm Transaction</div>
-      <div class="summary" id="confirmSummary"></div>
-      <div class="actions">
-        <button class="btn primary" id="confirmAddBtn">Add Transaction</button>
-      </div>
-      <div class="other" id="editTxnBtn">Go Back &amp; Edit</div>
-    </div>
+<!-- FULLSCREEN Loading -->
+<div class="fscreen" id="loadingScreen">
+  <div class="fsPanel center">
+    <div class="spinner"></div>
+    <div style="font-weight:900">Initiating transfer…</div>
   </div>
+</div>
 
+<!-- FULLSCREEN Confirmation -->
+<div class="fscreen" id="confirmScreen">
+  <div class="fsPanel">
+    <div class="center">
+      <div class="checkCircle">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="#fff"><path d="M9 16.2l-3.5-3.5L4 14.2l5 5 11-11-1.5-1.5z"/></svg>
+      </div>
+      <div class="confirmTitle" id="confirmTitle">Your transfer has been initiated</div>
+    </div>
+    <div class="detailList" id="confirmDetails"></div>
+    <div class="note" id="confirmNote" style="display:none">Your transfer has been scheduled.</div>
+    <button class="doneBtn" id="confirmDone">Done</button>
+  </div>
 </div>
 
 <script>
-  
-(()=> {
-  const app=document.getElementById('app');
+(()=>{
+  const app = document.getElementById('app');
 
-  // Transaction details nav
-  document.getElementById('backTxn').addEventListener('click', ()=>{ app.className='app pos-0'; });
+  /* ---------- ACCOUNT METADATA ---------- */
+  const SAV_ACCT = { num: '102979124', last4: '9124', name: 'SAVINGS' };
+  const CK_ACCT  = { num: '501262431', last4: '2431', name: 'CHECKING' };
+  const TOT_ACCT = { num: '000006750', last4: '6750', name: 'TOTAL CHECKING' }; // menu-only
 
-  /* === MANUAL DEFAULTS (edit; values persist via localStorage) === */
+  const money = v=> (Number(v)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
+
+  /* ---------- SETTINGS VERSION (reset balances by bumping) ---------- */
   const SETTINGS_DEFAULT = {
-    version: 6,                 // bump if you want to reset persisted balances
-    cardBalance: 49.46,
-    availableBalance: 275.54,
-    cashback: 0.00,             // <— added for Cashback tile
-    cardNumber: '5278 6812 3931 7295',
-    cardExpiry: '07/30',
-    cardCvv: '528'
+    version: 3,         // <— bump this to reset default balances below
+    savingsBal: 70.19,
+    checkingBal: 414.00
   };
 
-  function loadBalances(){
-    try{
-      const raw = localStorage.getItem('demo_balances');
-      if(!raw) return {...SETTINGS_DEFAULT};
-      const s = JSON.parse(raw);
-      if (typeof s.cardBalance==='number' && typeof s.availableBalance==='number' &&
-          s.version === SETTINGS_DEFAULT.version){
-        return {...SETTINGS_DEFAULT, ...s};
-      }
-    }catch(e){}
-    return {...SETTINGS_DEFAULT};
+  /* ---------- PERSISTED BALANCES ---------- */
+  const svState = JSON.parse(localStorage.getItem('sv_state')||'{"bal":70.19}');
+  const ckState = JSON.parse(localStorage.getItem('ck_state')||'{"bal":414.00}');
+  const storedVer = Number(localStorage.getItem('bank_version')||'0');
+
+  if (storedVer !== SETTINGS_DEFAULT.version) {
+    svState.bal = SETTINGS_DEFAULT.savingsBal;
+    ckState.bal = SETTINGS_DEFAULT.checkingBal;
+    localStorage.setItem('bank_version', String(SETTINGS_DEFAULT.version));
   }
-  let SETTINGS = loadBalances();
-  const saveBalances = () => localStorage.setItem('demo_balances', JSON.stringify(SETTINGS));
-
-  /* ----- Payment sheet open/close ----- */
-  const sheet=document.getElementById('sheet');
-  const dim=document.getElementById('dim');
-  const openPay=document.getElementById('openPay');
-  const closeSheet=()=>sheet.classList.remove('active');
-  openPay.addEventListener('click',()=>sheet.classList.add('active'));
-  dim.addEventListener('click',closeSheet);
-  document.getElementById('closeSheet').addEventListener('click',closeSheet);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
-
-  /* ----- Circular slider (locks at max; clockwise disabled when locked) ----- */
-  const MIN = 0.00;
-  let   MAX = SETTINGS.cardBalance;
-  let   THRESH = +(MAX * 0.82).toFixed(2);
-
-  const ringWrap=document.getElementById('ringWrap');
-  const ringSvg=document.getElementById('ringSvg');
-  const progress=document.getElementById('progress');
-  const handle=document.getElementById('handle');
-  const amountLabel=document.getElementById('amountLabel');
-  const payBtn=document.getElementById('payNowBtn');
-  const info=document.getElementById('payInfo');
-
-  const R=120;
-  const C=2*Math.PI*R;
-  progress.setAttribute('stroke-dasharray', `${C}`);
-  progress.setAttribute('stroke-dashoffset', `${C}`);
-
-  let amount=MIN;
-  let dragging=false, lastFrac=0, lockedAtMax=false;
-
-  function setUI(v){
-    if(lockedAtMax || Math.abs(v-MAX)<0.01){
-      progress.setAttribute('stroke','url(#gradBlue)');
-      info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>';
-    }else if(v>THRESH){
-      progress.setAttribute('stroke','url(#gradGreen)');
-      info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>';
-    }else{
-      progress.setAttribute('stroke','url(#gradGray)');
-      info.innerHTML='Pay June Balance<small>Paying your monthly balance is recommended to help keep you financially healthy and avoid interest charges.</small>';
-    }
-  }
-
-  const signedDelta = (a,b)=>(((a-b)+1.5)%1)-0.5;
-
-  function applyFromFraction(fracRaw, fromDrag=false){
-    let f = Math.max(0, Math.min(0.999999, fracRaw));
-    const delta = signedDelta(f, lastFrac);
-
-    if (lockedAtMax){
-      if (delta > 0){
-        f = 1;
-      }else{
-        lockedAtMax = false;
-      }
-    }
-
-    const NEAR_MAX = 0.995;
-    if (!lockedAtMax && f >= NEAR_MAX){
-      lockedAtMax = true;
-      f = 1;
-    }
-
-    lastFrac = f;
-    const fracForAmount = (f===1)?1:f;
-    amount = +((MIN + fracForAmount*(MAX-MIN)).toFixed(2));
-
-    const dash = C*(1-fracForAmount);
-    progress.style.transition = fromDrag ? 'none' : 'stroke-dashoffset 220ms ease, stroke 220ms ease';
-    progress.setAttribute('stroke-dashoffset', `${dash}`);
-
-    const ang=(-90 + 360*fracForAmount)*Math.PI/180;
-    const hx=160 + R*Math.cos(ang), hy=160 + R*Math.sin(ang);
-    handle.style.transition = fromDrag ? 'none' : 'cx 180ms ease, cy 180ms ease';
-    handle.setAttribute('cx',hx.toFixed(2));
-    handle.setAttribute('cy',hy.toFixed(2));
-
-    amountLabel.textContent='$'+amount.toFixed(2);
-    payBtn.textContent='Pay $'+amount.toFixed(2);
-    setUI(amount);
-  }
-
-  const cardBalanceEl = document.getElementById('cardBalance');
-  const availableEl   = document.getElementById('availableBalance');
-  const cashbackEl    = document.getElementById('cashback');
-  const fmtUSD = n => n.toLocaleString(undefined,{style:'currency',currency:'USD'});
-
-  function applyBalances(){
-    cardBalanceEl.textContent = fmtUSD(SETTINGS.cardBalance);
-    availableEl.textContent   = `${fmtUSD(SETTINGS.availableBalance)} Available`;
-    if (cashbackEl) cashbackEl.textContent = fmtUSD(SETTINGS.cashback);
-
-    MAX    = Math.max(0, SETTINGS.cardBalance);
-    THRESH = +(MAX * 0.82).toFixed(2);
-    lockedAtMax = false;
-    lastFrac = 0;
-    applyFromFraction(0, false);
-  }
-
-  function fractionFromPointer(evt){
-    const rect=ringWrap.getBoundingClientRect();
-    const x=(evt.touches?evt.touches[0].clientX:evt.clientX)-rect.left;
-    const y=(evt.touches?evt.touches[0].clientY:evt.clientY)-rect.top;
-    const cx=rect.width/2, cy=rect.height/2;
-    let theta=Math.atan2(y-cy,x-cx);
-    theta+=Math.PI/2;
-    if(theta<0) theta+=Math.PI*2;
-    return theta/(Math.PI*2);
-  }
-
-  const start=e=>{dragging=true; applyFromFraction(fractionFromPointer(e), true); e.preventDefault();}
-  const move =e=>{if(!dragging) return; applyFromFraction(fractionFromPointer(e), true);}
-  const end  =()=>{dragging=false;}
-
-  handle.addEventListener('mousedown',start); handle.addEventListener('touchstart',start,{passive:false});
-  ringSvg.addEventListener('mousedown',start); ringSvg.addEventListener('touchstart',start,{passive:false});
-  window.addEventListener('mousemove',move,{passive:false}); window.addEventListener('touchmove',move,{passive:false});
-  window.addEventListener('mouseup',end); window.addEventListener('touchend',end);
-
-  document.getElementById('otherAmountBtn').addEventListener('click',()=>{
-    const raw=prompt('Enter a payment amount (0.00–'+MAX.toFixed(2)+')', amount.toFixed(2));
-    if(!raw) return; const n=parseFloat(raw.replace(/[^\d.]/g,'')); if(isFinite(n)) {
-      const frac = Math.max(0, Math.min(1, n/MAX));
-      applyFromFraction(frac,false);
-    }
-  });
-
-  // SUCCESS POPUP
-  const successEl = document.getElementById('paySuccess');
-  const successMsg = document.getElementById('paySuccessMsg');
-  function showPaySuccess(n){
-    successMsg.textContent = `${fmtUSD(n)} has been applied to your card.`;
-    successEl.classList.add('active');
-    const hide = ()=>successEl.classList.remove('active');
-    successEl.addEventListener('click', hide, {once:true});
-    setTimeout(hide, 1600);
-  }
-
-  // Pay -> update balances (persist) -> success pop-up + add transaction
-  payBtn.addEventListener('click', ()=>{
-    if (amount <= 0) { sheet.classList.remove('active'); return; }
-
-    const payIso = new Date().toISOString();
-
-    SETTINGS.cardBalance      = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
-    SETTINGS.availableBalance = +(SETTINGS.availableBalance + amount).toFixed(2);
-    saveBalances();
-
-    window.addPayment({ amount, iso: payIso });
-
-    applyBalances();
-    sheet.classList.remove('active');
-    showPaySuccess(amount);
-  });
-
-  // Apply balances on load
-  applyBalances();
 
   /* ---------- TRANSACTIONS ---------- */
-  const txnListEl = document.getElementById('txnList');
+  // Each txn: { id, desc, amount, iso, type:'credit'|'debit', status:'Posted'|'Pending', note?:string }
+  let svTxns = JSON.parse(localStorage.getItem('sv_txns')||'[]');
+  let ckTxns = JSON.parse(localStorage.getItem('ck_txns')||'[]');
 
-  const TXN_STORE_KEY = 'demo_txns';
-  function loadTransactions(){
-    try{
-      const raw = localStorage.getItem(TXN_STORE_KEY);
-      if(!raw) return null;
-      const arr = JSON.parse(raw);
-      if (Array.isArray(arr)) return arr;
-    }catch(e){}
-    return null;
-  }
-  function saveTransactions(){
-    try{ localStorage.setItem(TXN_STORE_KEY, JSON.stringify(transactions)); }catch(e){}
+  function saveAll(){
+    localStorage.setItem('sv_state', JSON.stringify(svState));
+    localStorage.setItem('ck_state', JSON.stringify(ckState));
+    localStorage.setItem('sv_txns', JSON.stringify(svTxns));
+    localStorage.setItem('ck_txns', JSON.stringify(ckTxns));
   }
 
-  let transactions = loadTransactions() || [
-    {
-      id: rid(),
-      kind: 'refund',
-      merchant: 'Apple Store',
-      amount: 40.35,
-      status: 'Refunded',
-      card: 'Sapphire Reserve',
-      iso: '2023-07-14T16:32:00'
-    },
-    {
-      id: rid(),
-      kind: 'purchase',
-      merchant: 'FANATEC',
-      amount: 277.41,
-      status: 'Approved',
-      card: 'Sapphire Reserve',
-      iso: '2025-04-23T13:04:00'
-    }
-  ];
+  /* ---------- VIEW NAV ---------- */
+  const toChecking = document.getElementById('toChecking');
+  const toSavings  = document.getElementById('toSavings');
+  toChecking.addEventListener('click', ()=> app.className='app pos-1');
+  toSavings.addEventListener('click',  ()=> app.className='app pos-0');
 
-  function rid(){ return 't_'+Math.random().toString(36).slice(2,9) }
+  /* ---------- ACCOUNT CARDS DROP ---- */
+  const svCard = document.getElementById('svAcctCard');
+  const ckCard = document.getElementById('ckAcctCard');
+  const svInfo = document.getElementById('svAcctInfo');
+  const ckInfo = document.getElementById('ckAcctInfo');
+  svCard.addEventListener('click', ()=> svInfo.classList.toggle('open'));
+  ckCard.addEventListener('click', ()=> ckInfo.classList.toggle('open'));
 
-  // Display rule by STATUS (not kind)
-  function formatDisplay(t){
-    const negative = (t.status==='Refunded' || t.status==='Posted');
-    return (negative?'- ':'') + '$' + Number(t.amount).toFixed(2);
+  /* ---------- RENDER BALANCES ---------- */
+  const svBalEl = document.getElementById('svBal');
+  const ckBalEl = document.getElementById('ckBal');
+  const svBtnBal = document.getElementById('svBtnBal');
+  const ckBtnBal = document.getElementById('ckBtnBal');
+  const svAcctNumEl = document.getElementById('svAcctNum');
+  const ckAcctNumEl = document.getElementById('ckAcctNum');
+  function renderBalances(){
+    svBalEl.textContent = money(svState.bal);
+    ckBalEl.textContent = money(ckState.bal);
+    svBtnBal.textContent= money(svState.bal);
+    ckBtnBal.textContent= money(ckState.bal);
+    svAcctNumEl.textContent = SAV_ACCT.num;
+    ckAcctNumEl.textContent = CK_ACCT.num;
   }
-  function formatMoneyAbs(n){ return '$' + Math.abs(n).toFixed(2) }
-  function shortDate(iso){
-    const d = new Date(iso);
-    return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'});
-  }
-  function fullDateTime(iso){
-    const d = new Date(iso);
-    return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'}) + ', ' +
-           d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
-  }
+  renderBalances();
 
-  function renderTransactions(){
-    // Newest (later) on top
-    transactions.sort((a,b)=> new Date(b.iso) - new Date(a.iso));
-    txnListEl.innerHTML = transactions.map(t => `
-      <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
-        <div class="txnMain">
-          <div class="txnTitle">${t.merchant}${t.status ? ` <span style="opacity:.6">• ${t.status}</span>` : ''}</div>
-          <div class="txnSub">${shortDate(t.iso)}</div>
+  /* ---------- LIST RENDER ---------- */
+  const svList = document.getElementById('svList');
+  const ckList = document.getElementById('ckList');
+  const svEmpty= document.getElementById('svEmpty');
+  const ckEmpty= document.getElementById('ckEmpty');
+
+  function fmtRow(t){
+    const sign = t.type==='credit' ? '+' : '-';
+    const typeLabel = t.type==='credit'?'Credit':'Debit';
+    const statusFrag = t.status==='Pending' ? ' • Pending' : '';
+    return `
+      <div class="row" data-id="${t.id}">
+        <div class="rMain">
+          <div class="rTitle">${t.desc} <span style="opacity:.6">• ${typeLabel}${statusFrag}</span></div>
+          <div class="rSub">${new Date(t.iso).toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'})}</div>
         </div>
-        <div class="txnAmt">${formatDisplay(t)}</div>
-      </div>
-    `).join('');
+        <div class="rAmt">${sign}${money(Math.abs(t.amount)).replace('$','')}</div>
+      </div>`;
+  }
+  function sortNewest(a,b){ return new Date(b.iso) - new Date(a.iso); }
 
-    txnListEl.querySelectorAll('.txnRow').forEach(row=>{
-      row.addEventListener('click',()=>openTxn(row.dataset.id));
-      row.addEventListener('keypress',e=>{ if(e.key==='Enter') openTxn(row.dataset.id) });
+  function renderTxns(){
+    svTxns.sort(sortNewest); ckTxns.sort(sortNewest);
+    svList.innerHTML = svTxns.map(fmtRow).join('');
+    ckList.innerHTML = ckTxns.map(fmtRow).join('');
+    svEmpty.style.display = svTxns.length? 'none':'block';
+    ckEmpty.style.display = ckTxns.length? 'none':'block';
+
+    svList.querySelectorAll('.row').forEach(r=>{
+      r.addEventListener('click',()=> openTxn('savings', r.dataset.id));
+    });
+    ckList.querySelectorAll('.row').forEach(r=>{
+      r.addEventListener('click',()=> openTxn('checking', r.dataset.id));
     });
   }
+  renderTxns();
 
-  let currentTxnId = null;
-  function openTxn(id){
-    const t = transactions.find(x=>x.id===id);
-    if(!t) return;
-    currentTxnId = id;
-    document.getElementById('txnAmount').textContent = formatMoneyAbs(t.amount);
-    document.getElementById('txnMerchant').textContent = t.merchant;
-    document.getElementById('txnDate').textContent = fullDateTime(t.iso);
-    document.getElementById('txnStatus').innerHTML = `<strong>Status: ${t.status || 'Approved'}</strong>`;
-    document.getElementById('txnCard').textContent = t.card || 'Sapphire Reserve';
-    document.getElementById('txnTotal').textContent = formatMoneyAbs(t.amount);
-    app.className = 'app pos-1';
-  }
+  /* ---------- TXN DETAILS ---------- */
+  const backTxn = document.getElementById('backTxn');
+  const dAmount = document.getElementById('dAmount');
+  const dTitle  = document.getElementById('dTitle');
+  const dDate   = document.getElementById('dDate');
+  const dTotal  = document.getElementById('dTotal');
+  const dAccount= document.getElementById('dAccount');
+  const delBtn  = document.getElementById('deleteTxn');
+  const pendingBox = document.getElementById('pendingBox');
+  let openCtx = null; // {which:'savings'|'checking', id}
 
-  document.getElementById('deleteTxnBtn').addEventListener('click', ()=>{
-    if(!currentTxnId) return;
-    const i = transactions.findIndex(t=>t.id===currentTxnId);
-    if(i>-1){
-      transactions.splice(i,1);
-      saveTransactions();
-      renderTransactions();
-      currentTxnId = null;
-      app.className = 'app pos-0';
+  function openTxn(which,id){
+    const arr = which==='savings'? svTxns : ckTxns;
+    const t = arr.find(x=>x.id===id); if(!t) return;
+    const sign = t.type==='credit'?'+':'-';
+    dAmount.textContent = `${sign}${money(Math.abs(t.amount))}`;
+    dTitle.textContent  = t.desc;
+    dDate.textContent   = new Date(t.iso).toLocaleString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit',hour:'numeric',minute:'2-digit'});
+    dTotal.textContent  = `${sign}${money(Math.abs(t.amount))}`;
+    dAccount.textContent= which==='savings'?'Savings':'Checking';
+    // Pending note
+    if (t.status === 'Pending') {
+      pendingBox.style.display = 'block';
+      pendingBox.textContent = t.note || 'Transfer will be posted in 1–2 business days';
+    } else {
+      pendingBox.style.display = 'none';
     }
+    openCtx = {which,id};
+    app.className='app pos-3';
+  }
+  backTxn.addEventListener('click', ()=>{
+    app.className = (openCtx && openCtx.which==='checking') ? 'app pos-1' : 'app pos-0';
+  });
+  delBtn.addEventListener('click', ()=>{
+    if(!openCtx) return;
+    let arr = openCtx.which==='savings'? svTxns : ckTxns;
+    const i = arr.findIndex(x=>x.id===openCtx.id);
+    if(i>-1){ arr.splice(i,1); saveAll(); renderTxns(); }
+    backTxn.click();
   });
 
-  // Public helpers (defaults now Sapphire Reserve)
-  window.addPurchase = ({merchant, amount, iso, card='Sapphire Reserve', status='Approved'})=>{
-    transactions.push({ id: rid(), kind:'purchase', merchant, amount:Number(amount), iso, status, card });
-    saveTransactions();
-    renderTransactions();
-  };
-  window.addRefund = ({merchant, amount, iso, card='Sapphire Reserve', status='Refunded'})=>{
-    transactions.push({ id: rid(), kind:'refund', merchant, amount:Number(amount), iso, status, card });
-    saveTransactions();
-    renderTransactions();
-  };
-  window.addPayment = ({amount, iso, card='Sapphire Reserve', merchant='Card Payment', status='Posted'})=>{
-    transactions.push({ id: rid(), kind:'payment', merchant, amount:Number(amount), iso, status, card });
-    saveTransactions();
-    renderTransactions();
-  };
-  window.removeTransaction = (id)=>{
-    const i = transactions.findIndex(t=>t.id===id);
-    if(i>-1){ transactions.splice(i,1); saveTransactions(); renderTransactions(); }
-  };
-  window.removeTransactionWhere = (criteria)=>{
-    const i = transactions.findIndex(t => Object.entries(criteria).every(([k,v]) => t[k]===v));
-    if(i>-1){ transactions.splice(i,1); saveTransactions(); renderTransactions(); }
-  };
+  /* ---------- CREATE TRANSACTION SHEET ---------- */
+  const createSheet = document.getElementById('createSheet');
+  const ctDesc = document.getElementById('ctDesc');
+  const ctAmt  = document.getElementById('ctAmt');
+  const ctWhen = document.getElementById('ctWhen');
+  const ctType = document.getElementById('ctType');
+  const ctCancel = document.getElementById('ctCancel');
+  const ctSave   = document.getElementById('ctSave');
+  let createCtx = 'savings'; // current account for new txn
 
-  renderTransactions();
-
-  /* --- Card details sheet wiring (tap big card to open) --- */
-  const cardSheet = document.getElementById('cardSheet');
-  const cardDim = document.getElementById('cardDim');
-  const closeCardSheetBtn = document.getElementById('closeCardSheet');
-  const cdNumber = document.getElementById('cdNumber');
-  const cdExpiry = document.getElementById('cdExpiry');
-  const cdCvv = document.getElementById('cdCvv');
-
-  function openCardSheet(){
-    cdNumber.textContent = (SETTINGS.cardNumber || '')
-      .replace(/\s+/g,'')
-      .replace(/(\d{4})(?=\d)/g,'$1 ');
-    cdExpiry.textContent = SETTINGS.cardExpiry || 'MM/YY';
-    cdCvv.textContent = SETTINGS.cardCvv || '000';
-    cardSheet.classList.add('active');
+  function openCreate(which){
+    createCtx = which;
+    ctDesc.value=''; ctAmt.value='0.00';
+    ctWhen.value = new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+    ctType.value='';
+    ctSave.disabled = true;
+    createSheet.classList.add('active');
   }
-  function closeCardSheet(){ cardSheet.classList.remove('active'); }
-
-  cardDim.addEventListener('click', closeCardSheet);
-  closeCardSheetBtn.addEventListener('click', closeCardSheet);
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeCardSheet(); });
-
-  const bigCardEl = document.getElementById('bigCard');
-  if (bigCardEl){
-    bigCardEl.style.cursor='pointer';
-    bigCardEl.addEventListener('click', openCardSheet);
-  }
-
-  /* ===== Add Transaction flow ===== */
-  const addTxnSheet = document.getElementById('addTxnSheet');
-  const addTxnDim   = document.getElementById('addTxnDim');
-  const openAddTxn  = document.getElementById('openAddTxn');
-  const closeAddTxn = document.getElementById('closeAddTxn');
-  const txMerchant  = document.getElementById('txMerchant');
-  const txAmount    = document.getElementById('txAmount');
-  const txWhen      = document.getElementById('txWhen');
-  const txStatus    = document.getElementById('txStatus');
-  const txContinue  = document.getElementById('txContinue');
-  const txCancelFromForm = document.getElementById('txCancelFromForm');
-
-  const confirmSheet = document.getElementById('confirmTxnSheet');
-  const confirmDim   = document.getElementById('confirmDim');
-  const closeConfirm = document.getElementById('closeConfirm');
-  const confirmSummary = document.getElementById('confirmSummary');
-  const confirmAddBtn  = document.getElementById('confirmAddBtn');
-  const editTxnBtn     = document.getElementById('editTxnBtn');
-
-  function openAddSheet(){ addTxnSheet.classList.add('active'); }
-  function closeAddSheet(){ addTxnSheet.classList.remove('active'); }
-  function openConfirm(){ confirmSheet.classList.add('active'); }
-  function closeConfirmSheet(){ confirmSheet.classList.remove('active'); }
-
-  openAddTxn.addEventListener('click', openAddSheet);
-  addTxnDim.addEventListener('click', closeAddSheet);
-  closeAddTxn.addEventListener('click', closeAddSheet);
-  txCancelFromForm.addEventListener('click', closeAddSheet);
-
-  confirmDim.addEventListener('click', closeConfirmSheet);
-  closeConfirm.addEventListener('click', closeConfirmSheet);
-  editTxnBtn.addEventListener('click', ()=>{ closeConfirmSheet(); openAddSheet(); });
-
-  let pendingTxn = null;
-  function fullDateTime(iso){
-    const d = new Date(iso);
-    return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'}) + ', ' +
-           d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
-  }
-  txContinue.addEventListener('click', ()=>{
-    const m = (txMerchant.value||'').trim();
-    const a = parseFloat(txAmount.value);
-    const w = txWhen.value ? new Date(txWhen.value) : new Date();
-    const s = txStatus.value || 'Approved';
-    if(!m || !isFinite(a)){ return; }
-    pendingTxn = { merchant:m, amount: +a.toFixed(2), iso: w.toISOString(), status:s };
-    confirmSummary.innerHTML = `
-      <p><b>Merchant:</b> ${m}</p>
-      <p><b>Amount:</b> $${pendingTxn.amount.toFixed(2)}</p>
-      <p><b>Date &amp; Time:</b> ${fullDateTime(pendingTxn.iso)}</p>
-      <p><b>Status:</b> ${s}</p>
-    `;
-    closeAddSheet();
-    openConfirm();
+  function closeCreate(){ createSheet.classList.remove('active'); }
+  document.querySelector('#savings #svAddTxn').addEventListener('click', ()=>openCreate('savings'));
+  document.querySelector('#checking #ckAddTxn').addEventListener('click', ()=>openCreate('checking'));
+  createSheet.querySelector('.dim').addEventListener('click', closeCreate);
+  ctCancel.addEventListener('click', closeCreate);
+  ;[ctDesc,ctAmt,ctWhen,ctType].forEach(el=> el.addEventListener('input', ()=>{
+    ctSave.disabled = !(ctDesc.value.trim() && Number(ctAmt.value)>0 && ctWhen.value && ctType.value);
+  }));
+  ctSave.addEventListener('click', ()=>{
+    const t = {
+      id: 't_'+Math.random().toString(36).slice(2,9),
+      desc: ctDesc.value.trim(),
+      amount: Number(parseFloat(ctAmt.value).toFixed(2)),
+      iso: new Date(ctWhen.value).toISOString(),
+      type: ctType.value,
+      status: 'Posted'
+    };
+    if(createCtx==='savings') svTxns.push(t); else ckTxns.push(t);
+    saveAll(); renderTxns(); closeCreate();
   });
 
-  confirmAddBtn.addEventListener('click', ()=>{
-    if(!pendingTxn) return;
-    const {merchant, amount, iso, status} = pendingTxn;
-    if(status==='Approved'){
-      window.addPurchase({merchant, amount, iso, status, card:'Sapphire Reserve'});
-    }else if(status==='Refunded'){
-      window.addRefund({merchant, amount, iso, status, card:'Sapphire Reserve'});
-    }else{
-      window.addPayment({amount, iso, status, card:'Sapphire Reserve', merchant});
+  /* ---------- PAY/TRANSFER PAGE WIRING ---------- */
+  const svSend = document.getElementById('svSend');
+  const ckSend = document.getElementById('ckSend');
+  let transferOrigin = 'savings'; // where the user came from
+
+  const ptAmount = document.getElementById('ptAmount');
+  const fromLine = document.getElementById('fromLine');
+  const toLine   = document.getElementById('toLine');
+  const fromMenu2= document.getElementById('fromMenu2');
+  const toMenu2  = document.getElementById('toMenu2');
+  const fromText = document.getElementById('fromText');
+  const toText   = document.getElementById('toText');
+  const ptCancel = document.getElementById('ptCancel');
+  const ptTransfer = document.getElementById('ptTransfer');
+
+  // speed UI
+  const speedInstant = document.getElementById('speedInstant');
+  const speedBiz     = document.getElementById('speedBiz');
+  let speedSel = null; // 'instant' | 'biz'
+
+  let fromSel=null, toSel=null;
+
+  function setSpeed(sel){
+    speedSel = sel;
+    speedInstant.classList.toggle('selected', sel==='instant');
+    speedBiz.classList.toggle('selected', sel==='biz');
+  }
+
+  function autoPickSpeed(){
+    if(fromSel==='total' || toSel==='total'){ setSpeed('biz'); }
+    else if(fromSel && toSel){ setSpeed('instant'); }
+    else { setSpeed(null); }
+  }
+
+  function resetPayTransfer(origin){
+    transferOrigin = origin;
+    ptAmount.value='';
+    fromSel = null; toSel = null;
+    fromText.textContent = 'Choose account (from)';
+    toText.textContent   = 'Choose account (to)';
+    toLine.classList.add('disabled');
+    ptTransfer.disabled = true;
+    fromMenu2.classList.remove('open'); toMenu2.classList.remove('open');
+    setSpeed(null);
+  }
+
+  function validatePT(){
+    const amtOk = Number(ptAmount.value) > 0;
+    ptTransfer.disabled = !(amtOk && fromSel && toSel);
+  }
+
+  function openPT(){ app.className='app pos-2'; }
+  svSend.addEventListener('click', ()=>{ resetPayTransfer('savings'); openPT(); });
+  ckSend.addEventListener('click', ()=>{ resetPayTransfer('checking'); openPT(); });
+
+  ptCancel.addEventListener('click', ()=>{
+    app.className = transferOrigin==='checking' ? 'app pos-1' : 'app pos-0';
+  });
+
+  // Menus open/close
+  fromLine.addEventListener('click', ()=> fromMenu2.classList.toggle('open'));
+  toLine.addEventListener('click', ()=>{
+    if(toLine.classList.contains('disabled')) return;
+    toMenu2.classList.toggle('open');
+  });
+  document.addEventListener('click', (e)=>{
+    if(!fromLine.contains(e.target) && !fromMenu2.contains(e.target)) fromMenu2.classList.remove('open');
+    if(!toLine.contains(e.target) && !toMenu2.contains(e.target)) toMenu2.classList.remove('open');
+  });
+
+  // Build a button helper for "to" menu
+  function addToBtn(id,label){
+    const b=document.createElement('button');
+    b.textContent=label; b.dataset.id=id;
+    b.addEventListener('click', ()=>{
+      toSel=id; toText.textContent=label; toMenu2.classList.remove('open'); autoPickSpeed(); validatePT();
+    });
+    toMenu2.appendChild(b);
+  }
+
+  // Choose "from"
+  fromMenu2.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      fromSel = btn.dataset.id; // 'savings' | 'checking' | 'total'
+      fromText.textContent = btn.textContent;
+      fromMenu2.classList.remove('open');
+
+      // Build "to" menu excluding whichever was chosen for "from"
+      toMenu2.innerHTML = '';
+      const opts = [
+        ['savings','SAVINGS (...'+SAV_ACCT.last4+')'],
+        ['checking','CHECKING (...'+CK_ACCT.last4+')'],
+        ['total','TOTAL CHECKING (...'+TOT_ACCT.last4+')']
+      ].filter(([id])=> id!==fromSel);
+      opts.forEach(([id,label])=> addToBtn(id,label));
+
+      toSel=null; toText.textContent='Choose account (to)';
+      toLine.classList.remove('disabled');
+      autoPickSpeed();
+      validatePT();
+    });
+  });
+
+  ptAmount.addEventListener('input', validatePT);
+
+  /* --------- Loading & Confirmation + POSTING LOGIC ---------- */
+  const loadingScreen = document.getElementById('loadingScreen');
+  const confirmScreen = document.getElementById('confirmScreen');
+  const confirmTitle  = document.getElementById('confirmTitle');
+  const confirmDetails= document.getElementById('confirmDetails');
+  const confirmNote   = document.getElementById('confirmNote');
+  const confirmDone   = document.getElementById('confirmDone');
+
+  function accountLabel(id){
+    if(id==='savings')  return `${SAV_ACCT.name} (...${SAV_ACCT.last4})`;
+    if(id==='checking') return `${CK_ACCT.name} (...${CK_ACCT.last4})`;
+    return `${TOT_ACCT.name} (...${TOT_ACCT.last4})`;
+  }
+  function labelOnly(id){
+    if(id==='savings')  return SAV_ACCT.name;
+    if(id==='checking') return CK_ACCT.name;
+    return TOT_ACCT.name;
+  }
+  function last4(id){
+    if(id==='savings')  return SAV_ACCT.last4;
+    if(id==='checking') return CK_ACCT.last4;
+    return TOT_ACCT.last4;
+  }
+
+  function postTransfer(amountNum, fromId, toId){
+    const nowIso = new Date().toISOString();
+    const isBiz = (fromId==='total' || toId==='total');
+    const status = isBiz ? 'Pending' : 'Posted';
+    const note = isBiz ? 'Transfer will be posted in 1–2 business days' : '';
+
+    // Helper to push a txn
+    const mkTxn = (desc, amt, type)=>({
+      id: 't_'+Math.random().toString(36).slice(2,9),
+      desc, amount: Number(amt.toFixed(2)),
+      iso: nowIso, type, status, note
+    });
+
+    // Savings <-> Checking (both local): create TWO records + update BOTH balances
+    if ((fromId==='savings' || fromId==='checking') && (toId==='savings' || toId==='checking')) {
+      // From (debit)
+      const descFrom = `Online transfer to ${labelOnly(toId)} ${last4(toId)}`;
+      const debitTxn = mkTxn(descFrom, amountNum, 'debit');
+      if (fromId==='savings') { svTxns.push(debitTxn); svState.bal = +(svState.bal - amountNum).toFixed(2); }
+      else { ckTxns.push(debitTxn); ckState.bal = +(ckState.bal - amountNum).toFixed(2); }
+
+      // To (credit)
+      const descTo = `Online transfer from ${labelOnly(fromId)} ${last4(fromId)}`;
+      const creditTxn = mkTxn(descTo, amountNum, 'credit');
+      if (toId==='savings') { svTxns.push(creditTxn); svState.bal = +(svState.bal + amountNum).toFixed(2); }
+      else { ckTxns.push(creditTxn); ckState.bal = +(ckState.bal + amountNum).toFixed(2); }
+    } else {
+      // One side is TOTAL CHECKING (external). Create ONE local txn + update ONE local balance.
+      // Local side is whichever is savings/checking.
+      const localId = (fromId==='savings' || fromId==='checking') ? fromId : toId;
+      const isFromLocal = localId === fromId;
+
+      const desc = isFromLocal
+        ? `Online transfer to ${labelOnly(toId)} ${last4(toId)}`
+        : `Online transfer from ${labelOnly(fromId)} ${last4(fromId)}`;
+
+      const type = isFromLocal ? 'debit' : 'credit';
+      const txn = mkTxn(desc, amountNum, type);
+
+      if (localId==='savings') {
+        svTxns.push(txn);
+        svState.bal = +(svState.bal + (type==='credit'? +amountNum : -amountNum)).toFixed(2);
+      } else {
+        ckTxns.push(txn);
+        ckState.bal = +(ckState.bal + (type==='credit'? +amountNum : -amountNum)).toFixed(2);
+      }
     }
-    pendingTxn = null;
-    closeConfirmSheet();
+
+    saveAll();
+    renderBalances();
+    renderTxns();
+  }
+
+  ptTransfer.addEventListener('click', ()=>{
+    loadingScreen.classList.add('show');
+
+    setTimeout(()=>{
+      // Post both sides (or one, for TOTAL) BEFORE showing confirm, so lists/balances update immediately
+      const amt = Number(parseFloat(ptAmount.value).toFixed(2));
+      postTransfer(amt, fromSel, toSel);
+
+      loadingScreen.classList.remove('show');
+
+      const isBiz = (fromSel==='total' || toSel==='total');
+      confirmTitle.textContent = 'Your transfer has been initiated';
+      confirmDetails.innerHTML = `
+        <div class="detailRow"><div>Amount</div><div style="font-weight:900">${money(amt)}</div></div>
+        <div class="detailRow"><div>From</div><div style="font-weight:900">${accountLabel(fromSel)}</div></div>
+        <div class="detailRow"><div>To</div><div style="font-weight:900">${accountLabel(toSel)}</div></div>
+        <div class="detailRow"><div>Speed</div><div style="font-weight:900">${isBiz ? '1–2 business days' : 'Instant (~1–2m)'}</div></div>
+      `;
+      confirmNote.style.display = isBiz ? 'block' : 'none';
+      confirmScreen.classList.add('show');
+    }, 5000);
+  });
+
+  confirmDone.addEventListener('click', ()=>{
+    confirmScreen.classList.remove('show');
+    app.className = transferOrigin==='checking' ? 'app pos-1' : 'app pos-0';
   });
 
 })();
