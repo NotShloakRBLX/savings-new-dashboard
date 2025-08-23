@@ -18,7 +18,7 @@
        font:16px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
        -webkit-font-smoothing:antialiased}
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
-  .views{display:flex;width:400%;height:100%;transition:transform var(--t)}
+  .views{display:flex;width:500%;height:100%;transition:transform var(--t)}
   .view{width:100%;height:100%;overflow:auto;padding-bottom:24px;background:linear-gradient(#0b0b0b,#0a0a0a 56%,#090909)}
   .view::-webkit-scrollbar{width:0;height:0}
 
@@ -74,11 +74,12 @@
   .rSub{color:var(--muted);font-size:12px}
   .rAmt{font-weight:900}
 
-  /* Views positions: 4 views [savings, checking, transfer, txnDetails] */
+  /* Views positions: 5 views [savings, checking, transfer, txnDetails, payOverTime] */
   .pos-0 .views{transform:translateX(0)}         /* Savings */
-  .pos-1 .views{transform:translateX(-25%)}      /* Checking */
-  .pos-2 .views{transform:translateX(-50%)}      /* Pay/Transfer */
-  .pos-3 .views{transform:translateX(-75%)}      /* Txn details */
+  .pos-1 .views{transform:translateX(-20%)}      /* Checking */
+  .pos-2 .views{transform:translateX(-40%)}      /* Pay/Transfer */
+  .pos-3 .views{transform:translateX(-60%)}      /* Txn details */
+  .pos-4 .views{transform:translateX(-80%)}      /* Pay over time */
 
   /* Transaction details view */
   .backPill{display:block;margin:14px auto 10px;width:92%;max-width:390px;padding:12px 18px;text-align:center;
@@ -155,6 +156,15 @@
   .sheet .actions{display:flex;gap:10px;margin-top:16px}
   .sheet .btn2{background:#222;border-color:var(--tileBorder)}
   .sheet .btn2.primary{background:var(--green)}
+
+  /* ---- Pay over time page ---- */
+  .thinLine{height:1px;background:rgba(255,255,255,.12);margin:2px 6px 0}
+  .plansBody{display:flex;align-items:center;justify-content:center;min-height:60vh}
+  .plansEmpty{color:var(--muted);font-weight:800;font-size:18px}
+  .planBtnWrap{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;width:min(410px,92vw);z-index:6}
+  .planBtn{width:100%;padding:16px 20px;border-radius:18px;border:1px solid rgba(255,255,255,.18);
+           font-weight:900;color:#fff;background:linear-gradient(135deg,#0a84ff,#7b5cff);
+           box-shadow:0 14px 28px rgba(10,132,255,.35)}
 </style>
 </head>
 <body>
@@ -233,14 +243,7 @@
         <!-- NEW: single Send Money button -->
         <button class="fullBtn" id="ckSend">Send Money</button>
 
-        <div class="tile" style="margin-top:14px;cursor:pointer" id="toSavings">
-          <div class="tileRow">
-            <div class="label">Savings</div>
-            <div class="big" id="svBtnBal">$70.19</div>
-          </div>
-        </div>
-
-        <div class="tile" style="margin-top:12px">
+        <div class="tile" style="margin-top:12px;cursor:pointer" id="payOverTime">
           <div class="tileRow">
             <div class="label">Pay over time—</div>
             <div class="big"></div>
@@ -324,6 +327,23 @@
       <div class="rowD"><div>Account</div><div id="dAccount" style="font-weight:900">Savings</div></div>
       <div class="rowD"><div>Total</div><div id="dTotal" style="font-weight:900">+$0.00</div></div>
       <button class="danger" id="deleteTxn">Delete Transaction</button>
+    </section>
+
+    <!-- PAY OVER TIME VIEW -->
+    <section class="view" id="payOverTimeView">
+      <div class="nav">
+        <h1>Pay over time</h1>
+        <div class="iconrow"></div>
+      </div>
+      <div class="content">
+        <div class="thinLine"></div>
+        <div class="plansBody">
+          <div class="plansEmpty">No plans</div>
+        </div>
+      </div>
+      <div class="planBtnWrap">
+        <button class="planBtn" id="planPurchaseBtn">Plan a purchase</button>
+      </div>
     </section>
 
   </div>
@@ -816,12 +836,12 @@ try {
     renderTxns();
   }
 
-  ptTransfer.addEventListener('click', ()=>{
+  document.getElementById('ptTransfer').addEventListener('click', ()=>{
     loadingScreen.classList.add('show');
 
     setTimeout(()=>{
       // Post both sides (or one, for TOTAL) BEFORE showing confirm, so lists/balances update immediately
-      const amt = Number(parseFloat(ptAmount.value).toFixed(2));
+      const amt = Number(parseFloat(document.getElementById('ptAmount').value).toFixed(2));
       postTransfer(amt, fromSel, toSel);
 
       loadingScreen.classList.remove('show');
@@ -839,10 +859,14 @@ try {
     }, 5000);
   });
 
-  confirmDone.addEventListener('click', ()=>{
+  document.getElementById('confirmDone').addEventListener('click', ()=>{
     confirmScreen.classList.remove('show');
     app.className = transferOrigin==='checking' ? 'app pos-1' : 'app pos-0';
   });
+
+  /* ---- Pay over time nav ---- */
+  const payOverTile = document.getElementById('payOverTime');
+  payOverTile.addEventListener('click', ()=>{ app.className = 'app pos-4'; });
 
 })();
 </script>
