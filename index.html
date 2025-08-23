@@ -841,31 +841,6 @@
       if (evt.id) markSeen(evt.id, seen); // still mark so we don't re-process endlessly
       return;
     }
-
-    /* === Fallback: react when another tab updates the event log in localStorage === */
-const LEDGER_CHANNEL_NAME = 'ledger';
-const LEDGER_LOG_KEY  = 'global_event_log';
-const LEDGER_SEEN_KEY = 'bank_seen_events';
-
-// Reprocess any unseen events in the whole log (helps if multiple landed at once)
-function replayUnseenFromLog() {
-  let seen;
-  try { seen = new Set(JSON.parse(localStorage.getItem(LEDGER_SEEN_KEY) || '[]')); }
-  catch { seen = new Set(); }
-  try {
-    const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]');
-    for (const evt of log) {
-      if (!evt || !evt.id || seen.has(evt.id)) continue;
-      handleLedgerEvent(evt);
-    }
-  } catch {}
-}
-
-// Listen to storage updates from other tabs/windows (works on Safari/iOS)
-window.addEventListener('storage', (e) => {
-  if (e.key === LEDGER_LOG_KEY) {
-    // Re-scan the whole log and process only unseen events
-    replayUnseenFromLog();
   }
 });
 
@@ -894,4 +869,5 @@ replayUnseenFromLog();
 </script>
 </body>
 </html>
+
 
