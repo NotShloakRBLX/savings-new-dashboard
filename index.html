@@ -387,6 +387,65 @@
 </div>
 
 <script>
+
+// === Cross-app ledger listener (same-origin) ===
+const LEDGER_CHANNEL_NAME = 'ledger';
+const LEDGER_LOG_KEY = 'global_event_log';
+const LEDGER_SEEN_KEY = 'global_event_seen';
+const THIS_ACCOUNT_ID = 'checking-123';      // <- match the id you emit
+
+// Optional: if your app already has a helper to add a bank transaction, use it.
+// Otherwise here is a tiny fallback that appends to a localStorage array "bank_txns".
+function addBankTxnFallback({ id, merchant, amount, iso, status = 'Posted' }) {
+  const KEY = 'bank_txns';
+  const list = JSON.parse(localStorage.getItem(KEY) || '[]');
+  list.push({ id, merchant, amount, iso, status, kind: 'deposit' });
+  localStorage.setItem(KEY, JSON.stringify(list));
+  // TODO: re-render your UI if needed.
+}
+
+// Choose your real renderer if available:
+const addBankTxn = (window.addBankTxn || addBankTxnFallback);
+
+function getSeen() {
+  try { return new Set(JSON.parse(localStorage.getItem(LEDGER_SEEN_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function markSeen(id, seenSet) {
+  seenSet.add(id);
+  localStorage.setItem(LEDGER_SEEN_KEY, JSON.stringify([...seenSet]));
+}
+
+function handleLedgerEvent(evt) {
+  if (!evt || evt.type !== 'cashback_deposit') return;
+  if (evt.toAccountId !== THIS_ACCOUNT_ID) return;
+
+  const seen = getSeen();
+  if (seen.has(evt.id)) return;
+
+  addBankTxn({
+    id: evt.id,
+    merchant: 'Cashback deposited',
+    amount: evt.amount,
+    iso: evt.iso,
+    status: 'Posted'
+  });
+
+  markSeen(evt.id, seen);
+}
+
+// 1) Live updates via BroadcastChannel
+try {
+  const ch = new BroadcastChannel(LEDGER_CHANNEL_NAME);
+  ch.onmessage = (e) => handleLedgerEvent(e.data);
+} catch { /* ignore */ }
+
+// 2) Replay any persisted events on load (so it works even if this tab opens later)
+try {
+  const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]');
+  log.forEach(handleLedgerEvent);
+} catch { /* ignore */ }
+  
 (()=>{
   const app = document.getElementById('app');
 
@@ -789,3 +848,4 @@
 </script>
 </body>
 </html>
+
