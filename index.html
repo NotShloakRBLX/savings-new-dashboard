@@ -477,7 +477,7 @@ try { const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]'); log.
   const money = v=> (Number(v)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
 
   /* ---------- SETTINGS VERSION ---------- */
-  const SETTINGS_DEFAULT = { version: 3, savingsBal: 70.19, checkingBal: 414.00 };
+  const SETTINGS_DEFAULT = { version: 4, savingsBal: 783.11, checkingBal: 414.00 };
 
   /* ---------- PERSISTED BALANCES ---------- */
   const svState = JSON.parse(localStorage.getItem('sv_state')||'{"bal":70.19}');
@@ -850,3 +850,4 @@ try { const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]'); log.
 </script>
 </body>
 </html>
+
