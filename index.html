@@ -91,6 +91,8 @@
         background:var(--tile);border:1px solid var(--tileBorder);border-radius:18px}
   .danger{display:block;width:92%;max-width:390px;margin:14px auto;padding:16px 20px;border-radius:16px;
           background:rgba(183,58,58,.15);border:1px solid rgba(183,58,58,.4);color:#fff;font-weight:900;text-align:center}
+  .infoNote{margin:12px 12px 0;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.06);
+           border:1px solid var(--tileBorder);color:var(--muted);font-weight:800}
 
   /* Pay/Transfer page */
   .formCard{background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow)}
@@ -318,6 +320,7 @@
         <div class="txnTitle" id="dTitle">Description</div>
         <div class="txnDate" id="dDate">MM/DD/YY, 0:00 PM</div>
       </div>
+      <div class="infoNote" id="pendingBox" style="display:none">Transfer will be posted in 1–2 business days</div>
       <div class="rowD"><div>Account</div><div id="dAccount" style="font-weight:900">Savings</div></div>
       <div class="rowD"><div>Total</div><div id="dTotal" style="font-weight:900">+$0.00</div></div>
       <button class="danger" id="deleteTxn">Delete Transaction</button>
@@ -387,18 +390,33 @@
 (()=>{
   const app = document.getElementById('app');
 
-  /* ---------- SIMPLE STATE ---------- */
-  const SAV_ACCT = { num: '102979124', last4: '9124' };
-  const CK_ACCT  = { num: '501262431', last4: '2431' };
-  const TOT_ACCT = { num: '000006750', last4: '6750' }; // display-only for menus
+  /* ---------- ACCOUNT METADATA ---------- */
+  const SAV_ACCT = { num: '102979124', last4: '9124', name: 'SAVINGS' };
+  const CK_ACCT  = { num: '501262431', last4: '2431', name: 'CHECKING' };
+  const TOT_ACCT = { num: '000006750', last4: '6750', name: 'TOTAL CHECKING' }; // menu-only
 
   const money = v=> (Number(v)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
 
-  // persistent balances (display only)
+  /* ---------- SETTINGS VERSION (reset balances by bumping) ---------- */
+  const SETTINGS_DEFAULT = {
+    version: 3,         // <— bump this to reset default balances below
+    savingsBal: 70.19,
+    checkingBal: 414.00
+  };
+
+  /* ---------- PERSISTED BALANCES ---------- */
   const svState = JSON.parse(localStorage.getItem('sv_state')||'{"bal":70.19}');
   const ckState = JSON.parse(localStorage.getItem('ck_state')||'{"bal":414.00}');
+  const storedVer = Number(localStorage.getItem('bank_version')||'0');
 
-  // transactions per account
+  if (storedVer !== SETTINGS_DEFAULT.version) {
+    svState.bal = SETTINGS_DEFAULT.savingsBal;
+    ckState.bal = SETTINGS_DEFAULT.checkingBal;
+    localStorage.setItem('bank_version', String(SETTINGS_DEFAULT.version));
+  }
+
+  /* ---------- TRANSACTIONS ---------- */
+  // Each txn: { id, desc, amount, iso, type:'credit'|'debit', status:'Posted'|'Pending', note?:string }
   let svTxns = JSON.parse(localStorage.getItem('sv_txns')||'[]');
   let ckTxns = JSON.parse(localStorage.getItem('ck_txns')||'[]');
 
@@ -440,7 +458,7 @@
   }
   renderBalances();
 
-  /* ---------- TXN LISTS ---------- */
+  /* ---------- LIST RENDER ---------- */
   const svList = document.getElementById('svList');
   const ckList = document.getElementById('ckList');
   const svEmpty= document.getElementById('svEmpty');
@@ -448,10 +466,12 @@
 
   function fmtRow(t){
     const sign = t.type==='credit' ? '+' : '-';
+    const typeLabel = t.type==='credit'?'Credit':'Debit';
+    const statusFrag = t.status==='Pending' ? ' • Pending' : '';
     return `
       <div class="row" data-id="${t.id}">
         <div class="rMain">
-          <div class="rTitle">${t.desc} <span style="opacity:.6">• ${t.type==='credit'?'Credit':'Debit'}</span></div>
+          <div class="rTitle">${t.desc} <span style="opacity:.6">• ${typeLabel}${statusFrag}</span></div>
           <div class="rSub">${new Date(t.iso).toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'})}</div>
         </div>
         <div class="rAmt">${sign}${money(Math.abs(t.amount)).replace('$','')}</div>
@@ -483,6 +503,7 @@
   const dTotal  = document.getElementById('dTotal');
   const dAccount= document.getElementById('dAccount');
   const delBtn  = document.getElementById('deleteTxn');
+  const pendingBox = document.getElementById('pendingBox');
   let openCtx = null; // {which:'savings'|'checking', id}
 
   function openTxn(which,id){
@@ -494,6 +515,13 @@
     dDate.textContent   = new Date(t.iso).toLocaleString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit',hour:'numeric',minute:'2-digit'});
     dTotal.textContent  = `${sign}${money(Math.abs(t.amount))}`;
     dAccount.textContent= which==='savings'?'Savings':'Checking';
+    // Pending note
+    if (t.status === 'Pending') {
+      pendingBox.style.display = 'block';
+      pendingBox.textContent = t.note || 'Transfer will be posted in 1–2 business days';
+    } else {
+      pendingBox.style.display = 'none';
+    }
     openCtx = {which,id};
     app.className='app pos-3';
   }
@@ -540,13 +568,14 @@
       desc: ctDesc.value.trim(),
       amount: Number(parseFloat(ctAmt.value).toFixed(2)),
       iso: new Date(ctWhen.value).toISOString(),
-      type: ctType.value // 'credit' or 'debit'
+      type: ctType.value,
+      status: 'Posted'
     };
     if(createCtx==='savings') svTxns.push(t); else ckTxns.push(t);
     saveAll(); renderTxns(); closeCreate();
   });
 
-  /* ---------- NEW: PAY/TRANSFER PAGE WIRING ---------- */
+  /* ---------- PAY/TRANSFER PAGE WIRING ---------- */
   const svSend = document.getElementById('svSend');
   const ckSend = document.getElementById('ckSend');
   let transferOrigin = 'savings'; // where the user came from
@@ -651,7 +680,7 @@
 
   ptAmount.addEventListener('input', validatePT);
 
-  /* --------- Loading & Confirmation flow ---------- */
+  /* --------- Loading & Confirmation + POSTING LOGIC ---------- */
   const loadingScreen = document.getElementById('loadingScreen');
   const confirmScreen = document.getElementById('confirmScreen');
   const confirmTitle  = document.getElementById('confirmTitle');
@@ -660,36 +689,99 @@
   const confirmDone   = document.getElementById('confirmDone');
 
   function accountLabel(id){
-    if(id==='savings')  return `SAVINGS (...${SAV_ACCT.last4})`;
-    if(id==='checking') return `CHECKING (...${CK_ACCT.last4})`;
-    return `TOTAL CHECKING (...${TOT_ACCT.last4})`;
+    if(id==='savings')  return `${SAV_ACCT.name} (...${SAV_ACCT.last4})`;
+    if(id==='checking') return `${CK_ACCT.name} (...${CK_ACCT.last4})`;
+    return `${TOT_ACCT.name} (...${TOT_ACCT.last4})`;
+  }
+  function labelOnly(id){
+    if(id==='savings')  return SAV_ACCT.name;
+    if(id==='checking') return CK_ACCT.name;
+    return TOT_ACCT.name;
+  }
+  function last4(id){
+    if(id==='savings')  return SAV_ACCT.last4;
+    if(id==='checking') return CK_ACCT.last4;
+    return TOT_ACCT.last4;
+  }
+
+  function postTransfer(amountNum, fromId, toId){
+    const nowIso = new Date().toISOString();
+    const isBiz = (fromId==='total' || toId==='total');
+    const status = isBiz ? 'Pending' : 'Posted';
+    const note = isBiz ? 'Transfer will be posted in 1–2 business days' : '';
+
+    // Helper to push a txn
+    const mkTxn = (desc, amt, type)=>({
+      id: 't_'+Math.random().toString(36).slice(2,9),
+      desc, amount: Number(amt.toFixed(2)),
+      iso: nowIso, type, status, note
+    });
+
+    // Savings <-> Checking (both local): create TWO records + update BOTH balances
+    if ((fromId==='savings' || fromId==='checking') && (toId==='savings' || toId==='checking')) {
+      // From (debit)
+      const descFrom = `Online transfer to ${labelOnly(toId)} ${last4(toId)}`;
+      const debitTxn = mkTxn(descFrom, amountNum, 'debit');
+      if (fromId==='savings') { svTxns.push(debitTxn); svState.bal = +(svState.bal - amountNum).toFixed(2); }
+      else { ckTxns.push(debitTxn); ckState.bal = +(ckState.bal - amountNum).toFixed(2); }
+
+      // To (credit)
+      const descTo = `Online transfer from ${labelOnly(fromId)} ${last4(fromId)}`;
+      const creditTxn = mkTxn(descTo, amountNum, 'credit');
+      if (toId==='savings') { svTxns.push(creditTxn); svState.bal = +(svState.bal + amountNum).toFixed(2); }
+      else { ckTxns.push(creditTxn); ckState.bal = +(ckState.bal + amountNum).toFixed(2); }
+    } else {
+      // One side is TOTAL CHECKING (external). Create ONE local txn + update ONE local balance.
+      // Local side is whichever is savings/checking.
+      const localId = (fromId==='savings' || fromId==='checking') ? fromId : toId;
+      const isFromLocal = localId === fromId;
+
+      const desc = isFromLocal
+        ? `Online transfer to ${labelOnly(toId)} ${last4(toId)}`
+        : `Online transfer from ${labelOnly(fromId)} ${last4(fromId)}`;
+
+      const type = isFromLocal ? 'debit' : 'credit';
+      const txn = mkTxn(desc, amountNum, type);
+
+      if (localId==='savings') {
+        svTxns.push(txn);
+        svState.bal = +(svState.bal + (type==='credit'? +amountNum : -amountNum)).toFixed(2);
+      } else {
+        ckTxns.push(txn);
+        ckState.bal = +(ckState.bal + (type==='credit'? +amountNum : -amountNum)).toFixed(2);
+      }
+    }
+
+    saveAll();
+    renderBalances();
+    renderTxns();
   }
 
   ptTransfer.addEventListener('click', ()=>{
-    // Show loading for 5 seconds
     loadingScreen.classList.add('show');
 
     setTimeout(()=>{
+      // Post both sides (or one, for TOTAL) BEFORE showing confirm, so lists/balances update immediately
+      const amt = Number(parseFloat(ptAmount.value).toFixed(2));
+      postTransfer(amt, fromSel, toSel);
+
       loadingScreen.classList.remove('show');
 
-      // Fill confirmation
-      const isBiz = speedSel === 'biz';
+      const isBiz = (fromSel==='total' || toSel==='total');
       confirmTitle.textContent = 'Your transfer has been initiated';
       confirmDetails.innerHTML = `
-        <div class="detailRow"><div>Amount</div><div style="font-weight:900">${money(ptAmount.value)}</div></div>
+        <div class="detailRow"><div>Amount</div><div style="font-weight:900">${money(amt)}</div></div>
         <div class="detailRow"><div>From</div><div style="font-weight:900">${accountLabel(fromSel)}</div></div>
         <div class="detailRow"><div>To</div><div style="font-weight:900">${accountLabel(toSel)}</div></div>
         <div class="detailRow"><div>Speed</div><div style="font-weight:900">${isBiz ? '1–2 business days' : 'Instant (~1–2m)'}</div></div>
       `;
       confirmNote.style.display = isBiz ? 'block' : 'none';
-
       confirmScreen.classList.add('show');
     }, 5000);
   });
 
   confirmDone.addEventListener('click', ()=>{
     confirmScreen.classList.remove('show');
-    // Return to the page where the flow started
     app.className = transferOrigin==='checking' ? 'app pos-1' : 'app pos-0';
   });
 
@@ -697,4 +789,3 @@
 </script>
 </body>
 </html>
-
