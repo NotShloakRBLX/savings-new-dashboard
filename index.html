@@ -6,116 +6,363 @@
 <title>Accounts</title>
 <style>
   :root{
-    --page:#eef3fa;            /* page background */
-    --panel:#ffffff;           /* card background */
-    --hair:#e2e8f1;            /* light divider */
-    --ink:#0d1421;             /* main text */
-    --muted:#6b7a90;           /* secondary text */
-    --tabBlue:#0a4ea3;         /* dark blue tab */
-    --radius:22px;
+    --bg:#eef3f8;              /* page background */
+    --panel:#ffffff;           /* cards */
+    --border:#dfe6ee;          /* light grey border */
+    --headline:#0b223a;        /* dark heading text */
+    --muted:#5e6b7a;           /* secondary text */
+    --amount:#0c1b2a;          /* right-side amounts */
+    --blue:#0b5dc2;            /* dark blue header bar */
+    --link:#0b5dc2;            /* actions link color */
+    --shadow:0 12px 24px rgba(16,35,54,.10);
+    --radiusOuter:22px;
+    --radiusInner:18px;
+    --t:.25s cubic-bezier(.2,.8,.2,1);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;
-    background:var(--page);
-    color:var(--ink);
-    /* sharp text, not heavy */
-    font:16px -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:auto;
-    text-rendering:geometricPrecision;
+    margin:0;background:var(--bg);color:var(--headline);
+    font:16px -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
   }
+  .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden}
+  .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
+  .view{width:100%;height:100%;overflow:auto;padding-bottom:24px}
+  .view::-webkit-scrollbar{width:0;height:0}
 
-  .wrap{max-width:480px;margin:0 auto;padding:18px 14px 28px}
-
-  /* Top bar */
-  .titleRow{display:flex;align-items:center;justify-content:space-between;margin:0 4px 14px}
-  .titleRow h1{margin:0;font-size:32px;line-height:1.05;font-weight:600;letter-spacing:-.2px}
-  .kebab{
-    width:38px;height:38px;border-radius:999px;background:#fff;border:1px solid #d8e0ea;
+  /* ---------- Top bars ---------- */
+  .screenHead{
+    position:sticky;top:0;z-index:5;
+    padding:16px 16px 10px;background:linear-gradient(180deg,rgba(238,243,248,.98),rgba(238,243,248,.80) 50%,transparent);
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)
+  }
+  .titleRow{display:flex;align-items:center;justify-content:space-between}
+  .title{font-size:34px;letter-spacing:.2px;margin:0 0 8px;font-weight:700}
+  .dotsBtn{
+    width:38px;height:38px;border-radius:999px;background:#fff;border:1px solid var(--border);
+    display:grid;place-items:center;box-shadow:var(--shadow)
+  }
+  .backRow{display:flex;align-items:center;gap:8px}
+  .backBtn{
+    width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;
     display:grid;place-items:center
   }
-  .kebab i{width:16px;height:16px;position:relative;display:block}
-  .kebab i::before,.kebab i::after,.kebab i span{
-    content:"";position:absolute;left:50%;transform:translateX(-50%);
-    width:4px;height:4px;border-radius:50%;background:#8d97aa
-  }
-  .kebab i::before{top:0}
-  .kebab i span{top:6px}
-  .kebab i::after{top:12px}
+  .bigTitle{font-size:28px;font-weight:700;margin:6px 0 0;letter-spacing:.3px}
 
-  /* Accounts panel */
-  .panel{
-    background:var(--panel);
-    border:1px solid var(--hair);
-    border-radius:var(--radius);
-    overflow:hidden;
-    box-shadow:0 10px 26px rgba(15,34,68,.06);
+  /* ---------- Accounts List ---------- */
+  .accountsWrap{padding:0 14px}
+  .bankCard{
+    margin-top:10px;background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radiusOuter);box-shadow:var(--shadow);overflow:hidden
   }
-  .panelHead{
-    background:var(--tabBlue);
-    color:#fff;
-    padding:14px 16px 12px;
-    font-weight:600;
-    letter-spacing:.2px;
+  .tab{
+    background:var(--blue);color:#fff;padding:14px 16px;font-size:18px;letter-spacing:.2px
   }
-  .list{background:#fff}
-  .row{
-    display:flex;align-items:center;gap:12px;
-    padding:16px;
-    border-top:1px solid var(--hair);
+  .listRow{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 16px;background:#fff
   }
-  .row:first-child{border-top:0}
-  .name{
-    text-transform:uppercase;
-    font-weight:600;        /* no bold look */
-    letter-spacing:.3px;
-  }
-  .right{margin-left:auto;text-align:right}
-  .amt{
-    font-size:30px;
-    font-weight:600;        /* crisp, not bold */
-    letter-spacing:-.2px;
-  }
-  .sub{font-size:13px;color:var(--muted);margin-top:2px}
+  .listRow + .listRow{border-top:1px solid var(--border)}
+  .accLeft{min-width:0}
+  .accName{font-size:18px;letter-spacing:.2px;margin:0;color:var(--headline);font-weight:600;text-transform:uppercase}
+  .accSub{font-size:14px;color:var(--muted);margin-top:6px}
+  .accRight{text-align:right}
+  .accAmt{font-size:28px;letter-spacing:.2px;color:var(--amount);font-weight:700}
   .grab{
-    margin-left:10px;color:#9aa4b8;user-select:none;font-weight:700;letter-spacing:-2px
+    margin-left:12px;width:6px;height:26px;border-radius:8px;background:#c7d3e1;opacity:.9
   }
+  .rowBtn{cursor:pointer}
+  .rowBtn:active{background:#f6f8fb}
+
+  /* ---------- Account details ---------- */
+  .content{padding:0 14px}
+  .balanceCard{
+    margin-top:10px;background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radiusOuter);box-shadow:var(--shadow);overflow:hidden
+  }
+  .balTop{
+    display:flex;align-items:flex-end;justify-content:flex-end;padding:18px 16px 10px 16px
+  }
+  .balNumber{font-size:34px;font-weight:700}
+  .balSub{font-size:16px;color:var(--muted)}
+  .divider{height:1px;background:var(--border)}
+  .cardBody{padding:16px}
+  .cardTitle{font-size:20px;font-weight:700;margin:0 0 8px}
+  .kv{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+  .kv + .kv{border-top:1px solid var(--border)}
+  .kv .label{color:var(--muted)}
+  .kv .value{font-weight:600}
+  .infoDot{
+    display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;
+    background:#e7f0ff;color:var(--blue);font-size:12px;font-weight:700;margin-left:6px
+  }
+
+  .toggleRow{display:flex;justify-content:center;padding:12px 12px 16px;background:#fff;border-top:1px solid var(--border)}
+  .pillBtn{
+    display:inline-flex;align-items:center;gap:10px;border:1px solid var(--border);
+    border-radius:999px;padding:10px 14px;background:#fff;color:var(--link);font-weight:700
+  }
+  .rot{transition:transform var(--t)}
+
+  .actionRow{
+    display:flex;justify-content:space-around;gap:18px;padding:18px 10px 6px
+  }
+  .actionItem{text-align:center}
+  .circle{
+    width:56px;height:56px;border-radius:50%;background:#fff;border:1px solid var(--border);
+    display:grid;place-items:center;box-shadow:var(--shadow);margin:0 auto 8px
+  }
+  .actionLabel{color:var(--link);font-weight:700}
+
+  .tile{
+    margin:14px 0;background:#fff;border:1px solid var(--border);border-radius:var(--radiusInner);
+    padding:14px 16px;display:flex;align-items:center;justify-content:space-between
+  }
+  .tile h4{margin:0;font-size:18px}
+  .chev{width:18px;height:18px;border-right:2px solid #9ba6b4;border-bottom:2px solid #9ba6b4;transform:rotate(-45deg)}
+  .emptyTrans{
+    padding:14px 16px;border-top:1px solid var(--border);color:var(--muted)
+  }
+
+  /* view switching */
+  .pos-0 .views{transform:translateX(0)}
+  .pos-1 .views{transform:translateX(-100%)}
+  .pos-2 .views{transform:translateX(-200%)}
+
+  /* accessibility tap highlight off */
+  .rowBtn, .pillBtn, .tile, .backBtn{ -webkit-tap-highlight-color: transparent; }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="titleRow">
-      <h1>Accounts</h1>
-      <div class="kebab" aria-label="More"><i><span></span></i></div>
-    </div>
+<div class="app pos-0" id="app">
+  <div class="views">
 
-    <section class="panel" aria-label="Bank accounts">
-      <div class="panelHead">Bank accounts (2)</div>
-      <div class="list">
-
-        <!-- SAVINGS -->
-        <div class="row">
-          <div class="name">SAVINGS (<span aria-hidden="true">…</span>9124)</div>
-          <div class="right">
-            <div class="amt">$783.11</div>
-            <div class="sub">Available balance</div>
-          </div>
-          <div class="grab" aria-hidden="true">||</div>
+    <!-- ===== ACCOUNTS LIST ===== -->
+    <section class="view" id="accounts">
+      <div class="screenHead">
+        <div class="titleRow">
+          <h1 class="title">Accounts</h1>
+          <button class="dotsBtn" aria-label="More options">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#6a7889">
+              <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+            </svg>
+          </button>
         </div>
+      </div>
 
-        <!-- CHECKING -->
-        <div class="row">
-          <div class="name">SAPPHIRE CHECKING (<span aria-hidden="true">…</span>2431)</div>
-          <div class="right">
-            <div class="amt">$414.00</div>
-            <div class="sub">Available balance</div>
+      <div class="accountsWrap">
+        <div class="bankCard">
+          <div class="tab">Bank accounts (2)</div>
+
+          <!-- SAVINGS -->
+          <div class="listRow rowBtn" id="rowSavings">
+            <div class="accLeft">
+              <div class="accName">SAVINGS (…9124)</div>
+              <div class="accSub">Available balance</div>
+            </div>
+            <div class="accRight">
+              <div class="accAmt">$783.11</div>
+            </div>
+            <div class="grab" aria-hidden="true"></div>
           </div>
-          <div class="grab" aria-hidden="true">||</div>
-        </div>
 
+          <!-- CHECKING -->
+          <div class="listRow rowBtn" id="rowChecking">
+            <div class="accLeft">
+              <div class="accName">SAPPHIRE CHECKING (…2431)</div>
+              <div class="accSub">Available balance</div>
+            </div>
+            <div class="accRight">
+              <div class="accAmt">$414.00</div>
+            </div>
+            <div class="grab" aria-hidden="true"></div>
+          </div>
+        </div>
       </div>
     </section>
+
+    <!-- ===== SAVINGS DETAILS ===== -->
+    <section class="view" id="savings">
+      <div class="screenHead">
+        <div class="backRow">
+          <button class="backBtn" id="backFromSavings" aria-label="Back">
+            <svg width="18" height="18" viewBox="0 0 24 24" stroke="#5d6a7a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h2 class="bigTitle">SAVINGS (…9124)</h2>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="balanceCard" id="svCard">
+          <div class="balTop">
+            <div>
+              <div class="balNumber">$783.11</div>
+              <div class="balSub">Available balance</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+
+          <div class="cardBody">
+            <div class="cardTitle">Account details</div>
+
+            <!-- collapsed rows (always visible) -->
+            <div class="kv"><div class="label">Available balance</div><div class="value">$783.11 <span class="infoDot">?</span></div></div>
+            <div class="kv"><div class="label">Present balance</div><div class="value">$783.11 <span class="infoDot">?</span></div></div>
+
+            <!-- expandable rows -->
+            <div id="svMore" style="display:none">
+              <div class="kv"><div class="label">Account number</div><div class="value">551809124</div></div>
+              <div class="kv"><div class="label">Routing number</div><div class="value">072000326 <span class="infoDot">?</span></div></div>
+              <div class="kv"><div class="label">Interest rate</div><div class="value">184% APR</div></div>
+              <div class="kv"><div class="label">Next interest date</div><div class="value">08/31/2025</div></div>
+              <div class="kv"><div class="label">Next tax statement date</div><div class="value">08/27/2025</div></div>
+            </div>
+          </div>
+
+          <div class="toggleRow">
+            <button class="pillBtn" id="svToggle">
+              <span id="svToggleText">Show details</span>
+              <svg id="svCaret" class="rot" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="actionRow">
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div>
+            <div class="actionLabel">Pay</div>
+          </div>
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></div>
+            <div class="actionLabel">Transfer</div>
+          </div>
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="#0b5dc2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
+            <div class="actionLabel">More</div>
+          </div>
+        </div>
+
+        <div class="tile">
+          <h4>Manage account</h4>
+          <div class="chev" aria-hidden="true"></div>
+        </div>
+
+        <div class="balanceCard" style="margin-top:14px">
+          <div class="tile" style="border:0;border-radius:0;box-shadow:none;margin:0">
+            <h4>See all transactions</h4>
+            <div class="chev" aria-hidden="true"></div>
+          </div>
+          <div class="emptyTrans">No transactions yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CHECKING DETAILS ===== -->
+    <section class="view" id="checking">
+      <div class="screenHead">
+        <div class="backRow">
+          <button class="backBtn" id="backFromChecking" aria-label="Back">
+            <svg width="18" height="18" viewBox="0 0 24 24" stroke="#5d6a7a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h2 class="bigTitle">SAPPHIRE CHECKING (…2431)</h2>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="balanceCard" id="ckCard">
+          <div class="balTop">
+            <div>
+              <div class="balNumber">$414.00</div>
+              <div class="balSub">Available balance</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+
+          <div class="cardBody">
+            <div class="cardTitle">Account details</div>
+
+            <!-- collapsed rows -->
+            <div class="kv"><div class="label">Available balance</div><div class="value">$414.00 <span class="infoDot">?</span></div></div>
+            <div class="kv"><div class="label">Present balance</div><div class="value">$414.00 <span class="infoDot">?</span></div></div>
+
+            <!-- expandable rows -->
+            <div id="ckMore" style="display:none">
+              <div class="kv"><div class="label">Account number</div><div class="value">375282431</div></div>
+              <div class="kv"><div class="label">Routing number</div><div class="value">072000326 <span class="infoDot">?</span></div></div>
+              <div class="kv"><div class="label">Interest rate</div><div class="value">0.00%</div></div>
+              <div class="kv"><div class="label">Interest in 2025</div><div class="value">$0.00</div></div>
+            </div>
+          </div>
+
+          <div class="toggleRow">
+            <button class="pillBtn" id="ckToggle">
+              <span id="ckToggleText">Show details</span>
+              <svg id="ckCaret" class="rot" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="actionRow">
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div>
+            <div class="actionLabel">Pay</div>
+          </div>
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></div>
+            <div class="actionLabel">Transfer</div>
+          </div>
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="#0b5dc2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
+            <div class="actionLabel">More</div>
+          </div>
+        </div>
+
+        <div class="tile">
+          <h4>Manage account</h4>
+          <div class="chev" aria-hidden="true"></div>
+        </div>
+
+        <div class="balanceCard" style="margin-top:14px">
+          <div class="tile" style="border:0;border-radius:0;box-shadow:none;margin:0">
+            <h4>See all transactions</h4>
+            <div class="chev" aria-hidden="true"></div>
+          </div>
+          <div class="emptyTrans">No transactions yet.</div>
+        </div>
+      </div>
+    </section>
+
   </div>
+</div>
+
+<script>
+  const app = document.getElementById('app');
+
+  // nav from list
+  document.getElementById('rowSavings').addEventListener('click', ()=> app.className='app pos-1');
+  document.getElementById('rowChecking').addEventListener('click',()=> app.className='app pos-2');
+
+  // back buttons
+  document.getElementById('backFromSavings').addEventListener('click', ()=> app.className='app pos-0');
+  document.getElementById('backFromChecking').addEventListener('click',()=> app.className='app pos-0');
+
+  // detail toggles
+  function wireToggle(btnId, moreId, textId, caretId){
+    const btn=document.getElementById(btnId);
+    const box=document.getElementById(moreId);
+    const lab=document.getElementById(textId);
+    const caret=document.getElementById(caretId);
+    let open=false;
+    btn.addEventListener('click', ()=>{
+      open=!open;
+      box.style.display=open?'block':'none';
+      lab.textContent=open?'Hide details':'Show details';
+      caret.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+    });
+  }
+  wireToggle('svToggle','svMore','svToggleText','svCaret');
+  wireToggle('ckToggle','ckMore','ckToggleText','ckCaret');
+</script>
 </body>
 </html>
