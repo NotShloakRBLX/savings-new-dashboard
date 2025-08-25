@@ -24,25 +24,18 @@
     -webkit-font-smoothing:antialiased; line-height:1.2;
   }
 
-  /* --- App + slider --- */
+  /* --- App + slider (no fragile height chaining) --- */
   .app{
     max-width:430px;
     margin:0 auto;
     position:relative;
     background:var(--bg);
     overflow:hidden;
-
-    /* FIX: robust viewport height fallbacks */
-    min-height:100vh;
-    height:100vh;
-    height:100dvh;
-  }
-  @supports (height: 100svh){
-    .app{ height:100svh; }
+    min-height:100vh;           /* safe baseline */
   }
 
-  .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
-  .view{width:100%;height:100%;overflow:auto}
+  .views{display:flex;width:300%;transition:transform var(--t)}
+  .view{width:100%;min-height:100vh;overflow:auto}
   .pos-0 .views{transform:translateX(0)}
   .pos-1 .views{transform:translateX(-100%)}
   .pos-2 .views{transform:translateX(-200%)}
