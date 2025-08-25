@@ -14,8 +14,7 @@
     --amount:#0c1b2a;
     --blue:#0b5dc2;
     --shadow:0 12px 24px rgba(16,35,54,.10);
-    --radiusOuter:22px; --radiusInner:18px;
-    --t:.25s cubic-bezier(.2,.8,.2,1);
+    --t:.35s cubic-bezier(.2,.8,.2,1);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -24,8 +23,14 @@
     font:16px -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased; line-height:1.2;
   }
-  .app{max-width:430px;min-height:100vh;margin:0 auto;position:relative;background:var(--bg)}
-  .hidden{display:none !important}
+
+  /* --- App + slider --- */
+  .app{max-width:430px;height:100svh;margin:0 auto;position:relative;background:var(--bg);overflow:hidden}
+  .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
+  .view{width:100%;height:100%;overflow:auto}
+  .pos-0 .views{transform:translateX(0)}
+  .pos-1 .views{transform:translateX(-100%)}
+  .pos-2 .views{transform:translateX(-200%)}
 
   /* ---------- Top bars ---------- */
   .screenHead{
@@ -106,219 +111,219 @@
 </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app pos-0" id="app">
+  <div class="views">
 
-  <!-- ===== ACCOUNTS LIST ===== -->
-  <section id="view-accounts">
-    <div class="screenHead">
-      <div class="titleRow">
-        <h1 class="title">Accounts</h1>
-        <button class="dotsBtn" aria-label="More options">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#6a7889">
-            <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="accountsWrap">
-      <div class="bankCard">
-        <div class="tab">Bank accounts (2)</div>
-
-        <div class="listRow" id="openSavings">
-          <div class="accLeft">
-            <div class="accName">SAVINGS (…9124)</div>
-            <div class="accSub">Available balance</div>
-          </div>
-          <div class="accRight"><div class="accAmt">$783.11</div></div>
-          <div class="grab" aria-hidden="true"></div>
-        </div>
-
-        <div class="listRow" id="openChecking">
-          <div class="accLeft">
-            <div class="accName">SAPPHIRE CHECKING (…2431)</div>
-            <div class="accSub">Available balance</div>
-          </div>
-          <div class="accRight"><div class="accAmt">$414.00</div></div>
-          <div class="grab" aria-hidden="true"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SAVINGS DETAILS ===== -->
-  <section id="view-savings" class="hidden">
-    <div class="screenHead">
-      <div class="backRow">
-        <button class="backBtn" data-back aria-label="Back">
-          <svg width="18" height="18" viewBox="0 0 24 24" stroke="#5d6a7a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <h2 class="bigTitle">SAVINGS (…9124)</h2>
-      </div>
-    </div>
-
-    <div class="content">
-      <div class="balanceCard">
-        <div class="balTop">
-          <div>
-            <div class="balNumber">$783.11</div>
-            <div class="balSub">Available balance</div>
-          </div>
-        </div>
-        <div class="divider"></div>
-
-        <div class="cardBody">
-          <div class="cardTitle">Account details</div>
-
-          <div class="kv"><div class="label">Available balance</div><div class="value">$783.11 <span class="infoDot">?</span></div></div>
-          <div class="kv"><div class="label">Present balance</div><div class="value">$783.11 <span class="infoDot">?</span></div></div>
-
-          <div id="svMore" class="hidden">
-            <div class="kv"><div class="label">Account number</div><div class="value">551809124</div></div>
-            <div class="kv"><div class="label">Routing number</div><div class="value">072000326 <span class="infoDot">?</span></div></div>
-            <div class="kv"><div class="label">Interest rate</div><div class="value">184% APR</div></div>
-            <div class="kv"><div class="label">Next interest date</div><div class="value">08/31/2025</div></div>
-            <div class="kv"><div class="label">Next tax statement date</div><div class="value">08/27/2025</div></div>
-          </div>
-        </div>
-
-        <div class="toggleRow">
-          <button class="pillBtn" id="svToggle">
-            <span id="svToggleText">Show details</span>
-            <svg id="svCaret" class="rot" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <!-- ===== ACCOUNTS LIST ===== -->
+    <section class="view" id="view-accounts">
+      <div class="screenHead">
+        <div class="titleRow">
+          <h1 class="title">Accounts</h1>
+          <button class="dotsBtn" aria-label="More options">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#6a7889">
+              <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+            </svg>
           </button>
         </div>
       </div>
 
-      <div class="actionRow">
-        <div class="actionItem">
-          <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div>
-          <div class="actionLabel">Pay</div>
-        </div>
-        <div class="actionItem">
-          <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></div>
-          <div class="actionLabel">Transfer</div>
-        </div>
-        <div class="actionItem">
-          <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="#0b5dc2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
-          <div class="actionLabel">More</div>
-        </div>
-      </div>
+      <div class="accountsWrap">
+        <div class="bankCard">
+          <div class="tab">Bank accounts (2)</div>
 
-      <div class="tile">
-        <h4>Manage account</h4><div class="chev" aria-hidden="true"></div>
-      </div>
+          <div class="listRow" id="openSavings">
+            <div class="accLeft">
+              <div class="accName">SAVINGS (…9124)</div>
+              <div class="accSub">Available balance</div>
+            </div>
+            <div class="accRight"><div class="accAmt">$783.11</div></div>
+            <div class="grab" aria-hidden="true"></div>
+          </div>
 
-      <div class="balanceCard" style="margin-top:14px">
-        <div class="tile" style="border:0;border-radius:0;box-shadow:none;margin:0">
-          <h4>See all transactions</h4><div class="chev" aria-hidden="true"></div>
-        </div>
-        <div class="emptyTrans">No transactions yet.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== CHECKING DETAILS ===== -->
-  <section id="view-checking" class="hidden">
-    <div class="screenHead">
-      <div class="backRow">
-        <button class="backBtn" data-back aria-label="Back">
-          <svg width="18" height="18" viewBox="0 0 24 24" stroke="#5d6a7a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <h2 class="bigTitle">SAPPHIRE CHECKING (…2431)</h2>
-      </div>
-    </div>
-
-    <div class="content">
-      <div class="balanceCard">
-        <div class="balTop">
-          <div>
-            <div class="balNumber">$414.00</div>
-            <div class="balSub">Available balance</div>
+          <div class="listRow" id="openChecking">
+            <div class="accLeft">
+              <div class="accName">SAPPHIRE CHECKING (…2431)</div>
+              <div class="accSub">Available balance</div>
+            </div>
+            <div class="accRight"><div class="accAmt">$414.00</div></div>
+            <div class="grab" aria-hidden="true"></div>
           </div>
         </div>
-        <div class="divider"></div>
+      </div>
+    </section>
 
-        <div class="cardBody">
-          <div class="cardTitle">Account details</div>
-
-          <div class="kv"><div class="label">Available balance</div><div class="value">$414.00 <span class="infoDot">?</span></div></div>
-          <div class="kv"><div class="label">Present balance</div><div class="value">$414.00 <span class="infoDot">?</span></div></div>
-
-          <div id="ckMore" class="hidden">
-            <div class="kv"><div class="label">Account number</div><div class="value">375282431</div></div>
-            <div class="kv"><div class="label">Routing number</div><div class="value">072000326 <span class="infoDot">?</span></div></div>
-            <div class="kv"><div class="label">Interest rate</div><div class="value">0.00%</div></div>
-            <div class="kv"><div class="label">Interest in 2025</div><div class="value">$0.00</div></div>
-          </div>
-        </div>
-
-        <div class="toggleRow">
-          <button class="pillBtn" id="ckToggle">
-            <span id="ckToggleText">Show details</span>
-            <svg id="ckCaret" class="rot" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <!-- ===== SAVINGS DETAILS ===== -->
+    <section class="view" id="view-savings">
+      <div class="screenHead">
+        <div class="backRow">
+          <button class="backBtn" data-back="0" aria-label="Back">
+            <svg width="18" height="18" viewBox="0 0 24 24" stroke="#5d6a7a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
+          <h2 class="bigTitle">SAVINGS (…9124)</h2>
         </div>
       </div>
 
-      <div class="actionRow">
-        <div class="actionItem">
-          <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div>
-          <div class="actionLabel">Pay</div>
+      <div class="content">
+        <div class="balanceCard">
+          <div class="balTop">
+            <div>
+              <div class="balNumber">$783.11</div>
+              <div class="balSub">Available balance</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+
+          <div class="cardBody">
+            <div class="cardTitle">Account details</div>
+
+            <div class="kv"><div class="label">Available balance</div><div class="value">$783.11 <span class="infoDot">?</span></div></div>
+            <div class="kv"><div class="label">Present balance</div><div class="value">$783.11 <span class="infoDot">?</span></div></div>
+
+            <div id="svMore" class="hidden">
+              <div class="kv"><div class="label">Account number</div><div class="value">551809124</div></div>
+              <div class="kv"><div class="label">Routing number</div><div class="value">072000326 <span class="infoDot">?</span></div></div>
+              <div class="kv"><div class="label">Interest rate</div><div class="value">184% APR</div></div>
+              <div class="kv"><div class="label">Next interest date</div><div class="value">08/31/2025</div></div>
+              <div class="kv"><div class="label">Next tax statement date</div><div class="value">08/27/2025</div></div>
+            </div>
+          </div>
+
+          <div class="toggleRow">
+            <button class="pillBtn" id="svToggle">
+              <span id="svToggleText">Show details</span>
+              <svg id="svCaret" class="rot" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
         </div>
-        <div class="actionItem">
-          <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></div>
-          <div class="actionLabel">Transfer</div>
+
+        <div class="actionRow">
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div>
+            <div class="actionLabel">Pay</div>
+          </div>
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></div>
+            <div class="actionLabel">Transfer</div>
+          </div>
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="#0b5dc2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
+            <div class="actionLabel">More</div>
+          </div>
         </div>
-        <div class="actionItem">
-          <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="#0b5dc2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
-          <div class="actionLabel">More</div>
+
+        <div class="tile">
+          <h4>Manage account</h4><div class="chev" aria-hidden="true"></div>
+        </div>
+
+        <div class="balanceCard" style="margin-top:14px">
+          <div class="tile" style="border:0;border-radius:0;box-shadow:none;margin:0">
+            <h4>See all transactions</h4><div class="chev" aria-hidden="true"></div>
+          </div>
+          <div class="emptyTrans">No transactions yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CHECKING DETAILS ===== -->
+    <section class="view" id="view-checking">
+      <div class="screenHead">
+        <div class="backRow">
+          <button class="backBtn" data-back="0" aria-label="Back">
+            <svg width="18" height="18" viewBox="0 0 24 24" stroke="#5d6a7a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h2 class="bigTitle">SAPPHIRE CHECKING (…2431)</h2>
         </div>
       </div>
 
-      <div class="tile">
-        <h4>Manage account</h4><div class="chev" aria-hidden="true"></div>
-      </div>
+      <div class="content">
+        <div class="balanceCard">
+          <div class="balTop">
+            <div>
+              <div class="balNumber">$414.00</div>
+              <div class="balSub">Available balance</div>
+            </div>
+          </div>
+          <div class="divider"></div>
 
-      <div class="balanceCard" style="margin-top:14px">
-        <div class="tile" style="border:0;border-radius:0;box-shadow:none;margin:0">
-          <h4>See all transactions</h4><div class="chev" aria-hidden="true"></div>
+          <div class="cardBody">
+            <div class="cardTitle">Account details</div>
+
+            <div class="kv"><div class="label">Available balance</div><div class="value">$414.00 <span class="infoDot">?</span></div></div>
+            <div class="kv"><div class="label">Present balance</div><div class="value">$414.00 <span class="infoDot">?</span></div></div>
+
+            <div id="ckMore" class="hidden">
+              <div class="kv"><div class="label">Account number</div><div class="value">375282431</div></div>
+              <div class="kv"><div class="label">Routing number</div><div class="value">072000326 <span class="infoDot">?</span></div></div>
+              <div class="kv"><div class="label">Interest rate</div><div class="value">0.00%</div></div>
+              <div class="kv"><div class="label">Interest in 2025</div><div class="value">$0.00</div></div>
+            </div>
+          </div>
+
+          <div class="toggleRow">
+            <button class="pillBtn" id="ckToggle">
+              <span id="ckToggleText">Show details</span>
+              <svg id="ckCaret" class="rot" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
         </div>
-        <div class="emptyTrans">No transactions yet.</div>
-      </div>
-    </div>
-  </section>
 
+        <div class="actionRow">
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div>
+            <div class="actionLabel">Pay</div>
+          </div>
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></div>
+            <div class="actionLabel">Transfer</div>
+          </div>
+          <div class="actionItem">
+            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="#0b5dc2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
+            <div class="actionLabel">More</div>
+          </div>
+        </div>
+
+        <div class="tile">
+          <h4>Manage account</h4><div class="chev" aria-hidden="true"></div>
+        </div>
+
+        <div class="balanceCard" style="margin-top:14px">
+          <div class="tile" style="border:0;border-radius:0;box-shadow:none;margin:0">
+            <h4>See all transactions</h4><div class="chev" aria-hidden="true"></div>
+          </div>
+          <div class="emptyTrans">No transactions yet.</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
 </div>
 
 <script>
-  // Keep JS tiny & fail-safe so a script error never blanks the page
   (function(){
-    const qs = (s)=>document.querySelector(s);
+    const app = document.getElementById('app');
 
-    // open detail views
-    const openSavings = qs('#openSavings');
-    const openChecking= qs('#openChecking');
-    const vAccounts   = qs('#view-accounts');
-    const vSavings    = qs('#view-savings');
-    const vChecking   = qs('#view-checking');
-
-    function show(section){
-      vAccounts.classList.add('hidden');
-      vSavings.classList.add('hidden');
-      vChecking.classList.add('hidden');
-      section.classList.remove('hidden');
-      // scroll to top of the new view
-      window.scrollTo(0,0);
+    // Slide helper
+    function go(pos){
+      app.classList.remove('pos-0','pos-1','pos-2');
+      app.classList.add('pos-'+pos);
+      // reset scroll in the target view
+      const view = document.querySelectorAll('.view')[pos];
+      if (view) view.scrollTop = 0;
     }
 
-    if (openSavings)  openSavings.addEventListener('click', ()=> show(vSavings));
-    if (openChecking) openChecking.addEventListener('click',()=> show(vChecking));
-    document.querySelectorAll('[data-back]').forEach(b=> b.addEventListener('click', ()=> show(vAccounts)));
+    // Open detail views (slide left)
+    document.getElementById('openSavings').addEventListener('click', ()=> go(1));
+    document.getElementById('openChecking').addEventListener('click',()=> go(2));
 
-    // expand/collapse detail cards
+    // Back buttons (slide right)
+    document.querySelectorAll('[data-back]').forEach(btn=>{
+      btn.addEventListener('click', ()=> go(0));
+    });
+
+    // Expand/collapse detail cards
     function wireToggle(btnSel, boxSel, labelSel, caretSel){
-      const btn=qs(btnSel), box=qs(boxSel), lab=qs(labelSel), caret=qs(caretSel);
+      const btn=document.querySelector(btnSel), box=document.querySelector(boxSel),
+            lab=document.querySelector(labelSel), caret=document.querySelector(caretSel);
       if(!btn||!box||!lab||!caret) return;
       let open=false;
       btn.addEventListener('click', ()=>{
