@@ -6,95 +6,94 @@
 <title>Accounts</title>
 <style>
   :root{
-    /* Colors tuned to resemble the screenshot */
-    --bg:#f3f6fb;
-    --panel:#ffffff;
-    --hair:#e4e9f1;
-    --text:#0c1320;
-    --muted:#657187;
-    --blue1:#0d5db8;
-    --blue2:#0a4ea3;
-    --radius:18px;
+    --page:#eef3fa;            /* page background */
+    --panel:#ffffff;           /* card background */
+    --hair:#e2e8f1;            /* light divider */
+    --ink:#0d1421;             /* main text */
+    --muted:#6b7a90;           /* secondary text */
+    --tabBlue:#0a4ea3;         /* dark blue tab */
+    --radius:22px;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
     margin:0;
-    background:var(--bg);
-    color:var(--text);
+    background:var(--page);
+    color:var(--ink);
+    /* sharp text, not heavy */
     font:16px -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;
+    -webkit-font-smoothing:auto;
+    text-rendering:geometricPrecision;
   }
-  .app{max-width:480px;margin:0 auto;padding:16px 14px 32px}
-  /* Top title row */
-  .topbar{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 12px}
-  .topbar h1{font-size:28px;line-height:1.05;margin:0;font-weight:800;letter-spacing:-.2px}
+
+  .wrap{max-width:480px;margin:0 auto;padding:18px 14px 28px}
+
+  /* Top bar */
+  .titleRow{display:flex;align-items:center;justify-content:space-between;margin:0 4px 14px}
+  .titleRow h1{margin:0;font-size:32px;line-height:1.05;font-weight:600;letter-spacing:-.2px}
   .kebab{
-    width:34px;height:34px;border-radius:999px;border:1px solid #d7dfea;background:#fff;
-    display:grid;place-items:center;box-shadow:0 1px 0 rgba(0,0,0,.02)
+    width:38px;height:38px;border-radius:999px;background:#fff;border:1px solid #d8e0ea;
+    display:grid;place-items:center
   }
-  .kebab i{
-    width:14px;height:14px;position:relative;display:block
-  }
+  .kebab i{width:16px;height:16px;position:relative;display:block}
   .kebab i::before,.kebab i::after,.kebab i span{
     content:"";position:absolute;left:50%;transform:translateX(-50%);
-    width:4px;height:4px;border-radius:50%;background:#6b768c
+    width:4px;height:4px;border-radius:50%;background:#8d97aa
   }
   .kebab i::before{top:0}
-  .kebab i span{top:5px}
-  .kebab i::after{top:10px}
+  .kebab i span{top:6px}
+  .kebab i::after{top:12px}
 
-  /* Bank accounts panel */
+  /* Accounts panel */
   .panel{
-    border-radius:22px;
     background:var(--panel);
-    overflow:hidden;
-    box-shadow:0 10px 28px rgba(18,35,64,.06);
     border:1px solid var(--hair);
+    border-radius:var(--radius);
+    overflow:hidden;
+    box-shadow:0 10px 26px rgba(15,34,68,.06);
   }
-  .panelHeader{
-    background:linear-gradient(180deg,var(--blue1),var(--blue2));
+  .panelHead{
+    background:var(--tabBlue);
     color:#fff;
-    padding:16px 16px 14px;
-    font-weight:800;
+    padding:14px 16px 12px;
+    font-weight:600;
     letter-spacing:.2px;
-    position:relative;
   }
-  .panelHeader .count{opacity:.92}
-  .list{padding:6px 0}
+  .list{background:#fff}
   .row{
     display:flex;align-items:center;gap:12px;
-    padding:14px 16px;
+    padding:16px;
     border-top:1px solid var(--hair);
-    background:#fff;
   }
   .row:first-child{border-top:0}
-  .name{font-weight:800;letter-spacing:.15px}
+  .name{
+    text-transform:uppercase;
+    font-weight:600;        /* no bold look */
+    letter-spacing:.3px;
+  }
   .right{margin-left:auto;text-align:right}
-  .amt{font-size:28px;font-weight:900;letter-spacing:-.2px}
+  .amt{
+    font-size:30px;
+    font-weight:600;        /* crisp, not bold */
+    letter-spacing:-.2px;
+  }
   .sub{font-size:13px;color:var(--muted);margin-top:2px}
   .grab{
-    margin-left:10px;color:#9aa4b8;font-weight:900;letter-spacing:-2px;
-    user-select:none;
+    margin-left:10px;color:#9aa4b8;user-select:none;font-weight:700;letter-spacing:-2px
   }
-
-  /* Footer spacer (visual parity) */
-  .spacer{height:10px}
 </style>
 </head>
 <body>
-  <div class="app">
-    <div class="topbar">
+  <div class="wrap">
+    <div class="titleRow">
       <h1>Accounts</h1>
       <div class="kebab" aria-label="More"><i><span></span></i></div>
     </div>
 
     <section class="panel" aria-label="Bank accounts">
-      <div class="panelHeader">
-        <div class="count">Bank accounts (2)</div>
-      </div>
-
+      <div class="panelHead">Bank accounts (2)</div>
       <div class="list">
+
         <!-- SAVINGS -->
         <div class="row">
           <div class="name">SAVINGS (<span aria-hidden="true">…</span>9124)</div>
@@ -114,10 +113,9 @@
           </div>
           <div class="grab" aria-hidden="true">||</div>
         </div>
+
       </div>
     </section>
-
-    <div class="spacer"></div>
   </div>
 </body>
 </html>
