@@ -75,11 +75,7 @@
     margin-top:10px;background:#fff;border:1px solid var(--border);
     border-radius:22px;box-shadow:var(--shadow);overflow:hidden
   }
-  /* LEFT align top balance (changed from flex-end) */
-  .balTop{
-    display:flex;align-items:flex-end;justify-content:flex-start;
-    padding:18px 16px 10px 16px
-  }
+  .balTop{display:flex;align-items:flex-end;justify-content:flex-end;padding:18px 16px 10px 16px}
   .balNumber{font-size:34px;font-weight:700}
   .balSub{font-size:16px;color:var(--muted)}
   .divider{height:1px;background:var(--border)}
@@ -99,7 +95,6 @@
     border-radius:999px;padding:10px 14px;background:#fff;color:#0b5dc2;font-weight:700
   }
   .rot{transition:transform var(--t)}
-  .hidden{display:none}
 
   .actionRow{display:flex;justify-content:space-around;gap:18px;padding:18px 10px 6px}
   .actionItem{text-align:center}
@@ -311,6 +306,7 @@
     function go(pos){
       app.classList.remove('pos-0','pos-1','pos-2');
       app.classList.add('pos-'+pos);
+      // reset scroll in the target view
       const view = document.querySelectorAll('.view')[pos];
       if (view) view.scrollTop = 0;
     }
