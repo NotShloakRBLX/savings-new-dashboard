@@ -6,60 +6,49 @@
 <title>Accounts</title>
 <style>
   :root{
-    --bg:#f6f8fb;
-    --card:#ffffff;
-    --text:#0b1b2b;
-    --muted:#6b7a90;
-    --accent:#0b5fff;
-    --line:#e7edf5;
-    --danger:#c21f1f;
-    --pill:#eef3ff;
-    --shadow:0 6px 22px rgba(12,36,99,.06);
+    --bg:#f6f8fb;--card:#fff;--text:#0b1b2b;--muted:#6b7a90;--line:#e7edf5;
+    --pill:#eef3ff;--danger:#c21f1f;--shadow:0 6px 22px rgba(12,36,99,.06);
     --radius:16px;
   }
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   .app{max-width:420px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+  .toolbar{height:24px}
   header{padding:14px 16px 4px}
-  .pageTitle{font-weight:700;letter-spacing:.3px}
-  .subtle{color:var(--muted)}
+  .topline{display:flex;align-items:center;gap:8px}
+  .back{display:inline-block;width:10px;height:10px;border-left:2px solid var(--text);border-bottom:2px solid var(--text);transform:rotate(45deg);cursor:pointer}
+  .pageTitle{font-weight:800;letter-spacing:.2px}
   .screen{padding:8px 16px 24px}
-  .amount{font-size:34px;font-weight:750;margin:4px 0 2px}
+  .amount{font-size:34px;font-weight:800;margin:4px 0 2px}
   .labelSmall{font-size:14px;color:var(--muted)}
   .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 12px;margin:16px 0;border:1px solid var(--line)}
-  .cardHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .pillBtn{background:var(--pill);border:none;color:var(--text);padding:8px 12px;border-radius:999px;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
-  .pillBtn svg{width:16px;height:16px}
-  .row{display:flex;justify-content:space-between;align-items:center;padding:8px 6px;border-top:1px solid var(--line)}
-  .row:first-of-type{border-top:none}
+  .sectionTitle{font-size:16px;font-weight:800;margin:4px 0 10px}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:8px 6px}
+  .row + .row{border-top:1px solid var(--line)}
+  .muter{color:var(--muted);font-size:12px}
+  .toggleWrap{display:flex;justify-content:center;margin-top:10px}
+  .pillBtn{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);padding:10px 14px;border-radius:999px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .chev{width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s ease}
+  .chev.up{transform:rotate(-135deg)}
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0}
   .circleBtn{display:flex;flex-direction:column;align-items:center;gap:8px}
-  .circleBtn button{width:58px;height:58px;border-radius:999px;border:none;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;cursor:pointer;border:1px solid var(--line)}
-  .circleBtn span{font-size:12px}
+  .circleBtn button{width:58px;height:58px;border-radius:999px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;cursor:pointer}
   .icon{width:22px;height:22px}
-  .ctaList .entry{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;border:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .linkCard{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;border:1px solid var(--line);margin:16px 0}
+  .linkRow{display:flex;justify-content:space-between;align-items:center}
+  .arrow{width:8px;height:14px;border-right:2px solid var(--muted);border-top:2px solid var(--muted);transform:rotate(45deg)}
+  .entry{display:flex;justify-content:space-between;align-items:center}
   .red{color:var(--danger);font-weight:700}
-  .linkRow{display:flex;justify-content:space-between;align-items:center;padding:14px 6px}
-  .chev{width:8px;height:14px;border-right:2px solid var(--muted);border-top:2px solid var(--muted);transform:rotate(45deg)}
-  .toolbar{height:24px}
-  .back{display:inline-block;width:10px;height:10px;border-left:2px solid var(--text);border-bottom:2px solid var(--text);transform:rotate(45deg);margin-right:10px}
-  .topline{display:flex;align-items:center;gap:8px;margin:8px 0 0 0}
-  .tap{cursor:pointer}
   .hidden{display:none}
-  .muter{color:var(--muted);font-size:12px}
-  .footGap{height:42px}
 </style>
 </head>
 <body>
 <div class="app">
-  <!-- simple status bar shim -->
   <div class="toolbar"></div>
 
   <header>
     <div class="topline">
-      <span class="back tap" id="backBtn" title="Back"></span>
-      <div>
-        <div id="title" class="pageTitle">TOTAL CHECKING (...6750)</div>
-      </div>
+      <span class="back" id="backBtn" title="Back"></span>
+      <div id="title" class="pageTitle">TOTAL CHECKING (...6750)</div>
     </div>
   </header>
 
@@ -67,80 +56,81 @@
     <div class="amount" id="bigAmount">$0.00</div>
     <div class="labelSmall">Available balance</div>
 
-    <div class="card" id="detailsCard">
-      <div class="cardHeader">
-        <div class="pageTitle" style="font-size:16px;font-weight:700">Account details</div>
-        <button id="toggleDetails" class="pillBtn"><span id="toggleText">Show details</span>
-          <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
+    <!-- Account details card -->
+    <div class="card">
+      <div class="sectionTitle">Account details</div>
+
+      <!-- Always-visible rows -->
+      <div id="baseRows">
+        <div class="row"><span class="muter">Available balance</span><strong id="available">$0.00</strong></div>
+        <div class="row"><span class="muter">Present balance</span><strong id="present">$0.00</strong></div>
       </div>
 
-      <div id="detailRows" class="hidden">
-        <div class="row"><span>Available balance</span><strong id="available">$0.00</strong></div>
-        <div class="row"><span>Present balance</span><strong id="present">$0.00</strong></div>
+      <!-- Extra rows shown when toggled -->
+      <div id="extraRows" class="hidden">
         <div class="row"><span>Account number</span><strong id="acct">—</strong></div>
         <div class="row"><span>Routing number</span><strong id="routing">—</strong></div>
         <div class="row"><span>Interest rate</span><strong id="rate">—</strong></div>
         <div class="row"><span>Interest in 2025</span><strong id="interestYTD">—</strong></div>
         <div class="row"><span>Last statement date</span><strong id="lastStmt">—</strong></div>
       </div>
+
+      <!-- Centered pill like your screenshot -->
+      <div class="toggleWrap">
+        <button id="toggleBtn" class="pillBtn">
+          <span id="toggleText">Show details</span>
+          <span id="toggleChev" class="chev"></span>
+        </button>
+      </div>
     </div>
 
+    <!-- Pay / Transfer / Savings -->
     <div class="grid3">
       <div class="circleBtn">
-        <button id="payBtn" title="Pay">
-          <!-- card icon -->
+        <button title="Pay">
           <svg class="icon" viewBox="0 0 24 24"><path d="M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zm0-2h18v2H3V5z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-        </button>
-        <span>Pay</span>
+        </button><span>Pay</span>
       </div>
       <div class="circleBtn">
-        <button id="transferBtn" title="Transfer">
+        <button title="Transfer">
           <svg class="icon" viewBox="0 0 24 24"><path d="M7 7h10M7 12h10M7 17h10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-        </button>
-        <span>Transfer</span>
+        </button><span>Transfer</span>
       </div>
       <div class="circleBtn">
         <button id="savingsBtn" title="Savings">
-          <!-- dots replaced with piggy/safe-ish icon -->
-          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2" /></svg>
-        </button>
-        <span>Savings</span>
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2"/></svg>
+        </button><span>Savings</span>
       </div>
     </div>
 
-    <div class="card tap" id="manage">
+    <!-- Manage -->
+    <div class="linkCard">
       <div class="linkRow">
         <div>
-          <div style="font-weight:700">Manage account</div>
+          <div style="font-weight:800">Manage account</div>
           <div class="muter">Access tools &amp; services for your account</div>
         </div>
-        <span class="chev"></span>
+        <span class="arrow"></span>
       </div>
     </div>
 
-    <div class="card tap" id="txnsCard">
-      <div style="font-weight:700;margin-bottom:10px">See all transactions</div>
-      <div class="ctaList">
-        <div class="entry">
-          <div>
-            <div class="subtle" id="txnName">ORIG CO NAME: Affirm CRB CO</div>
-            <div class="muter" id="txnDesc">ENTRY DESCR: AffirmDepo &nbsp; SEC: WEB &nbsp; <em>Pending</em></div>
-          </div>
-          <div class="red" id="txnAmt">-$50.00</div>
+    <!-- Transactions preview -->
+    <div class="linkCard">
+      <div style="font-weight:800;margin-bottom:10px">See all transactions</div>
+      <div class="entry">
+        <div>
+          <div class="muter" id="txnName">ORIG CO NAME: Affirm CRB CO</div>
+          <div class="muter" id="txnDesc">ENTRY DESCR: AffirmDepo &nbsp; SEC: WEB &nbsp; <em>Pending</em></div>
         </div>
+        <div class="red" id="txnAmt">-$50.00</div>
       </div>
     </div>
-
-    <div class="footGap"></div>
   </main>
 </div>
 
 <script>
-/* =========================
-   DATA YOU CAN EDIT QUICKLY
-   ========================= */
-// CHECKING (from your screenshot)
+/* ---------- Data ---------- */
+// Checking (from your screenshot)
 const checkingData = {
   title: 'TOTAL CHECKING (...6750)',
   available: 1016.29,
@@ -157,57 +147,53 @@ const checkingData = {
   }
 };
 
-// SAVINGS — fill these with the details you provided previously.
-// If you already shared exact numbers, just replace the placeholders below.
+// Savings — replace with your real values
 const savingsData = {
   title: 'TOTAL SAVINGS (...XXXX)',
-  available: 0.00,         // e.g., 2450.18
-  present: 0.00,           // same as available if no holds
+  available: 0.00,
+  present: 0.00,
   accountNumber: 'XXXXXXXXX',
   routingNumber: '072000326',
   rate: '—',
   interestYTD: '—',
   lastStatement: '—',
-  txn: {
-    name: 'No recent activity',
-    desc: '—',
-    amount: '$0.00'
-  }
+  txn: { name: 'No recent activity', desc: '—', amount: '$0.00' }
 };
 
-/* ============== APP STATE ============== */
-let current = 'checking'; // 'checking' | 'savings'
-
+/* ---------- State & Elements ---------- */
+let current = 'checking';
+const $ = id => document.getElementById(id);
 const els = {
-  title: document.getElementById('title'),
-  bigAmount: document.getElementById('bigAmount'),
-  available: document.getElementById('available'),
-  present: document.getElementById('present'),
-  acct: document.getElementById('acct'),
-  routing: document.getElementById('routing'),
-  rate: document.getElementById('rate'),
-  interestYTD: document.getElementById('interestYTD'),
-  lastStmt: document.getElementById('lastStmt'),
-  txnName: document.getElementById('txnName'),
-  txnDesc: document.getElementById('txnDesc'),
-  txnAmt: document.getElementById('txnAmt'),
-  toggleBtn: document.getElementById('toggleDetails'),
-  toggleText: document.getElementById('toggleText'),
-  rows: document.getElementById('detailRows'),
-  backBtn: document.getElementById('backBtn'),
-  savingsBtn: document.getElementById('savingsBtn')
+  backBtn: $('backBtn'),
+  title: $('title'),
+  bigAmount: $('bigAmount'),
+  available: $('available'),
+  present: $('present'),
+  acct: $('acct'),
+  routing: $('routing'),
+  rate: $('rate'),
+  interestYTD: $('interestYTD'),
+  lastStmt: $('lastStmt'),
+  txnName: $('txnName'),
+  txnDesc: $('txnDesc'),
+  txnAmt: $('txnAmt'),
+  extraRows: $('extraRows'),
+  toggleBtn: $('toggleBtn'),
+  toggleText: $('toggleText'),
+  toggleChev: $('toggleChev'),
+  savingsBtn: $('savingsBtn')
 };
 
-function money(n){ return n.toLocaleString(undefined,{style:'currency',currency:'USD'}); }
+function money(n){ return Number(n||0).toLocaleString(undefined,{style:'currency',currency:'USD'}); }
 
-function loadView(kind){
+function load(kind){
   current = kind;
-  const d = kind==='checking' ? checkingData : savingsData;
+  const d = kind === 'checking' ? checkingData : savingsData;
 
   els.title.textContent = d.title;
-  els.bigAmount.textContent = money(Number(d.available||0));
-  els.available.textContent = money(Number(d.available||0));
-  els.present.textContent = money(Number(d.present||0));
+  els.bigAmount.textContent = money(d.available);
+  els.available.textContent = money(d.available);
+  els.present.textContent = money(d.present);
   els.acct.textContent = d.accountNumber || '—';
   els.routing.textContent = d.routingNumber || '—';
   els.rate.textContent = d.rate || '—';
@@ -217,22 +203,33 @@ function loadView(kind){
   els.txnDesc.textContent = d.txn.desc || '—';
   els.txnAmt.textContent = d.txn.amount || '$0.00';
 
-  // back button shows only on Savings (acts like nav)
+  // Back chevron only visible on Savings
   els.backBtn.style.visibility = (kind==='savings') ? 'visible' : 'hidden';
+
+  // Collapse extra rows by default each time you switch accounts
+  if (!els.extraRows.classList.contains('hidden')) toggleDetails(true);
 }
 
-function toggleDetails(){
-  const isHidden = els.rows.classList.contains('hidden');
-  els.rows.classList.toggle('hidden');
-  els.toggleText.textContent = isHidden ? 'Hide details' : 'Show details';
+function toggleDetails(forceClose=false){
+  const closing = forceClose || !els.extraRows.classList.contains('hidden') ? true : false;
+  if (closing){
+    els.extraRows.classList.add('hidden');
+    els.toggleText.textContent = 'Show details';
+    els.toggleChev.classList.remove('up');
+  } else {
+    els.extraRows.classList.remove('hidden');
+    els.toggleText.textContent = 'Hide details';
+    els.toggleChev.classList.add('up');
+  }
 }
 
-els.toggleBtn.addEventListener('click', toggleDetails);
-els.savingsBtn.addEventListener('click', () => loadView('savings'));
-els.backBtn.addEventListener('click', () => loadView('checking'));
+/* ---------- Events ---------- */
+els.toggleBtn.addEventListener('click', ()=>toggleDetails());
+els.savingsBtn.addEventListener('click', ()=>load('savings'));
+els.backBtn.addEventListener('click', ()=>load('checking'));
 
-// Initial render
-loadView('checking');
+/* ---------- Init ---------- */
+load('checking');
 </script>
 </body>
 </html>
