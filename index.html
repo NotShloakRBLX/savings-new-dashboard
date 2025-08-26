@@ -3,366 +3,844 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Accounts</title>
+<title>Bank • Savings & Checking (Demo)</title>
 <style>
   :root{
-    --bg:#eef3f8;              /* page background */
-    --panel:#ffffff;           /* cards */
-    --border:#dfe6ee;          /* light grey border */
-    --headline:#0b223a;        /* dark heading text */
-    --muted:#5e6b7a;           /* secondary text */
-    --amount:#0c1b2a;          /* right-side amounts */
-    --blue:#0b5dc2;            /* dark blue header bar */
-    --link:#0b5dc2;            /* actions link color */
-    --shadow:0 12px 24px rgba(16,35,54,.10);
-    --radiusOuter:22px;
-    --radiusInner:18px;
-    --t:.25s cubic-bezier(.2,.8,.2,1);
+    --bg:#0b0b0b; --panel:#161616; --panel2:#111; --border:rgba(255,255,255,.12);
+    --muted:rgba(255,255,255,.62); --text:#fff; --shadow:0 16px 40px rgba(0,0,0,.45);
+    --tile:rgba(255,255,255,.06); --tileBorder:rgba(255,255,255,.10);
+    --radius:18px; --t:.28s cubic-bezier(.2,.8,.2,1);
+    --green:#1e7f4b; --green-2:#0f5f37; --red:#b73a3a;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    margin:0;background:var(--bg);color:var(--headline);
-    font:16px -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden}
-  .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
-  .view{width:100%;height:100%;overflow:auto;padding-bottom:24px}
+  body{margin:0;background:#000;color:var(--text);
+       font:16px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
+  .views{display:flex;width:500%;height:100%;transition:transform var(--t)} /* 5 views */
+  .view{width:100%;height:100%;overflow:auto;padding-bottom:24px;background:linear-gradient(#0b0b0b,#0a0a0a 56%,#090909)}
   .view::-webkit-scrollbar{width:0;height:0}
 
-  /* ---------- Top bars ---------- */
-  .screenHead{
-    position:sticky;top:0;z-index:5;
-    padding:16px 16px 10px;background:linear-gradient(180deg,rgba(238,243,248,.98),rgba(238,243,248,.80) 50%,transparent);
-    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)
-  }
-  .titleRow{display:flex;align-items:center;justify-content:space-between}
-  .title{font-size:34px;letter-spacing:.2px;margin:0 0 8px;font-weight:700}
-  .dotsBtn{
-    width:38px;height:38px;border-radius:999px;background:#fff;border:1px solid var(--border);
-    display:grid;place-items:center;box-shadow:var(--shadow)
-  }
-  .backRow{display:flex;align-items:center;gap:8px}
-  .backBtn{
-    width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;
-    display:grid;place-items:center
-  }
-  .bigTitle{font-size:28px;font-weight:700;margin:6px 0 0;letter-spacing:.3px}
+  /* Top nav */
+  .nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
+       padding:18px 14px 12px;
+       background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(10,10,10,.58) 45%,transparent);
+       -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .nav h1{margin:0;font-size:42px;line-height:.98;font-weight:900;letter-spacing:-.6px}
+  .iconrow{display:flex;gap:10px}
+  .iconbtn{width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.06);
+           border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;transition:transform var(--t)}
+  .iconbtn:active{transform:scale(.96)}
+  .content{padding:8px 12px 28px}
 
-  /* ---------- Accounts List ---------- */
-  .accountsWrap{padding:0 14px}
-  .bankCard{
-    margin-top:10px;background:var(--panel);border:1px solid var(--border);
-    border-radius:var(--radiusOuter);box-shadow:var(--shadow);overflow:hidden
-  }
-  .tab{
-    background:var(--blue);color:#fff;padding:14px 16px;font-size:18px;letter-spacing:.2px
-  }
-  .listRow{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:16px 16px;background:#fff
-  }
-  .listRow + .listRow{border-top:1px solid var(--border)}
-  .accLeft{min-width:0}
-  .accName{font-size:18px;letter-spacing:.2px;margin:0;color:var(--headline);font-weight:600;text-transform:uppercase}
-  .accSub{font-size:14px;color:var(--muted);margin-top:6px}
-  .accRight{text-align:right}
-  .accAmt{font-size:28px;letter-spacing:.2px;color:var(--amount);font-weight:700}
-  .grab{
-    margin-left:12px;width:6px;height:26px;border-radius:8px;background:#c7d3e1;opacity:.9
-  }
-  .rowBtn{cursor:pointer}
-  .rowBtn:active{background:#f6f8fb}
+  /* Cards & tiles */
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 8px;color:var(--muted);font-size:15px}
+  .balance{font-size:44px;font-weight:900;letter-spacing:-.5px}
+  .apyPill{margin-left:auto;border:1px solid var(--border);background:rgba(255,255,255,.06);
+           border-radius:999px;padding:8px 14px;font-weight:900}
+  .row2{display:flex;gap:16px;margin-top:14px}
+  .btn{flex:1;border-radius:18px;padding:16px 18px;border:1px solid var(--border);background:rgba(255,255,255,.06);font-weight:900}
+  .btn.primary{background:#fff;color:#000}
+  .fullBtn{display:block;width:100%;margin-top:14px;border-radius:18px;padding:16px 18px;border:1px solid var(--border);
+           background:#fff;color:#000;font-weight:900}
+  .tile{background:var(--tile);border:1px solid var(--tileBorder);border-radius:18px;padding:14px 16px}
+  .tileRow{display:flex;justify-content:space-between;align-items:center}
+  .label{color:var(--muted);font-weight:700}
+  .sub{color:var(--muted);font-size:12px;margin-top:2px;font-weight:600}
+  .big{font-weight:900}
 
-  /* ---------- Account details ---------- */
-  .content{padding:0 14px}
-  .balanceCard{
-    margin-top:10px;background:var(--panel);border:1px solid var(--border);
-    border-radius:var(--radiusOuter);box-shadow:var(--shadow);overflow:hidden
-  }
-  .balTop{
-    display:flex;align-items:flex-end;justify-content:flex-end;padding:18px 16px 10px 16px
-  }
-  .balNumber{font-size:34px;font-weight:700}
-  .balSub{font-size:16px;color:var(--muted)}
-  .divider{height:1px;background:var(--border)}
-  .cardBody{padding:16px}
-  .cardTitle{font-size:20px;font-weight:700;margin:0 0 8px}
-  .kv{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
-  .kv + .kv{border-top:1px solid var(--border)}
-  .kv .label{color:var(--muted)}
-  .kv .value{font-weight:600}
-  .infoDot{
-    display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;
-    background:#e7f0ff;color:var(--blue);font-size:12px;font-weight:700;margin-left:6px
+  /* FIXED selector so both buttons style correctly */
+  #svSend, #ckSend{
+    font-size: 18px;
+    line-height: 1.1;
+    padding: 18px 20px;
   }
 
-  .toggleRow{display:flex;justify-content:center;padding:12px 12px 16px;background:#fff;border-top:1px solid var(--border)}
-  .pillBtn{
-    display:inline-flex;align-items:center;gap:10px;border:1px solid var(--border);
-    border-radius:999px;padding:10px 14px;background:#fff;color:var(--link);font-weight:700
-  }
-  .rot{transition:transform var(--t)}
+  /* Account info dropdown */
+  .acctInfo{overflow:hidden;max-height:0;opacity:.0;transition:max-height var(--t),opacity var(--t);margin:0 2px}
+  .acctInfo.open{max-height:180px;opacity:1}
+  .mini{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin-top:10px;
+        border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);font-weight:800}
 
-  .actionRow{
-    display:flex;justify-content:space-around;gap:18px;padding:18px 10px 6px
-  }
-  .actionItem{text-align:center}
-  .circle{
-    width:56px;height:56px;border-radius:50%;background:#fff;border:1px solid var(--border);
-    display:grid;place-items:center;box-shadow:var(--shadow);margin:0 auto 8px
-  }
-  .actionLabel{color:var(--link);font-weight:700}
+  /* Transactions list */
+  .sectionTitle{margin:18px 6px 10px;font-size:26px;font-weight:900;letter-spacing:-.2px}
+  .empty{padding:18px;border-radius:18px;border:1px dashed var(--tileBorder);text-align:center;color:var(--muted);background:rgba(255,255,255,.03)}
+  .list .row{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);
+             border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:12px 14px}
+  .list .row + .row{margin-top:10px}
+  .rMain{flex:1}
+  .rTitle{font-weight:900}
+  .rSub{color:var(--muted);font-size:12px}
+  .rAmt{font-weight:900}
 
-  .tile{
-    margin:14px 0;background:#fff;border:1px solid var(--border);border-radius:var(--radiusInner);
-    padding:14px 16px;display:flex;align-items:center;justify-content:space-between
+  /* Views positions: 5 views [savings, checking, transfer, txnDetails, payOverTime] */
+  .pos-0 .views{transform:translateX(0)}         /* Savings */
+  .pos-1 .views{transform:translateX(-20%)}      /* Checking */
+  .pos-2 .views{transform:translateX(-40%)}      /* Pay/Transfer */
+  .pos-3 .views{transform:translateX(-60%)}      /* Txn details */
+  .pos-4 .views{transform:translateX(-80%)}      /* Pay over time */
+
+  /* Transaction details view */
+  .backPill{display:block;margin:14px auto 10px;width:92%;max-width:390px;padding:12px 18px;text-align:center;
+            border-radius:999px;border:1px solid var(--tileBorder);background:rgba(255,255,255,.06);font-weight:900}
+  .txnHeader{padding:14px 18px 10px;text-align:center}
+  .txnAmount{font-size:64px;font-weight:900;letter-spacing:-.6px}
+  .txnTitle{color:var(--muted);font-size:24px;font-weight:800;margin-top:4px}
+  .txnDate{color:var(--muted);margin-top:6px}
+  .rowD{margin:14px 12px;display:flex;justify-content:space-between;align-items:center;padding:16px;
+        background:var(--tile);border:1px solid var(--tileBorder);border-radius:18px}
+  .danger{display:block;width:92%;max-width:390px;margin:14px auto;padding:16px 20px;border-radius:16px;
+          background:rgba(183,58,58,.15);border:1px solid rgba(183,58,58,.4);color:#fff;font-weight:900;text-align:center}
+  .infoNote{margin:12px 12px 0;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.06);
+           border:1px solid var(--tileBorder);color:var(--muted);font-weight:800}
+
+  /* Smooth reveal for txn view */
+  #txnView .txnHeader,
+  #txnView .infoNote,
+  #txnView .rowD,
+  #txnView .danger{
+    opacity:0;
+    transform:translateY(10px);
+    transition:opacity var(--t), transform var(--t);
   }
-  .tile h4{margin:0;font-size:18px}
-  .chev{width:18px;height:18px;border-right:2px solid #9ba6b4;border-bottom:2px solid #9ba6b4;transform:rotate(-45deg)}
-  .emptyTrans{
-    padding:14px 16px;border-top:1px solid var(--border);color:var(--muted)
+  #txnView.reveal .txnHeader,
+  #txnView.reveal .infoNote,
+  #txnView.reveal .rowD,
+  #txnView.reveal .danger{
+    opacity:1;
+    transform:translateY(0);
   }
 
-  /* view switching */
-  .pos-0 .views{transform:translateX(0)}
-  .pos-1 .views{transform:translateX(-100%)}
-  .pos-2 .views{transform:translateX(-200%)}
+  /* Pay/Transfer page */
+  .formCard{background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow)}
+  .lab{display:block;margin:0 0 8px;color:var(--muted);font-weight:800}
+  .dollarWrap{display:flex;align-items:center;gap:8px;border-radius:14px;border:1px solid var(--tileBorder);background:#161616;padding:12px 14px}
+  .dollarWrap span{font-size:28px;font-weight:900}
+  .dollarWrap input{flex:1;background:transparent;border:0;color:#fff;font-size:28px;font-weight:900;outline:none}
+  .selectLine{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--tileBorder);
+              background:#161616;color:#fff;border-radius:12px;padding:12px 14px;font-weight:800}
+  .selectLine.disabled{opacity:.5;pointer-events:none}
+  .menuWrap{position:relative}
+  .menu{position:absolute;left:0;right:0;top:calc(100% + 8px);background:#111;border:1px solid var(--tileBorder);
+        border-radius:14px;box-shadow:var(--shadow);max-height:0;overflow:hidden;opacity:0;transform:translateY(-6px);
+        transition:max-height var(--t),opacity var(--t),transform var(--t);z-index:30}
+  .menu.open{max-height:240px;opacity:1;transform:translateY(0)}
+  .menu button{width:100%;text-align:left;background:transparent;border:0;color:#fff;padding:12px 14px;font-weight:800}
+  .menu button + button{border-top:1px solid var(--tileBorder)}
+  .actions{display:flex;gap:10px;margin-top:14px}
+  .btn2{flex:1;border-radius:14px;padding:14px 16px;font-weight:900;border:1px solid var(--border);background:#222;color:#fff}
+  .btn2.primary{background:var(--green);border-color:transparent}
+  .btn2.primary[disabled]{opacity:.5}
 
-  /* accessibility tap highlight off */
-  .rowBtn, .pillBtn, .tile, .backBtn{ -webkit-tap-highlight-color: transparent; }
+  /* Transfer speed (unclickable) */
+  .speedRow{display:flex;gap:10px;margin-top:14px}
+  .speedBtn{flex:1;border-radius:14px;padding:12px 14px;border:1px solid var(--tileBorder);
+            background:#1a1a1a;color:#fff;font-weight:900;text-align:center;pointer-events:none}
+  .speedBtn.selected{background:#fff;color:#000}
+
+  /* Loading + confirmation full-screen overlays */
+  .fscreen{position:fixed;inset:0;display:none;place-items:center;z-index:80;background:rgba(0,0,0,.75)}
+  .fscreen.show{display:grid}
+  .fsPanel{width:92%;max-width:420px;background:#151515;border:1px solid var(--tileBorder);border-radius:20px;
+           box-shadow:var(--shadow);padding:18px}
+  .center{display:flex;flex-direction:column;align-items:center;text-align:center}
+  .spinner{width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#fff;animation:spin 1s linear infinite;margin-bottom:12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .checkCircle{width:64px;height:64px;border-radius:50%;background:#1e7f4b;display:grid;place-items:center;margin:6px 0 10px}
+  .confirmTitle{font-size:18px;font-weight:900;margin:6px 0}
+  .detailList{margin-top:8px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);border-radius:14px;padding:12px}
+  .detailRow{display:flex;justify-content:space-between;align-items:center;padding:6px 2px}
+  .note{color:var(--muted);margin-top:8px}
+  .doneBtn{display:block;width:100%;margin-top:14px;border-radius:14px;padding:14px 16px;font-weight:900;border:1px solid var(--tileBorder);background:#222;color:#fff}
+
+  /* ------- Create Transaction SHEET (modal) ------- */
+  .sheet{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:95}
+  .sheet.active{pointer-events:auto}
+  .sheet .dim{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;transition:opacity var(--t)}
+  .sheet.active .dim{opacity:1}
+  .sheet .panel{width:92%;max-width:420px;background:#151515;color:#fff;border:1px solid var(--tileBorder);
+                border-radius:20px;box-shadow:var(--shadow);
+                transform:translateY(18px) scale(.98);opacity:0;
+                transition:transform var(--t),opacity var(--t)}
+  .sheet.active .panel{transform:translateY(0) scale(1);opacity:1}
+  .sheet .head{padding:14px 16px;border-bottom:1px solid var(--tileBorder);font-weight:900;font-size:18px}
+  .sheet .body{padding:14px 16px}
+  .sheet .field{margin-top:12px}
+  .sheet .inp, .sheet .select{width:100%;border-radius:14px;border:1px solid var(--tileBorder);
+                              background:#1a1a1a;color:#fff;padding:12px 14px;font-size:16px;outline:none}
+  .sheet .actions{display:flex;gap:10px;margin-top:16px}
+  .sheet .btn2{background:#222;border-color:var(--tileBorder)}
+  .sheet .btn2.primary{background:var(--green)}
+
+  /* ---- Pay over time page ---- */
+  .thinLine{height:1px;background:rgba(255,255,255,.12);margin:2px 6px 0}
+  .plansBody{display:flex;align-items:center;justify-content:center;min-height:60vh}
+  .plansEmpty{color:var(--muted);font-weight:800;font-size:18px}
+  .planBtnWrap{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;width:min(410px,92vw);z-index:6}
+  .planBtn{width:100%;padding:16px 20px;border-radius:18px;border:1px solid rgba(255,255,255,.18);
+           font-weight:900;color:#fff;background:linear-gradient(135deg,#0a84ff,#7b5cff);
+           box-shadow:0 14px 28px rgba(10,132,255,.35)}
 </style>
 </head>
 <body>
 <div class="app pos-0" id="app">
   <div class="views">
 
-    <!-- ===== ACCOUNTS LIST ===== -->
-    <section class="view" id="accounts">
-      <div class="screenHead">
-        <div class="titleRow">
-          <h1 class="title">Accounts</h1>
-          <button class="dotsBtn" aria-label="More options">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#6a7889">
-              <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="accountsWrap">
-        <div class="bankCard">
-          <div class="tab">Bank accounts (2)</div>
-
-          <!-- SAVINGS -->
-          <div class="listRow rowBtn" id="rowSavings">
-            <div class="accLeft">
-              <div class="accName">SAVINGS (…9124)</div>
-              <div class="accSub">Available balance</div>
-            </div>
-            <div class="accRight">
-              <div class="accAmt">$783.11</div>
-            </div>
-            <div class="grab" aria-hidden="true"></div>
-          </div>
-
-          <!-- CHECKING -->
-          <div class="listRow rowBtn" id="rowChecking">
-            <div class="accLeft">
-              <div class="accName">SAPPHIRE CHECKING (…2431)</div>
-              <div class="accSub">Available balance</div>
-            </div>
-            <div class="accRight">
-              <div class="accAmt">$414.00</div>
-            </div>
-            <div class="grab" aria-hidden="true"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== SAVINGS DETAILS ===== -->
+    <!-- SAVINGS VIEW -->
     <section class="view" id="savings">
-      <div class="screenHead">
-        <div class="backRow">
-          <button class="backBtn" id="backFromSavings" aria-label="Back">
-            <svg width="18" height="18" viewBox="0 0 24 24" stroke="#5d6a7a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <h2 class="bigTitle">SAVINGS (…9124)</h2>
+      <div class="nav">
+        <h1>Savings</h1>
+        <div class="iconrow">
+          <div class="iconbtn" id="svSearch" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+          <div class="iconbtn" id="svAddTxn" aria-label="Create transaction"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M11 11V6h2v5h5v2h-5v5h-2v-5H6v-2z"/></svg></div>
+          <div class="iconbtn" aria-label="More"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" r="2" cy="5"/><circle cx="12" r="2" cy="12"/><circle cx="12" r="2" cy="19"/></svg></div>
         </div>
       </div>
 
       <div class="content">
-        <div class="balanceCard" id="svCard">
-          <div class="balTop">
+        <div class="card accountCard" id="svAcctCard" style="position:relative;cursor:pointer">
+          <div style="display:flex;align-items:center;gap:12px">
+            <h3 style="margin:0">Current Balance</h3>
+            <div class="apyPill">184% APY</div>
+          </div>
+          <div class="balance" id="svBal">$783.11</div>
+        </div>
+
+        <!-- dropdown with account/routing -->
+        <div class="acctInfo" id="svAcctInfo">
+          <div class="mini"><span>Account</span><span class="big" id="svAcctNum">551809124</span></div>
+          <div class="mini"><span>Routing</span><span class="big">072000326</span></div>
+        </div>
+
+        <!-- Send Money -->
+        <button class="fullBtn" id="svSend">Send Money</button>
+
+        <!-- Jump to Checking (shows name, acct number, and balance) -->
+        <div class="tile" style="margin-top:14px;cursor:pointer" id="toChecking">
+          <div class="tileRow">
             <div>
-              <div class="balNumber">$783.11</div>
-              <div class="balSub">Available balance</div>
+              <div class="label" id="toCkLabel">SAPPHIRE CHECKING (...2431)</div>
+              <div class="sub" id="toCkAcct">Acct 375282431</div>
             </div>
-          </div>
-          <div class="divider"></div>
-
-          <div class="cardBody">
-            <div class="cardTitle">Account details</div>
-
-            <!-- collapsed rows (always visible) -->
-            <div class="kv"><div class="label">Available balance</div><div class="value">$783.11 <span class="infoDot">?</span></div></div>
-            <div class="kv"><div class="label">Present balance</div><div class="value">$783.11 <span class="infoDot">?</span></div></div>
-
-            <!-- expandable rows -->
-            <div id="svMore" style="display:none">
-              <div class="kv"><div class="label">Account number</div><div class="value">551809124</div></div>
-              <div class="kv"><div class="label">Routing number</div><div class="value">072000326 <span class="infoDot">?</span></div></div>
-              <div class="kv"><div class="label">Interest rate</div><div class="value">184% APR</div></div>
-              <div class="kv"><div class="label">Next interest date</div><div class="value">08/31/2025</div></div>
-              <div class="kv"><div class="label">Next tax statement date</div><div class="value">08/27/2025</div></div>
-            </div>
-          </div>
-
-          <div class="toggleRow">
-            <button class="pillBtn" id="svToggle">
-              <span id="svToggleText">Show details</span>
-              <svg id="svCaret" class="rot" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
+            <div class="big" id="ckBtnBal">$414.00</div>
           </div>
         </div>
 
-        <div class="actionRow">
-          <div class="actionItem">
-            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div>
-            <div class="actionLabel">Pay</div>
-          </div>
-          <div class="actionItem">
-            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></div>
-            <div class="actionLabel">Transfer</div>
-          </div>
-          <div class="actionItem">
-            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="#0b5dc2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
-            <div class="actionLabel">More</div>
-          </div>
-        </div>
-
-        <div class="tile">
-          <h4>Manage account</h4>
-          <div class="chev" aria-hidden="true"></div>
-        </div>
-
-        <div class="balanceCard" style="margin-top:14px">
-          <div class="tile" style="border:0;border-radius:0;box-shadow:none;margin:0">
-            <h4>See all transactions</h4>
-            <div class="chev" aria-hidden="true"></div>
-          </div>
-          <div class="emptyTrans">No transactions yet.</div>
+        <div class="sectionTitle">Latest Transactions</div>
+        <div id="svListWrap">
+          <div class="empty" id="svEmpty">No transactions yet</div>
+          <div class="list" id="svList"></div>
         </div>
       </div>
     </section>
 
-    <!-- ===== CHECKING DETAILS ===== -->
+    <!-- CHECKING VIEW -->
     <section class="view" id="checking">
-      <div class="screenHead">
-        <div class="backRow">
-          <button class="backBtn" id="backFromChecking" aria-label="Back">
-            <svg width="18" height="18" viewBox="0 0 24 24" stroke="#5d6a7a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <h2 class="bigTitle">SAPPHIRE CHECKING (…2431)</h2>
+      <div class="nav">
+        <h1>Checking</h1>
+        <div class="iconrow">
+          <div class="iconbtn" id="ckSearch" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+          <div class="iconbtn" id="ckAddTxn" aria-label="Create transaction"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M11 11V6h2v5h5v2h-5v5h-2v-5H6v-2z"/></svg></div>
+          <div class="iconbtn" aria-label="More"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" r="2" cy="5"/><circle cx="12" r="2" cy="12"/><circle cx="12" r="2" cy="19"/></svg></div>
         </div>
       </div>
 
       <div class="content">
-        <div class="balanceCard" id="ckCard">
-          <div class="balTop">
+        <div class="card accountCard" id="ckAcctCard" style="cursor:pointer">
+          <div style="display:flex;align-items:center;gap:12px">
+            <h3 style="margin:0">Current Balance</h3>
+          </div>
+          <div class="balance" id="ckBal">$414.00</div>
+        </div>
+
+        <!-- Checking account/routing (same routing) -->
+        <div class="acctInfo" id="ckAcctInfo">
+          <div class="mini"><span>Account</span><span class="big" id="ckAcctNum">375282431</span></div>
+          <div class="mini"><span>Routing</span><span class="big">072000326</span></div>
+        </div>
+
+        <!-- Send Money -->
+        <button class="fullBtn" id="ckSend">Send Money</button>
+
+        <!-- Jump to Savings (shows name, acct number, and balance) -->
+        <div class="tile" style="margin-top:14px;cursor:pointer" id="toSavings">
+          <div class="tileRow">
             <div>
-              <div class="balNumber">$414.00</div>
-              <div class="balSub">Available balance</div>
+              <div class="label" id="toSvLabel">SAVINGS (...9124)</div>
+              <div class="sub" id="toSvAcct">Acct 551809124</div>
+            </div>
+            <div class="big" id="svBtnBal">$783.11</div>
+          </div>
+        </div>
+
+        <!-- Pay over time tile -->
+        <div class="tile" style="margin-top:12px;cursor:pointer" id="payOverTime">
+          <div class="tileRow">
+            <div class="label">Pay over time—</div>
+            <div class="big"></div>
+          </div>
+        </div>
+
+        <div class="sectionTitle">Latest Transactions</div>
+        <div id="ckListWrap">
+          <div class="empty" id="ckEmpty">No transactions yet</div>
+          <div class="list" id="ckList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAY/TRANSFER PAGE -->
+    <section class="view" id="transfer">
+      <div class="nav">
+        <h1>Pay/Transfer</h1>
+        <div class="iconrow"></div>
+      </div>
+      <div class="content">
+        <div class="formCard">
+          <label class="lab">Amount</label>
+          <div class="dollarWrap">
+            <span>$</span>
+            <input class="amtInput" id="ptAmount" inputmode="decimal" placeholder="0.00" />
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="menuWrap">
+            <div class="lab">Transfer from</div>
+            <button class="selectLine" id="fromLine">
+              <span id="fromText">Choose account (from)</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+            <div class="menu" id="fromMenu2">
+              <button data-id="savings">SAVINGS (...9124)</button>
+              <button data-id="checking">CHECKING (...2431)</button>
             </div>
           </div>
-          <div class="divider"></div>
 
-          <div class="cardBody">
-            <div class="cardTitle">Account details</div>
+          <div style="height:10px"></div>
 
-            <!-- collapsed rows -->
-            <div class="kv"><div class="label">Available balance</div><div class="value">$414.00 <span class="infoDot">?</span></div></div>
-            <div class="kv"><div class="label">Present balance</div><div class="value">$414.00 <span class="infoDot">?</span></div></div>
-
-            <!-- expandable rows -->
-            <div id="ckMore" style="display:none">
-              <div class="kv"><div class="label">Account number</div><div class="value">375282431</div></div>
-              <div class="kv"><div class="label">Routing number</div><div class="value">072000326 <span class="infoDot">?</span></div></div>
-              <div class="kv"><div class="label">Interest rate</div><div class="value">0.00%</div></div>
-              <div class="kv"><div class="label">Interest in 2025</div><div class="value">$0.00</div></div>
-            </div>
+          <div class="menuWrap">
+            <div class="lab">Transfer to</div>
+            <button class="selectLine disabled" id="toLine">
+              <span id="toText">Choose account (to)</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+            <div class="menu" id="toMenu2"></div>
           </div>
 
-          <div class="toggleRow">
-            <button class="pillBtn" id="ckToggle">
-              <span id="ckToggleText">Show details</span>
-              <svg id="ckCaret" class="rot" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          <!-- Speed (auto-selected; unclickable) -->
+          <div class="speedRow" id="speedRow">
+            <div class="speedBtn" id="speedInstant">Instant (~1–2m)</div>
+            <div class="speedBtn" id="speedBiz">1–2 business days</div>
+          </div>
+
+          <div class="actions">
+            <button class="btn2" id="ptCancel">Cancel</button>
+            <button class="btn2 primary" id="ptTransfer" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style="vertical-align:middle;margin-right:6px"><path d="M12 17a2 2 0 002-2v-1h1a3 3 0 000-6h-1V6a3 3 0 10-6 0v2H7a3 3 0 000 6h1v1a2 2 0 002 2h2zm-2-9V6a2 2 0 114 0v2h-4z"/></svg>
+              Transfer
             </button>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="actionRow">
-          <div class="actionItem">
-            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div>
-            <div class="actionLabel">Pay</div>
-          </div>
-          <div class="actionItem">
-            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0b5dc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></div>
-            <div class="actionLabel">Transfer</div>
-          </div>
-          <div class="actionItem">
-            <div class="circle"><svg width="26" height="26" viewBox="0 0 24 24" fill="#0b5dc2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
-            <div class="actionLabel">More</div>
-          </div>
-        </div>
+    <!-- TRANSACTION DETAILS (shared) -->
+    <section class="view" id="txnView">
+      <a class="backPill" id="backTxn">Back</a>
+      <div class="txnHeader">
+        <div class="txnAmount" id="dAmount">+$0.00</div>
+        <div class="txnTitle" id="dTitle">Description</div>
+        <div class="txnDate" id="dDate">MM/DD/YY, 0:00 PM</div>
+      </div>
+      <div class="infoNote" id="pendingBox" style="display:none">Transfer will be posted in 1–2 business days</div>
+      <div class="rowD"><div>Account</div><div id="dAccount" style="font-weight:900">Savings</div></div>
+      <div class="rowD"><div>Total</div><div id="dTotal" style="font-weight:900">+$0.00</div></div>
+      <button class="danger" id="deleteTxn">Delete Transaction</button>
+    </section>
 
-        <div class="tile">
-          <h4>Manage account</h4>
-          <div class="chev" aria-hidden="true"></div>
+    <!-- PAY OVER TIME VIEW -->
+    <section class="view" id="payOverTimeView">
+      <div class="nav">
+        <button class="backPill" id="potBack">Back</button>
+        <div class="iconrow"></div>
+      </div>
+      <div class="content">
+        <h1 style="margin:0 6px 0;font-size:32px;font-weight:900">Pay over time</h1>
+        <div class="thinLine"></div>
+        <div class="plansBody">
+          <div class="plansEmpty">No plans</div>
         </div>
-
-        <div class="balanceCard" style="margin-top:14px">
-          <div class="tile" style="border:0;border-radius:0;box-shadow:none;margin:0">
-            <h4>See all transactions</h4>
-            <div class="chev" aria-hidden="true"></div>
-          </div>
-          <div class="emptyTrans">No transactions yet.</div>
-        </div>
+      </div>
+      <div class="planBtnWrap">
+        <button class="planBtn" id="planPurchaseBtn" aria-label="Plan a purchase">Plan a purchase</button>
       </div>
     </section>
 
   </div>
 </div>
 
+<!-- ===== CREATE TRANSACTION SHEET (modal) ===== -->
+<div class="sheet ct-panel" id="createSheet" aria-hidden="true">
+  <div class="dim"></div>
+  <div class="panel" role="dialog" aria-label="Create Transaction">
+    <div class="head">Create Transaction</div>
+    <div class="body">
+      <div class="field">
+        <label class="lab">Description</label>
+        <input class="inp" id="ctDesc" placeholder="e.g., Interest earned, ATM, etc.">
+      </div>
+      <div class="field">
+        <label class="lab">Amount</label>
+        <input class="inp" id="ctAmt" inputmode="decimal" placeholder="0.00" value="0.00" style="font-size:28px;font-weight:900">
+      </div>
+      <div class="field">
+        <label class="lab">Date &amp; time</label>
+        <input class="inp" id="ctWhen" type="datetime-local">
+      </div>
+      <div class="field">
+        <label class="lab">Type</label>
+        <select class="select" id="ctType">
+          <option value="" selected>Choose type</option>
+          <option value="credit">Credit (+)</option>
+          <option value="debit">Debit (−)</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button class="btn2" id="ctCancel">Cancel</button>
+        <button class="btn2 primary" id="ctSave" disabled>Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FULLSCREEN Loading -->
+<div class="fscreen" id="loadingScreen">
+  <div class="fsPanel center">
+    <div class="spinner"></div>
+    <div style="font-weight:900">Initiating transfer…</div>
+  </div>
+</div>
+
+<!-- FULLSCREEN Confirmation -->
+<div class="fscreen" id="confirmScreen">
+  <div class="fsPanel">
+    <div class="center">
+      <div class="checkCircle">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="#fff"><path d="M9 16.2l-3.5-3.5L4 14.2l5 5 11-11-1.5-1.5z"/></svg>
+      </div>
+      <div class="confirmTitle" id="confirmTitle">Your transfer has been initiated</div>
+    </div>
+    <div class="detailList" id="confirmDetails"></div>
+    <div class="note" id="confirmNote" style="display:none">Your transfer has been scheduled.</div>
+    <button class="doneBtn" id="confirmDone">Done</button>
+  </div>
+</div>
+
 <script>
+// === Cross-app ledger listener (same-origin) ===
+const LEDGER_CHANNEL_NAME = 'ledger';
+const LEDGER_LOG_KEY = 'global_event_log';
+const LEDGER_SEEN_KEY = 'global_event_seen';
+const THIS_ACCOUNT_ID = 'checking-123';
+
+function addBankTxnFallback({ id, merchant, amount, iso, status = 'Posted' }) {
+  const KEY = 'bank_txns';
+  const list = JSON.parse(localStorage.getItem(KEY) || '[]');
+  list.push({ id, merchant, amount, iso, status, kind: 'deposit' });
+  localStorage.setItem(KEY, JSON.stringify(list));
+}
+const addBankTxn = (window.addBankTxn || addBankTxnFallback);
+
+function getSeen() {
+  try { return new Set(JSON.parse(localStorage.getItem(LEDGER_SEEN_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function markSeen(id, seenSet) {
+  seenSet.add(id);
+  localStorage.setItem(LEDGER_SEEN_KEY, JSON.stringify([...seenSet]));
+}
+function handleLedgerEvent(evt) {
+  if (!evt || evt.type !== 'cashback_deposit') return;
+  if (evt.toAccountId !== THIS_ACCOUNT_ID) return;
+  const seen = getSeen();
+  if (seen.has(evt.id)) return;
+  addBankTxn({ id: evt.id, merchant: 'Cashback deposited', amount: evt.amount, iso: evt.iso, status: 'Posted' });
+  markSeen(evt.id, seen);
+}
+try { const ch = new BroadcastChannel(LEDGER_CHANNEL_NAME); ch.onmessage = (e)=>handleLedgerEvent(e.data); } catch {}
+try { const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]'); log.forEach(handleLedgerEvent); } catch {}
+  
+(()=>{
   const app = document.getElementById('app');
 
-  // nav from list
-  document.getElementById('rowSavings').addEventListener('click', ()=> app.className='app pos-1');
-  document.getElementById('rowChecking').addEventListener('click',()=> app.className='app pos-2');
+  /* ---------- ACCOUNT METADATA ---------- */
+  const SAV_ACCT = { num: '551809124', last4: '9124', name: 'SAVINGS' };
+  const CK_ACCT  = { num: '375282431', last4: '2431', name: 'CHECKING' };
 
-  // back buttons
-  document.getElementById('backFromSavings').addEventListener('click', ()=> app.className='app pos-0');
-  document.getElementById('backFromChecking').addEventListener('click',()=> app.className='app pos-0');
+  const money = v=> (Number(v)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
 
-  // detail toggles
-  function wireToggle(btnId, moreId, textId, caretId){
-    const btn=document.getElementById(btnId);
-    const box=document.getElementById(moreId);
-    const lab=document.getElementById(textId);
-    const caret=document.getElementById(caretId);
-    let open=false;
-    btn.addEventListener('click', ()=>{
-      open=!open;
-      box.style.display=open?'block':'none';
-      lab.textContent=open?'Hide details':'Show details';
-      caret.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+  /* ---------- SETTINGS VERSION ---------- */
+  const SETTINGS_DEFAULT = { version: 4, savingsBal: 783.11, checkingBal: 414.00 };
+
+  /* ---------- PERSISTED BALANCES ---------- */
+  const svState = JSON.parse(localStorage.getItem('sv_state')||'{"bal":783.11}');
+  const ckState = JSON.parse(localStorage.getItem('ck_state')||'{"bal":414.00}');
+  const storedVer = Number(localStorage.getItem('bank_version')||'0');
+  if (storedVer !== SETTINGS_DEFAULT.version) {
+    svState.bal = SETTINGS_DEFAULT.savingsBal;
+    ckState.bal = SETTINGS_DEFAULT.checkingBal;
+    localStorage.setItem('bank_version', String(SETTINGS_DEFAULT.version));
+  }
+
+  /* ---------- TRANSACTIONS ---------- */
+  let svTxns = JSON.parse(localStorage.getItem('sv_txns')||'[]');
+  let ckTxns = JSON.parse(localStorage.getItem('ck_txns')||'[]');
+
+  function saveAll(){
+    localStorage.setItem('sv_state', JSON.stringify(svState));
+    localStorage.setItem('ck_state', JSON.stringify(ckState));
+    localStorage.setItem('sv_txns', JSON.stringify(svTxns));
+    localStorage.setItem('ck_txns', JSON.stringify(ckTxns));
+  }
+
+  /* ---------- VIEW NAV ---------- */
+  const toChecking = document.getElementById('toChecking');
+  const toSavings  = document.getElementById('toSavings');
+  toChecking.addEventListener('click', ()=> app.className='app pos-1');
+  toSavings?.addEventListener('click',  ()=> app.className='app pos-0');
+
+  /* ---------- ACCOUNT CARDS DROP ---- */
+  const svCard = document.getElementById('svAcctCard');
+  const ckCard = document.getElementById('ckAcctCard');
+  const svInfo = document.getElementById('svAcctInfo');
+  const ckInfo = document.getElementById('ckAcctInfo');
+  svCard.addEventListener('click', ()=> svInfo.classList.toggle('open'));
+  ckCard.addEventListener('click', ()=> ckInfo.classList.toggle('open'));
+
+  /* ---------- RENDER BALANCES ---------- */
+  const svBalEl = document.getElementById('svBal');
+  const ckBalEl = document.getElementById('ckBal');
+  const svBtnBal = document.getElementById('svBtnBal');
+  const ckBtnBal = document.getElementById('ckBtnBal');
+  const svAcctNumEl = document.getElementById('svAcctNum');
+  const ckAcctNumEl = document.getElementById('ckAcctNum');
+  const toCkLabel = document.getElementById('toCkLabel');
+  const toCkAcct  = document.getElementById('toCkAcct');
+  const toSvLabel = document.getElementById('toSvLabel');
+  const toSvAcct  = document.getElementById('toSvAcct');
+
+  function renderBalances(){
+    svBalEl.textContent = money(svState.bal);
+    ckBalEl.textContent = money(ckState.bal);
+    if (svBtnBal) svBtnBal.textContent= money(svState.bal);
+    if (ckBtnBal) ckBtnBal.textContent= money(ckState.bal);
+
+    svAcctNumEl.textContent = SAV_ACCT.num;
+    ckAcctNumEl.textContent = CK_ACCT.num;
+
+    if (toCkLabel) toCkLabel.textContent = `SAPPHIRE CHECKING (...${CK_ACCT.last4})`;
+    if (toCkAcct)  toCkAcct.textContent  = `Acct ${CK_ACCT.num}`;
+    if (toSvLabel) toSvLabel.textContent = `SAVINGS (...${SAV_ACCT.last4})`;
+    if (toSvAcct)  toSvAcct.textContent  = `Acct ${SAV_ACCT.num}`;
+  }
+  renderBalances();
+
+  /* ---------- LIST RENDER ---------- */
+  const svList = document.getElementById('svList');
+  const ckList = document.getElementById('ckList');
+  const svEmpty= document.getElementById('svEmpty');
+  const ckEmpty= document.getElementById('ckEmpty');
+
+  function fmtRow(t){
+    const sign = t.type==='credit' ? '+' : '-';
+    const typeLabel = t.type==='credit'?'Credit':'Debit';
+    const statusFrag = t.status==='Pending' ? ' • Pending' : '';
+    return `
+      <div class="row" data-id="${t.id}">
+        <div class="rMain">
+          <div class="rTitle">${t.desc} <span style="opacity:.6">• ${typeLabel}${statusFrag}</span></div>
+          <div class="rSub">${new Date(t.iso).toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'})}</div>
+        </div>
+        <div class="rAmt">${sign}${money(Math.abs(t.amount)).replace('$','')}</div>
+      </div>`;
+  }
+  function sortNewest(a,b){ return new Date(b.iso) - new Date(a.iso); }
+
+  function renderTxns(){
+    svTxns.sort(sortNewest); ckTxns.sort(sortNewest);
+    svList.innerHTML = svTxns.map(fmtRow).join('');
+    ckList.innerHTML = ckTxns.map(fmtRow).join('');
+    svEmpty.style.display = svTxns.length? 'none':'block';
+    ckEmpty.style.display = ckTxns.length? 'none':'block';
+
+    svList.querySelectorAll('.row').forEach(r=>{
+      r.addEventListener('click',()=> openTxn('savings', r.dataset.id));
+    });
+    ckList.querySelectorAll('.row').forEach(r=>{
+      r.addEventListener('click',()=> openTxn('checking', r.dataset.id));
     });
   }
-  wireToggle('svToggle','svMore','svToggleText','svCaret');
-  wireToggle('ckToggle','ckMore','ckToggleText','ckCaret');
+  renderTxns();
+
+  /* ---------- TXN DETAILS ---------- */
+  const backTxn = document.getElementById('backTxn');
+  const dAmount = document.getElementById('dAmount');
+  const dTitle  = document.getElementById('dTitle');
+  const dDate   = document.getElementById('dDate');
+  const dTotal  = document.getElementById('dTotal');
+  const dAccount= document.getElementById('dAccount');
+  const delBtn  = document.getElementById('deleteTxn');
+  const pendingBox = document.getElementById('pendingBox');
+  const txnViewEl = document.getElementById('txnView');
+  let openCtx = null;
+
+  function openTxn(which,id){
+    const arr = which==='savings'? svTxns : ckTxns;
+    const t = arr.find(x=>x.id===id); if(!t) return;
+    const sign = t.type==='credit'?'+':'-';
+    dAmount.textContent = `${sign}${money(Math.abs(t.amount))}`;
+    dTitle.textContent  = t.desc;
+    dDate.textContent   = new Date(t.iso).toLocaleString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit',hour:'numeric',minute:'2-digit'});
+    dTotal.textContent  = `${sign}${money(Math.abs(t.amount))}`;
+    dAccount.textContent= which==='savings'?'Savings':'Checking';
+    if (t.status === 'Pending') { pendingBox.style.display='block'; pendingBox.textContent=t.note||'Transfer will be posted in 1–2 business days'; }
+    else { pendingBox.style.display='none'; }
+    openCtx = {which,id};
+
+    // Smooth reveal animation
+    txnViewEl.classList.remove('reveal');        // reset state
+    app.className='app pos-3';                   // slide to details
+    requestAnimationFrame(()=>{                  // then reveal contents
+      requestAnimationFrame(()=> txnViewEl.classList.add('reveal'));
+    });
+  }
+  backTxn.addEventListener('click', ()=>{
+    txnViewEl.classList.remove('reveal');
+    app.className = (openCtx && openCtx.which==='checking') ? 'app pos-1' : 'app pos-0';
+  });
+  delBtn.addEventListener('click', ()=>{
+    if(!openCtx) return;
+    let arr = openCtx.which==='savings'? svTxns : ckTxns;
+    const i = arr.findIndex(x=>x.id===openCtx.id);
+    if(i>-1){ arr.splice(i,1); saveAll(); renderTxns(); }
+    backTxn.click();
+  });
+
+  /* ---------- CREATE TRANSACTION SHEET ---------- */
+  const createSheet = document.getElementById('createSheet');
+  const ctDesc = document.getElementById('ctDesc');
+  const ctAmt  = document.getElementById('ctAmt');
+  const ctWhen = document.getElementById('ctWhen');
+  const ctType = document.getElementById('ctType');
+  const ctCancel = document.getElementById('ctCancel');
+  const ctSave   = document.getElementById('ctSave');
+  let createCtx = 'savings';
+
+  function openCreate(which){
+    createCtx = which;
+    ctDesc.value=''; ctAmt.value='0.00';
+    ctWhen.value = new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+    ctType.value='';
+    ctSave.disabled = true;
+    createSheet.classList.add('active');
+  }
+  function closeCreate(){ createSheet.classList.remove('active'); }
+  document.querySelector('#savings #svAddTxn').addEventListener('click', ()=>openCreate('savings'));
+  document.querySelector('#checking #ckAddTxn').addEventListener('click', ()=>openCreate('checking'));
+  createSheet.querySelector('.dim').addEventListener('click', closeCreate);
+  ctCancel.addEventListener('click', closeCreate);
+  ;[ctDesc,ctAmt,ctWhen,ctType].forEach(el=> el.addEventListener('input', ()=>{
+    ctSave.disabled = !(ctDesc.value.trim() && Number(ctAmt.value)>0 && ctWhen.value && ctType.value);
+  }));
+  ctSave.addEventListener('click', ()=>{
+    const t = {
+      id: 't_'+Math.random().toString(36).slice(2,9),
+      desc: ctDesc.value.trim(),
+      amount: Number(parseFloat(ctAmt.value).toFixed(2)),
+      iso: new Date(ctWhen.value).toISOString(),
+      type: ctType.value,
+      status: 'Posted'
+    };
+    if(createCtx==='savings') svTxns.push(t); else ckTxns.push(t);
+    saveAll(); renderTxns(); closeCreate();
+  });
+
+  /* ---------- PAY/TRANSFER PAGE WIRING ---------- */
+  const svSend = document.getElementById('svSend');
+  const ckSend = document.getElementById('ckSend');
+  let transferOrigin = 'savings';
+
+  const ptAmount = document.getElementById('ptAmount');
+  const fromLine = document.getElementById('fromLine');
+  const toLine   = document.getElementById('toLine');
+  const fromMenu2= document.getElementById('fromMenu2');
+  const toMenu2  = document.getElementById('toMenu2');
+  const fromText = document.getElementById('fromText');
+  const toText   = document.getElementById('toText');
+
+  const speedInstant = document.getElementById('speedInstant');
+  const speedBiz     = document.getElementById('speedBiz');
+  let speedSel = null;
+
+  let fromSel=null, toSel=null;
+
+  function setSpeed(sel){
+    speedSel = sel;
+    speedInstant.classList.toggle('selected', sel==='instant');
+    speedBiz.classList.toggle('selected', sel==='biz');
+  }
+  function autoPickSpeed(){
+    // Only two local accounts now — always instant if both chosen
+    if(fromSel && toSel){ setSpeed('instant'); } else { setSpeed(null); }
+  }
+  function resetPayTransfer(origin){
+    transferOrigin = origin;
+    ptAmount.value='';
+    fromSel = null; toSel = null;
+    fromText.textContent = 'Choose account (from)';
+    toText.textContent   = 'Choose account (to)';
+    toLine.classList.add('disabled');
+    document.getElementById('ptTransfer').disabled = true;
+    fromMenu2.classList.remove('open'); toMenu2.classList.remove('open');
+    setSpeed(null);
+  }
+  function validatePT(){
+    const amtOk = Number(ptAmount.value) > 0;
+    document.getElementById('ptTransfer').disabled = !(amtOk && fromSel && toSel);
+  }
+  function openPT(){ app.className='app pos-2'; }
+  svSend.addEventListener('click', ()=>{ resetPayTransfer('savings'); openPT(); });
+  ckSend.addEventListener('click', ()=>{ resetPayTransfer('checking'); openPT(); });
+
+  document.getElementById('ptCancel').addEventListener('click', ()=>{
+    app.className = transferOrigin==='checking' ? 'app pos-1' : 'app pos-0';
+  });
+
+  fromLine.addEventListener('click', ()=> fromMenu2.classList.toggle('open'));
+  toLine.addEventListener('click', ()=>{
+    if(toLine.classList.contains('disabled')) return;
+    toMenu2.classList.toggle('open');
+  });
+  document.addEventListener('click', (e)=>{
+    if(!fromLine.contains(e.target) && !fromMenu2.contains(e.target)) fromMenu2.classList.remove('open');
+    if(!toLine.contains(e.target) && !toMenu2.contains(e.target)) toMenu2.classList.remove('open');
+  });
+
+  function addToBtn(id,label){
+    const b=document.createElement('button');
+    b.textContent=label; b.dataset.id=id;
+    b.addEventListener('click', ()=>{
+      toSel=id; toText.textContent=label; toMenu2.classList.remove('open'); autoPickSpeed(); validatePT();
+    });
+    toMenu2.appendChild(b);
+  }
+  fromMenu2.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      fromSel = btn.dataset.id;
+      document.getElementById('fromText').textContent = btn.textContent;
+      fromMenu2.classList.remove('open');
+
+      toMenu2.innerHTML = '';
+      const opts = [
+        ['savings','SAVINGS (...'+SAV_ACCT.last4+')'],
+        ['checking','CHECKING (...'+CK_ACCT.last4+')']
+      ].filter(([id])=> id!==fromSel);
+      opts.forEach(([id,label])=> addToBtn(id,label));
+
+      toSel=null; document.getElementById('toText').textContent='Choose account (to)';
+      toLine.classList.remove('disabled');
+      autoPickSpeed();
+      validatePT();
+    });
+  });
+
+  ptAmount.addEventListener('input', validatePT);
+
+  /* --------- Loading & Confirmation + POSTING LOGIC ---------- */
+  const loadingScreen = document.getElementById('loadingScreen');
+  const confirmScreen = document.getElementById('confirmScreen');
+  const confirmTitle  = document.getElementById('confirmTitle');
+  const confirmDetails= document.getElementById('confirmDetails');
+  const confirmNote   = document.getElementById('confirmNote');
+
+  function accountLabel(id){
+    if(id==='savings')  return `${SAV_ACCT.name} (...${SAV_ACCT.last4})`;
+    if(id==='checking') return `${CK_ACCT.name} (...${CK_ACCT.last4})`;
+    return id;
+  }
+  function labelOnly(id){
+    if(id==='savings')  return SAV_ACCT.name;
+    if(id==='checking') return CK_ACCT.name;
+    return id;
+  }
+  function last4(id){
+    if(id==='savings')  return SAV_ACCT.last4;
+    if(id==='checking') return CK_ACCT.last4;
+    return '';
+  }
+
+  function postTransfer(amountNum, fromId, toId){
+    const nowIso = new Date().toISOString();
+    const status = 'Posted';
+    const note = '';
+
+    const mkTxn = (desc, amt, type)=>({
+      id: 't_'+Math.random().toString(36).slice(2,9),
+      desc, amount: Number(amt.toFixed(2)),
+      iso: nowIso, type, status, note
+    });
+
+    // Local ↔ Local
+    const descFrom = `Online transfer to ${labelOnly(toId)} ${last4(toId)}`;
+    const debitTxn = mkTxn(descFrom, amountNum, 'debit');
+    if (fromId==='savings') { svTxns.push(debitTxn); svState.bal = +(svState.bal - amountNum).toFixed(2); }
+    else { ckTxns.push(debitTxn); ckState.bal = +(ckState.bal - amountNum).toFixed(2); }
+
+    const descTo = `Online transfer from ${labelOnly(fromId)} ${last4(fromId)}`;
+    const creditTxn = mkTxn(descTo, amountNum, 'credit');
+    if (toId==='savings') { svTxns.push(creditTxn); svState.bal = +(svState.bal + amountNum).toFixed(2); }
+    else { ckTxns.push(creditTxn); ckState.bal = +(ckState.bal + amountNum).toFixed(2); }
+
+    saveAll();
+    renderBalances();
+    renderTxns();
+  }
+
+  document.getElementById('ptTransfer').addEventListener('click', ()=>{
+    loadingScreen.classList.add('show');
+
+    setTimeout(()=>{
+      const amt = Number(parseFloat(document.getElementById('ptAmount').value).toFixed(2));
+      postTransfer(amt, fromSel, toSel);
+
+      loadingScreen.classList.remove('show');
+
+      confirmTitle.textContent = 'Your transfer has been initiated';
+      confirmDetails.innerHTML = `
+        <div class="detailRow"><div>Amount</div><div style="font-weight:900">${money(amt)}</div></div>
+        <div class="detailRow"><div>From</div><div style="font-weight:900">${accountLabel(fromSel)}</div></div>
+        <div class="detailRow"><div>To</div><div style="font-weight:900">${accountLabel(toSel)}</div></div>
+        <div class="detailRow"><div>Speed</div><div style="font-weight:900">Instant (~1–2m)</div></div>
+      `;
+      document.getElementById('confirmNote').style.display = 'none';
+      document.getElementById('confirmScreen').classList.add('show');
+    }, 500); // snappier
+  });
+
+  document.getElementById('confirmDone').addEventListener('click', ()=>{
+    document.getElementById('confirmScreen').classList.remove('show');
+    app.className = transferOrigin==='checking' ? 'app pos-1' : 'app pos-0';
+  });
+
+  /* ---- Pay over time nav ---- */
+  const payOverTile = document.getElementById('payOverTime');
+  if (payOverTile) payOverTile.addEventListener('click', ()=>{ app.className = 'app pos-4'; });
+  document.getElementById('potBack').addEventListener('click', ()=>{ app.className='app pos-1'; });
+
+})();
 </script>
 </body>
 </html>
