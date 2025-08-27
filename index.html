@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -442,32 +442,37 @@
   quickTap(document.getElementById('balBack'), ()=> gotoPage(0));
   quickTap(document.getElementById('txnBack'), ()=> gotoPage(0));
 
-  // ===== Change balance (typing fixed, supports '.' and ',') =====
+  // ===== Change balance (decimal typing FIXED) =====
   const balAmt = document.getElementById('balAmt');
   const balSave = document.getElementById('balSave');
 
   function sanitizeTyping(val){
-    let s = String(val || '').replace(/,/g,'.'); // normalize comma to dot
-    s = s.replace(/[^\d.]/g,'');                 // keep digits + dot
-    const firstDot = s.indexOf('.');
-    if (firstDot !== -1){
-      s = s.slice(0, firstDot + 1) + s.slice(firstDot + 1).replace(/\./g,'');
-      const parts = s.split('.');
-      parts[1] = (parts[1] || '').slice(0,2);
-      s = parts[0] + (parts[1] !== '' ? '.' + parts[1] : '');
+    // Allow digits and a single decimal separator (either '.' or ',') and limit to 2 decimals
+    let s = String(val || '').replace(/[^\d.,]/g,'');
+    const firstSep = s.search(/[.,]/);
+    if (firstSep !== -1){
+      const sep = s[firstSep];                 // keep whichever user typed
+      const head = s.slice(0, firstSep + 1);
+      let tail = s.slice(firstSep + 1).replace(/[.,]/g,''); // drop extra separators
+      tail = tail.slice(0,2);                  // 2 decimal places while typing
+      s = head + tail;
     }
     return s;
   }
 
   balAmt.addEventListener('input', ()=>{
-    const caretEnd = balAmt.selectionEnd;
-    balAmt.value = sanitizeTyping(balAmt.value);
+    const pos = balAmt.selectionEnd || balAmt.value.length;
+    const before = balAmt.value;
+    const next = sanitizeTyping(before);
+    balAmt.value = next;
+    const shift = next.length - before.length;
+    const newPos = Math.max(0, pos + shift);
+    try{ balAmt.setSelectionRange(newPos, newPos); }catch{}
+
     const v = parseMoney(balAmt.value);
     balSave.disabled = !(isFinite(v) && v>=0);
-    if (document.activeElement === balAmt) {
-      balAmt.setSelectionRange(caretEnd, caretEnd);
-    }
   });
+
   balAmt.addEventListener('blur', ()=>{
     const v = parseMoney(balAmt.value);
     if (isFinite(v)) balAmt.value = v.toLocaleString(undefined,{style:'currency',currency:'USD'});
@@ -485,20 +490,14 @@
     closeSettings();
   });
 
-  // ===== Add transaction (accepts comma decimals too) =====
+  // ===== Add transaction (unchanged) =====
   const txMerchant = document.getElementById('txMerchant');
   const txAmount   = document.getElementById('txAmount');
   const txWhen     = document.getElementById('txWhen');
   const txStatus   = document.getElementById('txStatus');
   const txAdd      = document.getElementById('txAdd');
 
-  function formatMoneyField(el){
-    const n = parseMoney(el.value);
-    if (!isNaN(n)) el.value = n.toLocaleString(undefined,{style:'currency',currency:'USD'});
-  }
-
   txAmount.addEventListener('input', ()=>{
-    // keep immediate formatting behavior but allow commas
     const n = parseMoney(txAmount.value);
     if (!isNaN(n)) txAmount.value = n.toLocaleString(undefined,{style:'currency',currency:'USD'});
     validateTxn();
