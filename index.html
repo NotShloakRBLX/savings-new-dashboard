@@ -54,6 +54,9 @@
   .label{color:var(--muted);font-size:12px}
   .amt{font-size:30px;line-height:1.05}
 
+  /* hide “Present balance” column on the top cards */
+  .presentCol{display:none}
+
   .apy{display:inline-block;margin-top:10px;padding:6px 10px;border-radius:999px;
        background:var(--tile);border:1px solid var(--tileBorder);font-size:12px}
 
@@ -67,7 +70,7 @@
   .swapTile{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--tile);border:1px solid var(--tileBorder);cursor:pointer}
   .swapTop{display:flex;justify-content:space-between;align-items:center}
   .swapName{color:#dcdcdc}
-  .swapAcct{color:var(--muted);font-size:12px;margin-top:2px}
+  .swapAcct{color:#a9a9a9;font-size:12px;margin-top:2px}
   .swapAmt{font-size:18px}
 
   .section{margin-top:16px}
@@ -78,7 +81,6 @@
   .key{color:var(--muted)}
   .val{color:#fff}
 
-  /* Show more pill */
   .moreBtnWrap{display:flex;justify-content:center;padding:12px}
   .moreBtn{
     border-radius:999px;border:1px solid var(--tileBorder);background:transparent;
@@ -89,7 +91,6 @@
   .moreWrap{display:none}
   .list.open .moreWrap{display:block}
 
-  /* slide positions */
   .pos-0 .views{transform:translateX(0%)}        /* Savings */
   .pos-1 .views{transform:translateX(-50%)}      /* Checking */
 
@@ -112,7 +113,8 @@
             <div class="label">Available balance</div>
             <div class="amt" id="svAvail">$783.11</div>
           </div>
-          <div class="bhCol" style="text-align:right">
+          <!-- Present balance kept in DOM but hidden to avoid JS changes -->
+          <div class="bhCol presentCol" style="text-align:right">
             <div class="label">Present balance</div>
             <div class="amt" id="svPresent">$783.11</div>
           </div>
@@ -125,7 +127,6 @@
           <button class="btn secondary" id="toTransfer1">Transfer</button>
         </div>
 
-        <!-- jump to checking -->
         <div class="swapTile" id="goChecking" aria-label="Open Checking">
           <div class="swapTop">
             <div>
@@ -136,7 +137,6 @@
           </div>
         </div>
 
-        <!-- details -->
         <div class="section">
           <h3 class="sectionTitle">Account details</h3>
           <div class="list" id="svDetails">
@@ -174,7 +174,8 @@
             <div class="label">Available balance</div>
             <div class="amt" id="ckAvail">$414.00</div>
           </div>
-          <div class="bhCol" style="text-align:right">
+          <!-- Present balance kept but hidden -->
+          <div class="bhCol presentCol" style="text-align:right">
             <div class="label">Present balance</div>
             <div class="amt" id="ckPresent">$414.00</div>
           </div>
@@ -185,7 +186,6 @@
           <button class="btn secondary" id="toTransfer2">Transfer</button>
         </div>
 
-        <!-- jump to savings -->
         <div class="swapTile" id="goSavings" aria-label="Open Savings">
           <div class="swapTop">
             <div>
@@ -196,7 +196,6 @@
           </div>
         </div>
 
-        <!-- details -->
         <div class="section">
           <h3 class="sectionTitle">Account details</h3>
           <div class="list" id="ckDetails">
@@ -256,13 +255,13 @@
 
   function render(){
     svAvail.textContent = money(sv);
-    svPresent.textContent = money(sv);
+    if (svPresent) svPresent.textContent = money(sv);
     svMini.textContent = money(sv);
     svAvailRow.textContent = money(sv);
     svPresentRow.textContent = money(sv);
 
     ckAvail.textContent = money(ck);
-    ckPresent.textContent = money(ck);
+    if (ckPresent) ckPresent.textContent = money(ck);
     ckMini.textContent = money(ck);
     ckAvailRow.textContent = money(ck);
     ckPresentRow.textContent = money(ck);
