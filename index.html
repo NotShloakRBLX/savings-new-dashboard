@@ -14,8 +14,7 @@
     --border:rgba(255,255,255,.12);
     --tile:rgba(255,255,255,.05);
     --tileBorder:rgba(255,255,255,.10);
-    --blue:#0f2b4d;   /* dark blue bank tab */
-    --blue2:#153a66;
+    --blue:#0f2b4d;
     --t:.35s cubic-bezier(.2,.8,.2,1);
     --radius:14px;
   }
@@ -24,7 +23,7 @@
   body{
     margin:0;background:#000;color:var(--text);
     font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    font-weight:500; /* no bold anywhere */
+    font-weight:500;
     -webkit-font-smoothing:auto; text-rendering:optimizeSpeed;
   }
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
@@ -32,7 +31,6 @@
   .view{width:100%;height:100%;overflow:auto;background:linear-gradient(#0b0b0b,#0a0a0a 60%,#090909)}
   .view::-webkit-scrollbar{width:0;height:0}
 
-  /* top bar */
   .nav{
     position:sticky;top:0;z-index:5;
     padding:12px 12px 8px;
@@ -42,14 +40,12 @@
   .bankTab{
     display:inline-flex;align-items:center;gap:8px;
     background:var(--blue);border:1px solid rgba(255,255,255,.18);
-    color:#fff;padding:10px 12px;border-radius:10px;
-    letter-spacing:.2px;
+    color:#fff;padding:10px 12px;border-radius:10px;letter-spacing:.2px;
   }
   .bankTab .dot{width:8px;height:8px;border-radius:50%;background:#6db1ff;opacity:.9}
 
   .content{padding:12px 12px 28px}
 
-  /* balances header (Available left, Present right) */
   .balHead{
     display:flex;justify-content:space-between;align-items:flex-end;
     gap:12px;padding:14px;border-radius:12px;background:var(--panel);border:1px solid var(--border)
@@ -57,13 +53,10 @@
   .bhCol{min-width:0}
   .label{color:var(--muted);font-size:12px}
   .amt{font-size:30px;line-height:1.05}
-  .subNote{color:var(--muted);font-size:12px;margin-top:2px}
 
-  /* APY chip (only on Savings) */
   .apy{display:inline-block;margin-top:10px;padding:6px 10px;border-radius:999px;
        background:var(--tile);border:1px solid var(--tileBorder);font-size:12px}
 
-  /* actions */
   .rowBtns{display:flex;gap:10px;margin-top:12px}
   .btn{
     flex:1;padding:14px 16px;border-radius:12px;border:1px solid var(--border);
@@ -71,14 +64,12 @@
   }
   .btn.secondary{background:var(--panel2);color:#fff}
 
-  /* “go to other account” tile */
   .swapTile{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--tile);border:1px solid var(--tileBorder);cursor:pointer}
   .swapTop{display:flex;justify-content:space-between;align-items:center}
   .swapName{color:#dcdcdc}
   .swapAcct{color:var(--muted);font-size:12px;margin-top:2px}
   .swapAmt{font-size:18px}
 
-  /* details list */
   .section{margin-top:16px}
   .sectionTitle{font-size:16px;color:#dcdcdc;margin:0 2px 8px}
   .list{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
@@ -87,11 +78,21 @@
   .key{color:var(--muted)}
   .val{color:#fff}
 
+  /* Show more pill */
+  .moreBtnWrap{display:flex;justify-content:center;padding:12px}
+  .moreBtn{
+    border-radius:999px;border:1px solid var(--tileBorder);background:transparent;
+    color:#dcdcdc;padding:10px 14px;font:inherit;cursor:pointer
+  }
+  .chev{display:inline-block;margin-left:8px;transition:transform var(--t)}
+  .open .chev{transform:rotate(180deg)}
+  .moreWrap{display:none}
+  .list.open .moreWrap{display:block}
+
   /* slide positions */
   .pos-0 .views{transform:translateX(0%)}        /* Savings */
   .pos-1 .views{transform:translateX(-50%)}      /* Checking */
 
-  /* simple tap affordances */
   .btn:active,.swapTile:active{transform:scale(.98);transition:transform var(--t)}
 </style>
 </head>
@@ -106,7 +107,6 @@
       </div>
       <div class="content">
 
-        <!-- balances header -->
         <div class="balHead" aria-label="Savings balances">
           <div class="bhCol">
             <div class="label">Available balance</div>
@@ -120,7 +120,6 @@
 
         <div class="apy">184% APR</div>
 
-        <!-- actions -->
         <div class="rowBtns">
           <button class="btn">Pay</button>
           <button class="btn secondary" id="toTransfer1">Transfer</button>
@@ -140,14 +139,23 @@
         <!-- details -->
         <div class="section">
           <h3 class="sectionTitle">Account details</h3>
-          <div class="list">
+          <div class="list" id="svDetails">
             <div class="row"><div class="key">Account number</div><div class="val">551809124</div></div>
             <div class="row"><div class="key">Routing number</div><div class="val">072000326</div></div>
-            <div class="row"><div class="key">Available balance</div><div class="val" id="svAvailRow">$783.11</div></div>
-            <div class="row"><div class="key">Present balance</div><div class="val" id="svPresentRow">$783.11</div></div>
-            <div class="row"><div class="key">Interest rate</div><div class="val">184% APR</div></div>
-            <div class="row"><div class="key">Next interest date</div><div class="val">08/31/2025</div></div>
-            <div class="row"><div class="key">Next tax statement date</div><div class="val">08/27/2025</div></div>
+
+            <div class="moreWrap">
+              <div class="row"><div class="key">Available balance</div><div class="val" id="svAvailRow">$783.11</div></div>
+              <div class="row"><div class="key">Present balance</div><div class="val" id="svPresentRow">$783.11</div></div>
+              <div class="row"><div class="key">Interest rate</div><div class="val">184% APR</div></div>
+              <div class="row"><div class="key">Next interest date</div><div class="val">08/31/2025</div></div>
+              <div class="row"><div class="key">Next tax statement date</div><div class="val">08/27/2025</div></div>
+            </div>
+
+            <div class="moreBtnWrap">
+              <button class="moreBtn" id="svMoreBtn" aria-expanded="false">
+                Show more <span class="chev">▾</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -161,7 +169,6 @@
       </div>
       <div class="content">
 
-        <!-- balances header -->
         <div class="balHead" aria-label="Checking balances">
           <div class="bhCol">
             <div class="label">Available balance</div>
@@ -173,7 +180,6 @@
           </div>
         </div>
 
-        <!-- actions -->
         <div class="rowBtns">
           <button class="btn">Pay</button>
           <button class="btn secondary" id="toTransfer2">Transfer</button>
@@ -193,14 +199,22 @@
         <!-- details -->
         <div class="section">
           <h3 class="sectionTitle">Account details</h3>
-          <div class="list">
+          <div class="list" id="ckDetails">
             <div class="row"><div class="key">Account number</div><div class="val">375282431</div></div>
             <div class="row"><div class="key">Routing number</div><div class="val">072000326</div></div>
-            <div class="row"><div class="key">Available balance</div><div class="val" id="ckAvailRow">$414.00</div></div>
-            <div class="row"><div class="key">Present balance</div><div class="val" id="ckPresentRow">$414.00</div></div>
-            <div class="row"><div class="key">Interest rate</div><div class="val">0.00%</div></div>
-            <div class="row"><div class="key">Interest in 2025</div><div class="val">$0.00</div></div>
-            <!-- (Last statement date intentionally removed) -->
+
+            <div class="moreWrap">
+              <div class="row"><div class="key">Available balance</div><div class="val" id="ckAvailRow">$414.00</div></div>
+              <div class="row"><div class="key">Present balance</div><div class="val" id="ckPresentRow">$414.00</div></div>
+              <div class="row"><div class="key">Interest rate</div><div class="val">0.00%</div></div>
+              <div class="row"><div class="key">Interest in 2025</div><div class="val">$0.00</div></div>
+            </div>
+
+            <div class="moreBtnWrap">
+              <button class="moreBtn" id="ckMoreBtn" aria-expanded="false">
+                Show more <span class="chev">▾</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -214,7 +228,6 @@
 (() => {
   const app = document.getElementById('app');
 
-  /* persistent balances (no transactions used on this screen) */
   const DEFAULTS = { ver: 2, sv: 783.11, ck: 414.00 };
   const ver = Number(localStorage.getItem('acct_ver') || '0');
   if (ver !== DEFAULTS.ver) {
@@ -242,13 +255,12 @@
   const ckPresentRow = document.getElementById('ckPresentRow');
 
   function render(){
-    // savings
     svAvail.textContent = money(sv);
     svPresent.textContent = money(sv);
     svMini.textContent = money(sv);
     svAvailRow.textContent = money(sv);
     svPresentRow.textContent = money(sv);
-    // checking
+
     ckAvail.textContent = money(ck);
     ckPresent.textContent = money(ck);
     ckMini.textContent = money(ck);
@@ -257,15 +269,24 @@
   }
   render();
 
-  // smooth slide nav
-  document.getElementById('goChecking').addEventListener('click', () => {
-    app.className = 'app pos-1'; // slide left
-  });
-  document.getElementById('goSavings').addEventListener('click', () => {
-    app.className = 'app pos-0'; // slide right to start
-  });
+  // slide nav
+  document.getElementById('goChecking').addEventListener('click', () => { app.className = 'app pos-1'; });
+  document.getElementById('goSavings').addEventListener('click',  () => { app.className = 'app pos-0'; });
 
-  // placeholders for Transfer buttons (no-ops so nothing breaks)
+  // Show more toggles
+  function setupMore(listId, btnId){
+    const list = document.getElementById(listId);
+    const btn  = document.getElementById(btnId);
+    btn.addEventListener('click', ()=>{
+      const open = list.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.innerHTML = open ? 'Hide details <span class="chev">▾</span>' : 'Show more <span class="chev">▾</span>';
+    });
+  }
+  setupMore('svDetails','svMoreBtn');
+  setupMore('ckDetails','ckMoreBtn');
+
+  // keep transfer buttons as no-ops
   document.getElementById('toTransfer1').addEventListener('click', () => {});
   document.getElementById('toTransfer2').addEventListener('click', () => {});
 })();
