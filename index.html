@@ -395,7 +395,7 @@
 
   const NUM_PAGES = 3;
   function gotoPage(i){
-    const pct = (i * 100) / NUM_PAGES;           // FIX: move by a third per page
+    const pct = (i * 100) / NUM_PAGES;
     setViews.style.transform = `translateX(-${pct}%)`;
   }
   function openSettings(ctx){
@@ -422,19 +422,40 @@
   document.getElementById('balBack').addEventListener('click', ()=> gotoPage(0));
   document.getElementById('txnBack').addEventListener('click', ()=> gotoPage(0));
 
-  // ===== Change balance =====
+  // ===== Change balance (FIXED TYPING FORMAT) =====
   const balAmt = document.getElementById('balAmt');
   const balSave = document.getElementById('balSave');
 
-  function formatMoneyField(el){
-    const n = parseMoney(el.value);
-    if (!isNaN(n)) el.value = n.toLocaleString(undefined,{style:'currency',currency:'USD'});
+  // Keep what the user types (digits + one dot, max 2 decimals). Format fully on blur/save.
+  function sanitizeTyping(val){
+    let s = String(val || '').replace(/[^\d.]/g,'');
+    const firstDot = s.indexOf('.');
+    if (firstDot !== -1){
+      // keep only first dot
+      s = s.slice(0, firstDot + 1) + s.slice(firstDot + 1).replace(/\./g,'');
+      // limit to 2 decimals
+      const parts = s.split('.');
+      parts[1] = (parts[1] || '').slice(0,2);
+      s = parts[0] + (parts[1] !== '' ? '.' + parts[1] : '');
+    }
+    return s;
   }
+
   balAmt.addEventListener('input', ()=>{
-    formatMoneyField(balAmt);
+    const caretEnd = balAmt.selectionEnd;
+    balAmt.value = sanitizeTyping(balAmt.value);
     const v = parseMoney(balAmt.value);
     balSave.disabled = !(isFinite(v) && v>=0);
+    // best effort caret restore
+    if (document.activeElement === balAmt) {
+      balAmt.setSelectionRange(caretEnd, caretEnd);
+    }
   });
+  balAmt.addEventListener('blur', ()=>{
+    const v = parseMoney(balAmt.value);
+    if (isFinite(v)) balAmt.value = v.toLocaleString(undefined,{style:'currency',currency:'USD'});
+  });
+
   balSave.addEventListener('click', ()=>{
     const v = parseMoney(balAmt.value);
     if (!(isFinite(v) && v>=0)) return;
@@ -447,12 +468,17 @@
     closeSettings();
   });
 
-  // ===== Add transaction =====
+  // ===== Add transaction (unchanged) =====
   const txMerchant = document.getElementById('txMerchant');
   const txAmount   = document.getElementById('txAmount');
   const txWhen     = document.getElementById('txWhen');
   const txStatus   = document.getElementById('txStatus');
   const txAdd      = document.getElementById('txAdd');
+
+  function formatMoneyField(el){
+    const n = parseMoney(el.value);
+    if (!isNaN(n)) el.value = n.toLocaleString(undefined,{style:'currency',currency:'USD'});
+  }
 
   txAmount.addEventListener('input', ()=>{
     formatMoneyField(txAmount);
