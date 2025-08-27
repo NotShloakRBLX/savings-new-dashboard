@@ -2,234 +2,273 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Accounts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Bank • Savings & Checking</title>
 <style>
   :root{
-    --bg:#f6f8fb;--card:#fff;--text:#0b1b2b;--muted:#6b7a90;--line:#e7edf5;
-    --pill:#eef3ff;--danger:#c21f1f;--shadow:0 6px 22px rgba(12,36,99,.06);
-    --radius:16px;
+    --bg:#0b0b0b;
+    --panel:#141414;
+    --panel2:#101010;
+    --text:#eaeaea;
+    --muted:#a9a9a9;
+    --border:rgba(255,255,255,.12);
+    --tile:rgba(255,255,255,.05);
+    --tileBorder:rgba(255,255,255,.10);
+    --blue:#0f2b4d;   /* dark blue bank tab */
+    --blue2:#153a66;
+    --t:.35s cubic-bezier(.2,.8,.2,1);
+    --radius:14px;
   }
-  html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  .app{max-width:420px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-  .toolbar{height:24px}
-  header{padding:14px 16px 4px}
-  .topline{display:flex;align-items:center;gap:8px}
-  .back{display:inline-block;width:10px;height:10px;border-left:2px solid var(--text);border-bottom:2px solid var(--text);transform:rotate(45deg);cursor:pointer}
-  .pageTitle{font-weight:800;letter-spacing:.2px}
-  .screen{padding:8px 16px 24px}
-  .amount{font-size:34px;font-weight:800;margin:4px 0 2px}
-  .labelSmall{font-size:14px;color:var(--muted)}
-  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 12px;margin:16px 0;border:1px solid var(--line)}
-  .sectionTitle{font-size:16px;font-weight:800;margin:4px 0 10px}
-  .row{display:flex;justify-content:space-between;align-items:center;padding:8px 6px}
-  .row + .row{border-top:1px solid var(--line)}
-  .muter{color:var(--muted);font-size:12px}
-  .toggleWrap{display:flex;justify-content:center;margin-top:10px}
-  .pillBtn{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);padding:10px 14px;border-radius:999px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-  .chev{width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s ease}
-  .chev.up{transform:rotate(-135deg)}
-  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0}
-  .circleBtn{display:flex;flex-direction:column;align-items:center;gap:8px}
-  .circleBtn button{width:58px;height:58px;border-radius:999px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;cursor:pointer}
-  .icon{width:22px;height:22px}
-  .linkCard{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;border:1px solid var(--line);margin:16px 0}
-  .linkRow{display:flex;justify-content:space-between;align-items:center}
-  .arrow{width:8px;height:14px;border-right:2px solid var(--muted);border-top:2px solid var(--muted);transform:rotate(45deg)}
-  .entry{display:flex;justify-content:space-between;align-items:center}
-  .red{color:var(--danger);font-weight:700}
-  .hidden{display:none}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:#000;color:var(--text);
+    font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    font-weight:500; /* no bold anywhere */
+    -webkit-font-smoothing:auto; text-rendering:optimizeSpeed;
+  }
+  .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
+  .views{display:flex;width:200%;height:100%;transition:transform var(--t)}
+  .view{width:100%;height:100%;overflow:auto;background:linear-gradient(#0b0b0b,#0a0a0a 60%,#090909)}
+  .view::-webkit-scrollbar{width:0;height:0}
+
+  /* top bar */
+  .nav{
+    position:sticky;top:0;z-index:5;
+    padding:12px 12px 8px;
+    background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(10,10,10,.62) 50%,transparent);
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  }
+  .bankTab{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--blue);border:1px solid rgba(255,255,255,.18);
+    color:#fff;padding:10px 12px;border-radius:10px;
+    letter-spacing:.2px;
+  }
+  .bankTab .dot{width:8px;height:8px;border-radius:50%;background:#6db1ff;opacity:.9}
+
+  .content{padding:12px 12px 28px}
+
+  /* balances header (Available left, Present right) */
+  .balHead{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    gap:12px;padding:14px;border-radius:12px;background:var(--panel);border:1px solid var(--border)
+  }
+  .bhCol{min-width:0}
+  .label{color:var(--muted);font-size:12px}
+  .amt{font-size:30px;line-height:1.05}
+  .subNote{color:var(--muted);font-size:12px;margin-top:2px}
+
+  /* APY chip (only on Savings) */
+  .apy{display:inline-block;margin-top:10px;padding:6px 10px;border-radius:999px;
+       background:var(--tile);border:1px solid var(--tileBorder);font-size:12px}
+
+  /* actions */
+  .rowBtns{display:flex;gap:10px;margin-top:12px}
+  .btn{
+    flex:1;padding:14px 16px;border-radius:12px;border:1px solid var(--border);
+    background:#efefef;color:#000;font-weight:500;cursor:pointer
+  }
+  .btn.secondary{background:var(--panel2);color:#fff}
+
+  /* “go to other account” tile */
+  .swapTile{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--tile);border:1px solid var(--tileBorder);cursor:pointer}
+  .swapTop{display:flex;justify-content:space-between;align-items:center}
+  .swapName{color:#dcdcdc}
+  .swapAcct{color:var(--muted);font-size:12px;margin-top:2px}
+  .swapAmt{font-size:18px}
+
+  /* details list */
+  .section{margin-top:16px}
+  .sectionTitle{font-size:16px;color:#dcdcdc;margin:0 2px 8px}
+  .list{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px}
+  .row + .row{border-top:1px solid var(--tileBorder)}
+  .key{color:var(--muted)}
+  .val{color:#fff}
+
+  /* slide positions */
+  .pos-0 .views{transform:translateX(0%)}        /* Savings */
+  .pos-1 .views{transform:translateX(-50%)}      /* Checking */
+
+  /* simple tap affordances */
+  .btn:active,.swapTile:active{transform:scale(.98);transition:transform var(--t)}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="toolbar"></div>
+<div class="app pos-0" id="app">
+  <div class="views">
 
-  <header>
-    <div class="topline">
-      <span class="back" id="backBtn" title="Back"></span>
-      <div id="title" class="pageTitle">TOTAL CHECKING (...6750)</div>
-    </div>
-  </header>
-
-  <main class="screen">
-    <div class="amount" id="bigAmount">$0.00</div>
-    <div class="labelSmall">Available balance</div>
-
-    <!-- Account details card -->
-    <div class="card">
-      <div class="sectionTitle">Account details</div>
-
-      <!-- Always-visible rows -->
-      <div id="baseRows">
-        <div class="row"><span class="muter">Available balance</span><strong id="available">$0.00</strong></div>
-        <div class="row"><span class="muter">Present balance</span><strong id="present">$0.00</strong></div>
+    <!-- ===== SAVINGS ===== -->
+    <section class="view" id="savings">
+      <div class="nav">
+        <div class="bankTab"><span class="dot"></span>Bank Accounts</div>
       </div>
+      <div class="content">
 
-      <!-- Extra rows shown when toggled -->
-      <div id="extraRows" class="hidden">
-        <div class="row"><span>Account number</span><strong id="acct">—</strong></div>
-        <div class="row"><span>Routing number</span><strong id="routing">—</strong></div>
-        <div class="row"><span>Interest rate</span><strong id="rate">—</strong></div>
-        <div class="row"><span>Interest in 2025</span><strong id="interestYTD">—</strong></div>
-        <div class="row"><span>Last statement date</span><strong id="lastStmt">—</strong></div>
-      </div>
-
-      <!-- Centered pill like your screenshot -->
-      <div class="toggleWrap">
-        <button id="toggleBtn" class="pillBtn">
-          <span id="toggleText">Show details</span>
-          <span id="toggleChev" class="chev"></span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Pay / Transfer / Savings -->
-    <div class="grid3">
-      <div class="circleBtn">
-        <button title="Pay">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zm0-2h18v2H3V5z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-        </button><span>Pay</span>
-      </div>
-      <div class="circleBtn">
-        <button title="Transfer">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M7 7h10M7 12h10M7 17h10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-        </button><span>Transfer</span>
-      </div>
-      <div class="circleBtn">
-        <button id="savingsBtn" title="Savings">
-          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2"/></svg>
-        </button><span>Savings</span>
-      </div>
-    </div>
-
-    <!-- Manage -->
-    <div class="linkCard">
-      <div class="linkRow">
-        <div>
-          <div style="font-weight:800">Manage account</div>
-          <div class="muter">Access tools &amp; services for your account</div>
+        <!-- balances header -->
+        <div class="balHead" aria-label="Savings balances">
+          <div class="bhCol">
+            <div class="label">Available balance</div>
+            <div class="amt" id="svAvail">$783.11</div>
+          </div>
+          <div class="bhCol" style="text-align:right">
+            <div class="label">Present balance</div>
+            <div class="amt" id="svPresent">$783.11</div>
+          </div>
         </div>
-        <span class="arrow"></span>
-      </div>
-    </div>
 
-    <!-- Transactions preview -->
-    <div class="linkCard">
-      <div style="font-weight:800;margin-bottom:10px">See all transactions</div>
-      <div class="entry">
-        <div>
-          <div class="muter" id="txnName">ORIG CO NAME: Affirm CRB CO</div>
-          <div class="muter" id="txnDesc">ENTRY DESCR: AffirmDepo &nbsp; SEC: WEB &nbsp; <em>Pending</em></div>
+        <div class="apy">184% APR</div>
+
+        <!-- actions -->
+        <div class="rowBtns">
+          <button class="btn">Pay</button>
+          <button class="btn secondary" id="toTransfer1">Transfer</button>
         </div>
-        <div class="red" id="txnAmt">-$50.00</div>
+
+        <!-- jump to checking -->
+        <div class="swapTile" id="goChecking" aria-label="Open Checking">
+          <div class="swapTop">
+            <div>
+              <div class="swapName">CHECKING (...2431)</div>
+              <div class="swapAcct">Acct 375282431</div>
+            </div>
+            <div class="swapAmt" id="ckMini">$414.00</div>
+          </div>
+        </div>
+
+        <!-- details -->
+        <div class="section">
+          <h3 class="sectionTitle">Account details</h3>
+          <div class="list">
+            <div class="row"><div class="key">Account number</div><div class="val">551809124</div></div>
+            <div class="row"><div class="key">Routing number</div><div class="val">072000326</div></div>
+            <div class="row"><div class="key">Available balance</div><div class="val" id="svAvailRow">$783.11</div></div>
+            <div class="row"><div class="key">Present balance</div><div class="val" id="svPresentRow">$783.11</div></div>
+            <div class="row"><div class="key">Interest rate</div><div class="val">184% APR</div></div>
+            <div class="row"><div class="key">Next interest date</div><div class="val">08/31/2025</div></div>
+            <div class="row"><div class="key">Next tax statement date</div><div class="val">08/27/2025</div></div>
+          </div>
+        </div>
+
       </div>
-    </div>
-  </main>
+    </section>
+
+    <!-- ===== CHECKING ===== -->
+    <section class="view" id="checking">
+      <div class="nav">
+        <div class="bankTab"><span class="dot"></span>Bank Accounts</div>
+      </div>
+      <div class="content">
+
+        <!-- balances header -->
+        <div class="balHead" aria-label="Checking balances">
+          <div class="bhCol">
+            <div class="label">Available balance</div>
+            <div class="amt" id="ckAvail">$414.00</div>
+          </div>
+          <div class="bhCol" style="text-align:right">
+            <div class="label">Present balance</div>
+            <div class="amt" id="ckPresent">$414.00</div>
+          </div>
+        </div>
+
+        <!-- actions -->
+        <div class="rowBtns">
+          <button class="btn">Pay</button>
+          <button class="btn secondary" id="toTransfer2">Transfer</button>
+        </div>
+
+        <!-- jump to savings -->
+        <div class="swapTile" id="goSavings" aria-label="Open Savings">
+          <div class="swapTop">
+            <div>
+              <div class="swapName">SAVINGS (...9124)</div>
+              <div class="swapAcct">Acct 551809124</div>
+            </div>
+            <div class="swapAmt" id="svMini">$783.11</div>
+          </div>
+        </div>
+
+        <!-- details -->
+        <div class="section">
+          <h3 class="sectionTitle">Account details</h3>
+          <div class="list">
+            <div class="row"><div class="key">Account number</div><div class="val">375282431</div></div>
+            <div class="row"><div class="key">Routing number</div><div class="val">072000326</div></div>
+            <div class="row"><div class="key">Available balance</div><div class="val" id="ckAvailRow">$414.00</div></div>
+            <div class="row"><div class="key">Present balance</div><div class="val" id="ckPresentRow">$414.00</div></div>
+            <div class="row"><div class="key">Interest rate</div><div class="val">0.00%</div></div>
+            <div class="row"><div class="key">Interest in 2025</div><div class="val">$0.00</div></div>
+            <!-- (Last statement date intentionally removed) -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
 </div>
 
 <script>
-/* ---------- Data ---------- */
-// Checking (from your screenshot)
-const checkingData = {
-  title: 'TOTAL CHECKING (...6750)',
-  available: 1016.29,
-  present: 1016.29,
-  accountNumber: '981586750',
-  routingNumber: '072000326',
-  rate: '0.00%',
-  interestYTD: '$0.00',
-  lastStatement: 'Jul 25, 2025',
-  txn: {
-    name: 'ORIG CO NAME: Affirm CRB CO',
-    desc: 'ENTRY DESCR: AffirmDepo  SEC: WEB  • Pending',
-    amount: '-$50.00'
+(() => {
+  const app = document.getElementById('app');
+
+  /* persistent balances (no transactions used on this screen) */
+  const DEFAULTS = { ver: 2, sv: 783.11, ck: 414.00 };
+  const ver = Number(localStorage.getItem('acct_ver') || '0');
+  if (ver !== DEFAULTS.ver) {
+    localStorage.setItem('sv_bal', String(DEFAULTS.sv));
+    localStorage.setItem('ck_bal', String(DEFAULTS.ck));
+    localStorage.setItem('acct_ver', String(DEFAULTS.ver));
   }
-};
+  const money = n => (Number(n)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
 
-// Savings — replace with your real values
-const savingsData = {
-  title: 'TOTAL SAVINGS (...XXXX)',
-  available: 0.00,
-  present: 0.00,
-  accountNumber: 'XXXXXXXXX',
-  routingNumber: '072000326',
-  rate: '—',
-  interestYTD: '—',
-  lastStatement: '—',
-  txn: { name: 'No recent activity', desc: '—', amount: '$0.00' }
-};
+  const sv = Number(localStorage.getItem('sv_bal') || DEFAULTS.sv);
+  const ck = Number(localStorage.getItem('ck_bal') || DEFAULTS.ck);
 
-/* ---------- State & Elements ---------- */
-let current = 'checking';
-const $ = id => document.getElementById(id);
-const els = {
-  backBtn: $('backBtn'),
-  title: $('title'),
-  bigAmount: $('bigAmount'),
-  available: $('available'),
-  present: $('present'),
-  acct: $('acct'),
-  routing: $('routing'),
-  rate: $('rate'),
-  interestYTD: $('interestYTD'),
-  lastStmt: $('lastStmt'),
-  txnName: $('txnName'),
-  txnDesc: $('txnDesc'),
-  txnAmt: $('txnAmt'),
-  extraRows: $('extraRows'),
-  toggleBtn: $('toggleBtn'),
-  toggleText: $('toggleText'),
-  toggleChev: $('toggleChev'),
-  savingsBtn: $('savingsBtn')
-};
+  // savings numbers
+  const svAvail = document.getElementById('svAvail');
+  const svPresent = document.getElementById('svPresent');
+  const svMini = document.getElementById('svMini');
+  const svAvailRow = document.getElementById('svAvailRow');
+  const svPresentRow = document.getElementById('svPresentRow');
 
-function money(n){ return Number(n||0).toLocaleString(undefined,{style:'currency',currency:'USD'}); }
+  // checking numbers
+  const ckAvail = document.getElementById('ckAvail');
+  const ckPresent = document.getElementById('ckPresent');
+  const ckMini = document.getElementById('ckMini');
+  const ckAvailRow = document.getElementById('ckAvailRow');
+  const ckPresentRow = document.getElementById('ckPresentRow');
 
-function load(kind){
-  current = kind;
-  const d = kind === 'checking' ? checkingData : savingsData;
-
-  els.title.textContent = d.title;
-  els.bigAmount.textContent = money(d.available);
-  els.available.textContent = money(d.available);
-  els.present.textContent = money(d.present);
-  els.acct.textContent = d.accountNumber || '—';
-  els.routing.textContent = d.routingNumber || '—';
-  els.rate.textContent = d.rate || '—';
-  els.interestYTD.textContent = d.interestYTD || '—';
-  els.lastStmt.textContent = d.lastStatement || '—';
-  els.txnName.textContent = d.txn.name || '—';
-  els.txnDesc.textContent = d.txn.desc || '—';
-  els.txnAmt.textContent = d.txn.amount || '$0.00';
-
-  // Back chevron only visible on Savings
-  els.backBtn.style.visibility = (kind==='savings') ? 'visible' : 'hidden';
-
-  // Collapse extra rows by default each time you switch accounts
-  if (!els.extraRows.classList.contains('hidden')) toggleDetails(true);
-}
-
-function toggleDetails(forceClose=false){
-  const closing = forceClose || !els.extraRows.classList.contains('hidden') ? true : false;
-  if (closing){
-    els.extraRows.classList.add('hidden');
-    els.toggleText.textContent = 'Show details';
-    els.toggleChev.classList.remove('up');
-  } else {
-    els.extraRows.classList.remove('hidden');
-    els.toggleText.textContent = 'Hide details';
-    els.toggleChev.classList.add('up');
+  function render(){
+    // savings
+    svAvail.textContent = money(sv);
+    svPresent.textContent = money(sv);
+    svMini.textContent = money(sv);
+    svAvailRow.textContent = money(sv);
+    svPresentRow.textContent = money(sv);
+    // checking
+    ckAvail.textContent = money(ck);
+    ckPresent.textContent = money(ck);
+    ckMini.textContent = money(ck);
+    ckAvailRow.textContent = money(ck);
+    ckPresentRow.textContent = money(ck);
   }
-}
+  render();
 
-/* ---------- Events ---------- */
-els.toggleBtn.addEventListener('click', ()=>toggleDetails());
-els.savingsBtn.addEventListener('click', ()=>load('savings'));
-els.backBtn.addEventListener('click', ()=>load('checking'));
+  // smooth slide nav
+  document.getElementById('goChecking').addEventListener('click', () => {
+    app.className = 'app pos-1'; // slide left
+  });
+  document.getElementById('goSavings').addEventListener('click', () => {
+    app.className = 'app pos-0'; // slide right to start
+  });
 
-/* ---------- Init ---------- */
-load('checking');
+  // placeholders for Transfer buttons (no-ops so nothing breaks)
+  document.getElementById('toTransfer1').addEventListener('click', () => {});
+  document.getElementById('toTransfer2').addEventListener('click', () => {});
+})();
 </script>
 </body>
 </html>
