@@ -131,7 +131,7 @@
     background:#1a1a1a;color:#fff;font:inherit
   }
 
-  .subviews{display:flex;width:300%;transition:transform var(--t)}
+  .subviews{display:flex;width:300%;transition:transform var(--t);will-change:transform}
   .page{width:100%}
 </style>
 </head>
@@ -339,18 +339,15 @@
     return isFinite(n) ? Math.round(n*100)/100 : NaN;
   };
 
-  // mutable balances so we can update
   let sv = Number(localStorage.getItem('sv_bal') || DEFAULTS.sv);
   let ck = Number(localStorage.getItem('ck_bal') || DEFAULTS.ck);
 
-  // savings numbers
   const svAvail = document.getElementById('svAvail');
   const svPresent = document.getElementById('svPresent');
   const svMini = document.getElementById('svMini');
   const svAvailRow = document.getElementById('svAvailRow');
   const svPresentRow = document.getElementById('svPresentRow');
 
-  // checking numbers
   const ckAvail = document.getElementById('ckAvail');
   const ckPresent = document.getElementById('ckPresent');
   const ckMini = document.getElementById('ckMini');
@@ -358,13 +355,12 @@
   const ckPresentRow = document.getElementById('ckPresentRow');
 
   function render(){
-    // savings
     svAvail.textContent = money(sv);
     if (svPresent) svPresent.textContent = money(sv);
     if (svMini) svMini.textContent = money(sv);
     if (svAvailRow) svAvailRow.textContent = money(sv);
     if (svPresentRow) svPresentRow.textContent = money(sv);
-    // checking
+
     ckAvail.textContent = money(ck);
     if (ckPresent) ckPresent.textContent = money(ck);
     if (ckMini) ckMini.textContent = money(ck);
@@ -373,11 +369,9 @@
   }
   render();
 
-  // slide nav
   document.getElementById('goChecking').addEventListener('click', () => { app.className = 'app pos-1'; });
   document.getElementById('goSavings').addEventListener('click',  () => { app.className = 'app pos-0'; });
 
-  // Show more toggles
   function setupMore(listId, btnId){
     const list = document.getElementById(listId);
     const btn  = document.getElementById(btnId);
@@ -390,7 +384,6 @@
   setupMore('svDetails','svMoreBtn');
   setupMore('ckDetails','ckMoreBtn');
 
-  // keep transfer buttons as no-ops
   document.getElementById('toTransfer1').addEventListener('click', () => {});
   document.getElementById('toTransfer2').addEventListener('click', () => {});
 
@@ -398,14 +391,17 @@
   const sheet = document.getElementById('settingsSheet');
   const dim = sheet.querySelector('.dim');
   const setViews = document.getElementById('setViews');
-  let settingsCtx = null; // 'savings' or 'checking'
+  let settingsCtx = null;
 
-  function gotoPage(i){ setViews.style.transform = `translateX(-${i*100}%)`; }
+  const NUM_PAGES = 3;
+  function gotoPage(i){
+    const pct = (i * 100) / NUM_PAGES;           // FIX: move by a third per page
+    setViews.style.transform = `translateX(-${pct}%)`;
+  }
   function openSettings(ctx){
     settingsCtx = ctx;
     sheet.classList.add('active'); sheet.setAttribute('aria-hidden','false');
     gotoPage(0);
-    // prefill defaults for forms
     balAmt.value = '';
     txMerchant.value = '';
     txAmount.value = '';
@@ -421,13 +417,12 @@
   dim.addEventListener('click', closeSettings);
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSettings(); });
 
-  // Home buttons -> pages
   document.getElementById('btnChangeBalance').addEventListener('click', ()=> gotoPage(1));
   document.getElementById('btnAddTxn').addEventListener('click', ()=> gotoPage(2));
   document.getElementById('balBack').addEventListener('click', ()=> gotoPage(0));
   document.getElementById('txnBack').addEventListener('click', ()=> gotoPage(0));
 
-  // ===== Change balance page =====
+  // ===== Change balance =====
   const balAmt = document.getElementById('balAmt');
   const balSave = document.getElementById('balSave');
 
@@ -452,7 +447,7 @@
     closeSettings();
   });
 
-  // ===== Add transaction page =====
+  // ===== Add transaction =====
   const txMerchant = document.getElementById('txMerchant');
   const txAmount   = document.getElementById('txAmount');
   const txWhen     = document.getElementById('txWhen');
