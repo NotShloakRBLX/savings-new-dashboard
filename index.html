@@ -25,6 +25,7 @@
     font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     font-weight:500;
     -webkit-font-smoothing:auto; text-rendering:optimizeSpeed;
+    -webkit-tap-highlight-color: transparent;
   }
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
   .views{display:flex;width:200%;height:100%;transition:transform var(--t)}
@@ -48,7 +49,7 @@
   .settingsBtn{
     position:absolute; right:12px; top:12px;
     width:22px; height:22px; opacity:.95;
-    cursor:pointer;
+    cursor:pointer; touch-action: manipulation;
   }
   .settingsBtn img{width:100%;height:100%;display:block}
 
@@ -71,7 +72,7 @@
   .rowBtns{display:flex;gap:10px;margin-top:12px}
   .btn{
     flex:1;padding:14px 16px;border-radius:12px;border:1px solid var(--border);
-    background:#efefef;color:#000;font-weight:500;cursor:pointer
+    background:#efefef;color:#000;font-weight:500;cursor:pointer; touch-action: manipulation;
   }
   .btn.secondary{background:var(--panel2);color:#fff}
 
@@ -92,7 +93,7 @@
   .moreBtnWrap{display:flex;justify-content:center;padding:12px}
   .moreBtn{
     border-radius:999px;border:1px solid var(--tileBorder);background:transparent;
-    color:#dcdcdc;padding:10px 14px;font:inherit;cursor:pointer
+    color:#dcdcdc;padding:10px 14px;font:inherit;cursor:pointer; touch-action: manipulation;
   }
   .chev{display:inline-block;margin-left:8px;transition:transform var(--t)}
   .open .chev{transform:rotate(180deg)}
@@ -117,11 +118,11 @@
   .sheet.active .panel{opacity:1;transform:translateY(0) scale(1)}
   .panelHead{padding:14px 16px;border-bottom:1px solid var(--tileBorder);font-weight:700;position:relative}
   .panelBody{padding:14px 16px}
-  .mBtn{display:block;width:100%;padding:12px 14px;margin-top:10px;border-radius:12px;border:1px solid var(--border);background:#efefef;color:#000;font-weight:500;cursor:pointer}
+  .mBtn{display:block;width:100%;padding:12px 14px;margin-top:10px;border-radius:12px;border:1px solid var(--border);background:#efefef;color:#000;font-weight:500;cursor:pointer; touch-action: manipulation;}
   .miniBack{
     position:absolute;left:10px;top:8px;
     padding:6px 10px;border-radius:10px;border:1px solid var(--tileBorder);
-    background:#1a1a1a;color:#fff;cursor:pointer;font-size:12px
+    background:#1a1a1a;color:#fff;cursor:pointer;font-size:12px; touch-action: manipulation;
   }
 
   .field{margin-top:10px}
@@ -334,8 +335,10 @@
     localStorage.setItem('acct_ver', String(DEFAULTS.ver));
   }
   const money = n => (Number(n)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
+  // Accept '.' or ',' as decimal separator
   const parseMoney = s => {
-    const n = parseFloat(String(s||'').replace(/[^\d.]/g,''));
+    const cleaned = String(s||'').replace(/,/g,'.').replace(/[^\d.]/g,'');
+    const n = parseFloat(cleaned);
     return isFinite(n) ? Math.round(n*100)/100 : NaN;
   };
 
@@ -369,6 +372,7 @@
   }
   render();
 
+  // smooth slide nav
   document.getElementById('goChecking').addEventListener('click', () => { app.className = 'app pos-1'; });
   document.getElementById('goSavings').addEventListener('click',  () => { app.className = 'app pos-0'; });
 
@@ -386,6 +390,22 @@
 
   document.getElementById('toTransfer1').addEventListener('click', () => {});
   document.getElementById('toTransfer2').addEventListener('click', () => {});
+
+  // ===== Fast-tap helper to remove mobile click delay =====
+  let lastTouchTs = 0;
+  function quickTap(el, handler){
+    if (!el) return;
+    el.addEventListener('touchend', (e)=>{
+      lastTouchTs = Date.now();
+      e.preventDefault();
+      handler(e);
+    }, {passive:false});
+    el.addEventListener('click', (e)=>{
+      // ignore ghost click if it follows a touch
+      if (Date.now() - lastTouchTs < 400) return;
+      handler(e);
+    });
+  }
 
   // ===== Settings modal wiring =====
   const sheet = document.getElementById('settingsSheet');
@@ -412,28 +432,26 @@
   function closeSettings(){ sheet.classList.remove('active'); sheet.setAttribute('aria-hidden','true'); }
 
   document.querySelectorAll('.settingsBtn').forEach(btn=>{
-    btn.addEventListener('click', ()=> openSettings(btn.dataset.ctx));
+    quickTap(btn, ()=> openSettings(btn.dataset.ctx));
   });
-  dim.addEventListener('click', closeSettings);
+  quickTap(dim, closeSettings);
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSettings(); });
 
-  document.getElementById('btnChangeBalance').addEventListener('click', ()=> gotoPage(1));
-  document.getElementById('btnAddTxn').addEventListener('click', ()=> gotoPage(2));
-  document.getElementById('balBack').addEventListener('click', ()=> gotoPage(0));
-  document.getElementById('txnBack').addEventListener('click', ()=> gotoPage(0));
+  quickTap(document.getElementById('btnChangeBalance'), ()=> gotoPage(1));
+  quickTap(document.getElementById('btnAddTxn'), ()=> gotoPage(2));
+  quickTap(document.getElementById('balBack'), ()=> gotoPage(0));
+  quickTap(document.getElementById('txnBack'), ()=> gotoPage(0));
 
-  // ===== Change balance (FIXED TYPING FORMAT) =====
+  // ===== Change balance (typing fixed, supports '.' and ',') =====
   const balAmt = document.getElementById('balAmt');
   const balSave = document.getElementById('balSave');
 
-  // Keep what the user types (digits + one dot, max 2 decimals). Format fully on blur/save.
   function sanitizeTyping(val){
-    let s = String(val || '').replace(/[^\d.]/g,'');
+    let s = String(val || '').replace(/,/g,'.'); // normalize comma to dot
+    s = s.replace(/[^\d.]/g,'');                 // keep digits + dot
     const firstDot = s.indexOf('.');
     if (firstDot !== -1){
-      // keep only first dot
       s = s.slice(0, firstDot + 1) + s.slice(firstDot + 1).replace(/\./g,'');
-      // limit to 2 decimals
       const parts = s.split('.');
       parts[1] = (parts[1] || '').slice(0,2);
       s = parts[0] + (parts[1] !== '' ? '.' + parts[1] : '');
@@ -446,7 +464,6 @@
     balAmt.value = sanitizeTyping(balAmt.value);
     const v = parseMoney(balAmt.value);
     balSave.disabled = !(isFinite(v) && v>=0);
-    // best effort caret restore
     if (document.activeElement === balAmt) {
       balAmt.setSelectionRange(caretEnd, caretEnd);
     }
@@ -456,7 +473,7 @@
     if (isFinite(v)) balAmt.value = v.toLocaleString(undefined,{style:'currency',currency:'USD'});
   });
 
-  balSave.addEventListener('click', ()=>{
+  quickTap(balSave, ()=>{
     const v = parseMoney(balAmt.value);
     if (!(isFinite(v) && v>=0)) return;
     if (settingsCtx === 'savings'){
@@ -468,7 +485,7 @@
     closeSettings();
   });
 
-  // ===== Add transaction (unchanged) =====
+  // ===== Add transaction (accepts comma decimals too) =====
   const txMerchant = document.getElementById('txMerchant');
   const txAmount   = document.getElementById('txAmount');
   const txWhen     = document.getElementById('txWhen');
@@ -481,7 +498,9 @@
   }
 
   txAmount.addEventListener('input', ()=>{
-    formatMoneyField(txAmount);
+    // keep immediate formatting behavior but allow commas
+    const n = parseMoney(txAmount.value);
+    if (!isNaN(n)) txAmount.value = n.toLocaleString(undefined,{style:'currency',currency:'USD'});
     validateTxn();
   });
   [txMerchant, txWhen, txStatus].forEach(el=> el.addEventListener('input', validateTxn));
@@ -494,7 +513,7 @@
     txAdd.disabled = !ok;
   }
 
-  txAdd.addEventListener('click', ()=>{
+  quickTap(txAdd, ()=>{
     const amt = parseMoney(txAmount.value);
     if (txAdd.disabled || !isFinite(amt)) return;
     const key = settingsCtx === 'savings' ? 'sv_txns' : 'ck_txns';
