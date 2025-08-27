@@ -104,20 +104,35 @@
 
   .btn:active,.swapTile:active{transform:scale(.98);transition:transform var(--t)}
 
-  /* ===== Center popup (Manage account) ===== */
+  /* ===== Center popup (Manage account + subpages) ===== */
   .sheet{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:60}
   .sheet .dim{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;transition:opacity var(--t)}
   .sheet .panel{
     width:86%;max-width:360px;background:#151515;border:1px solid var(--tileBorder);
     border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.5);
-    transform:translateY(8px) scale(.98);opacity:0;transition:transform var(--t),opacity var(--t)
+    transform:translateY(8px) scale(.98);opacity:0;transition:transform var(--t),opacity var(--t);overflow:hidden
   }
   .sheet.active{pointer-events:auto}
   .sheet.active .dim{opacity:1}
   .sheet.active .panel{opacity:1;transform:translateY(0) scale(1)}
-  .panelHead{padding:14px 16px;border-bottom:1px solid var(--tileBorder);font-weight:700}
+  .panelHead{padding:14px 16px;border-bottom:1px solid var(--tileBorder);font-weight:700;position:relative}
   .panelBody{padding:14px 16px}
   .mBtn{display:block;width:100%;padding:12px 14px;margin-top:10px;border-radius:12px;border:1px solid var(--border);background:#efefef;color:#000;font-weight:500;cursor:pointer}
+  .miniBack{
+    position:absolute;left:10px;top:8px;
+    padding:6px 10px;border-radius:10px;border:1px solid var(--tileBorder);
+    background:#1a1a1a;color:#fff;cursor:pointer;font-size:12px
+  }
+
+  .field{margin-top:10px}
+  .lab{display:block;margin:0 0 6px;color:#dcdcdc;font-weight:600;font-size:13px}
+  .inp, .sel{
+    width:100%;padding:12px 12px;border-radius:12px;border:1px solid var(--tileBorder);
+    background:#1a1a1a;color:#fff;font:inherit
+  }
+
+  .subviews{display:flex;width:300%;transition:transform var(--t)}
+  .page{width:100%}
 </style>
 </head>
 <body>
@@ -128,7 +143,7 @@
     <section class="view" id="savings">
       <div class="nav">
         <div class="bankTab"><span class="dot"></span>Bank Accounts</div>
-        <div class="settingsBtn" aria-label="Settings"><img src="./settings-icon.png" alt="Settings"></div>
+        <div class="settingsBtn" data-ctx="savings" aria-label="Settings"><img src="./settings-icon.png" alt="Settings"></div>
       </div>
       <div class="content">
 
@@ -189,7 +204,7 @@
     <section class="view" id="checking">
       <div class="nav">
         <div class="bankTab"><span class="dot"></span>Bank Accounts</div>
-        <div class="settingsBtn" aria-label="Settings"><img src="./settings-icon.png" alt="Settings"></div>
+        <div class="settingsBtn" data-ctx="checking" aria-label="Settings"><img src="./settings-icon.png" alt="Settings"></div>
       </div>
       <div class="content">
 
@@ -250,10 +265,59 @@
 <div class="sheet" id="settingsSheet" aria-hidden="true">
   <div class="dim"></div>
   <div class="panel" role="dialog" aria-label="Manage account">
-    <div class="panelHead">Manage account</div>
-    <div class="panelBody">
-      <button class="mBtn" id="btnChangeBalance">Change balance</button>
-      <button class="mBtn" id="btnAddTxn">Add Transaction</button>
+    <div class="subviews" id="setViews">
+      <!-- Page 0: Home -->
+      <div class="page">
+        <div class="panelHead">Manage account</div>
+        <div class="panelBody">
+          <button class="mBtn" id="btnChangeBalance">Change balance</button>
+          <button class="mBtn" id="btnAddTxn">Add Transaction</button>
+        </div>
+      </div>
+      <!-- Page 1: Change balance -->
+      <div class="page">
+        <div class="panelHead">
+          <button class="miniBack" id="balBack">Back</button>
+          <div style="text-align:center">Change balance</div>
+        </div>
+        <div class="panelBody">
+          <div class="field">
+            <label class="lab" for="balAmt">Amount</label>
+            <input id="balAmt" class="inp" inputmode="decimal" placeholder="$0.00" />
+          </div>
+          <button class="mBtn" id="balSave" disabled>Save</button>
+        </div>
+      </div>
+      <!-- Page 2: Add transaction -->
+      <div class="page">
+        <div class="panelHead">
+          <button class="miniBack" id="txnBack">Back</button>
+          <div style="text-align:center">Add transaction</div>
+        </div>
+        <div class="panelBody">
+          <div class="field">
+            <label class="lab" for="txMerchant">Merchant</label>
+            <input id="txMerchant" class="inp" placeholder="e.g., Starbucks" />
+          </div>
+          <div class="field">
+            <label class="lab" for="txAmount">Amount</label>
+            <input id="txAmount" class="inp" inputmode="decimal" placeholder="$0.00" />
+          </div>
+          <div class="field">
+            <label class="lab" for="txWhen">Date &amp; time</label>
+            <input id="txWhen" class="inp" type="datetime-local" />
+          </div>
+          <div class="field">
+            <label class="lab" for="txStatus">Status</label>
+            <select id="txStatus" class="sel">
+              <option value="">Choose…</option>
+              <option value="Complete">Complete</option>
+              <option value="Refunded">Refunded</option>
+            </select>
+          </div>
+          <button class="mBtn" id="txAdd" disabled>Add transaction</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -270,9 +334,14 @@
     localStorage.setItem('acct_ver', String(DEFAULTS.ver));
   }
   const money = n => (Number(n)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
+  const parseMoney = s => {
+    const n = parseFloat(String(s||'').replace(/[^\d.]/g,''));
+    return isFinite(n) ? Math.round(n*100)/100 : NaN;
+  };
 
-  const sv = Number(localStorage.getItem('sv_bal') || DEFAULTS.sv);
-  const ck = Number(localStorage.getItem('ck_bal') || DEFAULTS.ck);
+  // mutable balances so we can update
+  let sv = Number(localStorage.getItem('sv_bal') || DEFAULTS.sv);
+  let ck = Number(localStorage.getItem('ck_bal') || DEFAULTS.ck);
 
   // savings numbers
   const svAvail = document.getElementById('svAvail');
@@ -289,17 +358,18 @@
   const ckPresentRow = document.getElementById('ckPresentRow');
 
   function render(){
+    // savings
     svAvail.textContent = money(sv);
     if (svPresent) svPresent.textContent = money(sv);
-    svMini.textContent = money(sv);
-    svAvailRow.textContent = money(sv);
-    svPresentRow.textContent = money(sv);
-
+    if (svMini) svMini.textContent = money(sv);
+    if (svAvailRow) svAvailRow.textContent = money(sv);
+    if (svPresentRow) svPresentRow.textContent = money(sv);
+    // checking
     ckAvail.textContent = money(ck);
     if (ckPresent) ckPresent.textContent = money(ck);
-    ckMini.textContent = money(ck);
-    ckAvailRow.textContent = money(ck);
-    ckPresentRow.textContent = money(ck);
+    if (ckMini) ckMini.textContent = money(ck);
+    if (ckAvailRow) ckAvailRow.textContent = money(ck);
+    if (ckPresentRow) ckPresentRow.textContent = money(ck);
   }
   render();
 
@@ -327,19 +397,97 @@
   // ===== Settings modal wiring =====
   const sheet = document.getElementById('settingsSheet');
   const dim = sheet.querySelector('.dim');
+  const setViews = document.getElementById('setViews');
+  let settingsCtx = null; // 'savings' or 'checking'
 
-  function openSettings(){ sheet.classList.add('active'); sheet.setAttribute('aria-hidden','false'); }
+  function gotoPage(i){ setViews.style.transform = `translateX(-${i*100}%)`; }
+  function openSettings(ctx){
+    settingsCtx = ctx;
+    sheet.classList.add('active'); sheet.setAttribute('aria-hidden','false');
+    gotoPage(0);
+    // prefill defaults for forms
+    balAmt.value = '';
+    txMerchant.value = '';
+    txAmount.value = '';
+    txWhen.value = new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+    txStatus.value = '';
+    balSave.disabled = true; txAdd.disabled = true;
+  }
   function closeSettings(){ sheet.classList.remove('active'); sheet.setAttribute('aria-hidden','true'); }
 
   document.querySelectorAll('.settingsBtn').forEach(btn=>{
-    btn.addEventListener('click', openSettings);
+    btn.addEventListener('click', ()=> openSettings(btn.dataset.ctx));
   });
   dim.addEventListener('click', closeSettings);
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSettings(); });
 
-  // placeholder buttons (no functionality yet)
-  document.getElementById('btnChangeBalance').addEventListener('click', ()=>{});
-  document.getElementById('btnAddTxn').addEventListener('click', ()=>{});
+  // Home buttons -> pages
+  document.getElementById('btnChangeBalance').addEventListener('click', ()=> gotoPage(1));
+  document.getElementById('btnAddTxn').addEventListener('click', ()=> gotoPage(2));
+  document.getElementById('balBack').addEventListener('click', ()=> gotoPage(0));
+  document.getElementById('txnBack').addEventListener('click', ()=> gotoPage(0));
+
+  // ===== Change balance page =====
+  const balAmt = document.getElementById('balAmt');
+  const balSave = document.getElementById('balSave');
+
+  function formatMoneyField(el){
+    const n = parseMoney(el.value);
+    if (!isNaN(n)) el.value = n.toLocaleString(undefined,{style:'currency',currency:'USD'});
+  }
+  balAmt.addEventListener('input', ()=>{
+    formatMoneyField(balAmt);
+    const v = parseMoney(balAmt.value);
+    balSave.disabled = !(isFinite(v) && v>=0);
+  });
+  balSave.addEventListener('click', ()=>{
+    const v = parseMoney(balAmt.value);
+    if (!(isFinite(v) && v>=0)) return;
+    if (settingsCtx === 'savings'){
+      sv = v; localStorage.setItem('sv_bal', String(v));
+    } else {
+      ck = v; localStorage.setItem('ck_bal', String(v));
+    }
+    render();
+    closeSettings();
+  });
+
+  // ===== Add transaction page =====
+  const txMerchant = document.getElementById('txMerchant');
+  const txAmount   = document.getElementById('txAmount');
+  const txWhen     = document.getElementById('txWhen');
+  const txStatus   = document.getElementById('txStatus');
+  const txAdd      = document.getElementById('txAdd');
+
+  txAmount.addEventListener('input', ()=>{
+    formatMoneyField(txAmount);
+    validateTxn();
+  });
+  [txMerchant, txWhen, txStatus].forEach(el=> el.addEventListener('input', validateTxn));
+
+  function validateTxn(){
+    const ok = txMerchant.value.trim() &&
+               isFinite(parseMoney(txAmount.value)) &&
+               txWhen.value &&
+               (txStatus.value==='Complete' || txStatus.value==='Refunded');
+    txAdd.disabled = !ok;
+  }
+
+  txAdd.addEventListener('click', ()=>{
+    const amt = parseMoney(txAmount.value);
+    if (txAdd.disabled || !isFinite(amt)) return;
+    const key = settingsCtx === 'savings' ? 'sv_txns' : 'ck_txns';
+    const list = JSON.parse(localStorage.getItem(key) || '[]');
+    list.push({
+      id:'t_'+Math.random().toString(36).slice(2,9),
+      merchant: txMerchant.value.trim(),
+      amount: amt,
+      iso: new Date(txWhen.value).toISOString(),
+      status: txStatus.value
+    });
+    localStorage.setItem(key, JSON.stringify(list));
+    closeSettings();
+  });
 })();
 </script>
 </body>
