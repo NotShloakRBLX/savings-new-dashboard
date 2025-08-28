@@ -22,8 +22,7 @@
   body{
     margin:0;background:#000;color:var(--text);
     font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    font-weight:500;
-    -webkit-font-smoothing:auto; text-rendering:optimizeSpeed;
+    font-weight:500;-webkit-font-smoothing:auto;text-rendering:optimizeSpeed;
     -webkit-tap-highlight-color:transparent;
   }
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
@@ -127,8 +126,10 @@
     transform:translateY(100%);transition:transform var(--t);
   }
   .sheet.active .panel{transform:translateY(0)}
-  /* After the open animation, drop the transform so iOS tap targets align (fixes misrouted taps) */
+  /* After open, drop transform so iOS taps align */
   .panel.settled{transform:none !important}
+  /* While settling, ignore overlay taps so it can’t close instantly */
+  .sheet[data-settling="1"] .dim{pointer-events:none}
 
   .panelHead{display:flex;align-items:center;justify-content:center;padding:12px 14px 0;position:relative}
   .closeX{position:absolute;left:14px;top:8px;width:36px;height:36px;border-radius:10px;border:none;background:#1f1f1f;color:#fff;font-size:20px;font-weight:900;cursor:pointer}
@@ -375,17 +376,28 @@
 (() => {
   const app = document.getElementById('app');
 
-  /* ===== Helpers to OPEN/CLOSE sheets with iOS tap fix ===== */
+  /* ===== Sheet open/close with tap guards ===== */
+  function stopInsideClicks(sheet){
+    const panel = sheet.querySelector('.panel');
+    ['click','mousedown','mouseup','pointerdown','pointerup','touchstart','touchend']
+      .forEach(ev => panel.addEventListener(ev, e => e.stopPropagation(), {passive:false}));
+  }
+  document.querySelectorAll('.sheet').forEach(stopInsideClicks);
+
   function settleAfterOpen(sheet){
     const panel = sheet.querySelector('.panel');
+    sheet.dataset.settling = '1';
     panel.classList.remove('settled');
-    // When the slide-in transition ends, drop the transform so taps line up
+    const clearSettle = () => { sheet.dataset.settling='0'; };
     const onEnd = (e)=>{
       if (e.propertyName !== 'transform') return;
       panel.removeEventListener('transitionend', onEnd);
       panel.classList.add('settled');
+      clearSettle();
     };
     panel.addEventListener('transitionend', onEnd);
+    // Fallback: ensure we clear settling even if no transitionend (older browsers)
+    setTimeout(()=>{ if(sheet.dataset.settling==='1'){ panel.classList.add('settled'); clearSettle(); } }, 450);
   }
   function openSheet(sheet){
     sheet.classList.add('active');
@@ -393,8 +405,9 @@
   }
   function closeSheet(sheet){
     const panel = sheet.querySelector('.panel');
-    panel.classList.remove('settled'); // re-enable transform for the slide-out
+    panel.classList.remove('settled'); // re-enable transform for slide-out
     sheet.classList.remove('active');
+    sheet.dataset.settling='0';
   }
 
   /* balances */
@@ -458,7 +471,7 @@
   setupMore('svDetails','svMoreBtn');
   setupMore('ckDetails','ckMoreBtn');
 
-  /* transactions store/load */
+  /* transactions */
   const loadTxns = key => { try{const t=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(t)?t:[]}catch(e){return []} };
   const saveTxns = (key, arr) => localStorage.setItem(key, JSON.stringify(arr));
 
@@ -534,7 +547,7 @@
   const mgClose = ()=> closeSheet(manageSheet);
   document.getElementById('svMore').addEventListener('click', ()=>mgOpen('savings'));
   document.getElementById('ckMore').addEventListener('click', ()=>mgOpen('checking'));
-  document.getElementById('mgDim').addEventListener('click', mgClose);
+  document.getElementById('mgDim').addEventListener('click', ()=>{ if(manageSheet.dataset.settling!=='1') mgClose(); });
   document.getElementById('mgClose').addEventListener('click', mgClose);
   document.getElementById('mgCancel').addEventListener('click', mgClose);
 
@@ -560,7 +573,7 @@
     openSheet(addSheet);
   }
   function closeAdd(){ closeSheet(addSheet); }
-  document.getElementById('addDim').addEventListener('click', closeAdd);
+  document.getElementById('addDim').addEventListener('click', ()=>{ if(addSheet.dataset.settling!=='1') closeAdd(); });
   document.getElementById('addClose').addEventListener('click', closeAdd);
   document.getElementById('txCancel').addEventListener('click', closeAdd);
 
@@ -571,7 +584,7 @@
     openSheet(confirmSheet);
   }
   function closeConfirm(){ closeSheet(confirmSheet); }
-  document.getElementById('cfDim').addEventListener('click', closeConfirm);
+  document.getElementById('cfDim').addEventListener('click', ()=>{ if(confirmSheet.dataset.settling!=='1') closeConfirm(); });
   document.getElementById('cfClose').addEventListener('click', closeConfirm);
   document.getElementById('cfBack').addEventListener('click', ()=>{ closeConfirm(); openAdd(); });
 
@@ -581,7 +594,7 @@
     openSheet(balSheet);
   }
   function closeChange(){ closeSheet(balSheet); }
-  document.getElementById('balDim').addEventListener('click', closeChange);
+  document.getElementById('balDim').addEventListener('click', ()=>{ if(balSheet.dataset.settling!=='1') closeChange(); });
   document.getElementById('balClose').addEventListener('click', closeChange);
   document.getElementById('balCancel').addEventListener('click', closeChange);
   document.getElementById('balSave').addEventListener('click', ()=>{
