@@ -15,7 +15,7 @@
     --tile:rgba(255,255,255,.05);
     --tileBorder:rgba(255,255,255,.10);
     --blue:#0f2b4d;
-    --t:.30s cubic-bezier(.2,.8,.2,1);   /* snappier */
+    --t:.30s cubic-bezier(.2,.8,.2,1);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -31,7 +31,6 @@
   .view{width:100%;height:100%;overflow:auto;background:linear-gradient(#0b0b0b,#0a0a0a 60%,#090909)}
   .view::-webkit-scrollbar{width:0;height:0}
 
-  /* Top bar */
   .nav{
     position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
     padding:12px 12px 8px;
@@ -52,7 +51,6 @@
 
   .content{padding:12px 12px 28px}
 
-  /* header card */
   .balHead{
     display:flex;justify-content:space-between;align-items:flex-end;
     gap:12px;padding:14px;border-radius:12px;background:var(--panel);border:1px solid var(--border)
@@ -64,19 +62,16 @@
 
   .apy{display:inline-block;margin-top:10px;padding:6px 10px;border-radius:999px;background:var(--tile);border:1px solid var(--tileBorder);font-size:12px}
 
-  /* actions */
   .rowBtns{display:flex;gap:10px;margin-top:12px}
   .btn{flex:1;padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:#efefef;color:#000;font-weight:500;cursor:pointer}
   .btn.secondary{background:var(--panel2);color:#fff}
 
-  /* switch account tile */
   .swapTile{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--tile);border:1px solid var(--tileBorder);cursor:pointer}
   .swapTop{display:flex;justify-content:space-between;align-items:center}
   .swapName{color:#dcdcdc}
   .swapAcct{color:#a9a9a9;font-size:12px;margin-top:2px}
   .swapAmt{font-size:18px}
 
-  /* details */
   .section{margin-top:16px}
   .sectionTitle{font-size:16px;color:#dcdcdc;margin:0 2px 8px}
   .list{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
@@ -91,7 +86,7 @@
   .moreWrap{display:none}
   .list.open .moreWrap{display:block}
 
-  /* transactions (copied look from card, no icons) */
+  /* transactions (card look, no icons) */
   .tile{background:var(--tile);border:1px solid var(--tileBorder);border-radius:8px;padding:14px 16px;position:relative}
   .kb{font-size:13px;color:var(--muted);margin:0 0 6px}
   .txnRow{display:flex;gap:12px;align-items:flex-start;background:transparent;border:0;border-radius:12px;padding:16px 0;cursor:pointer;position:relative}
@@ -106,7 +101,6 @@
   .txnStack .txnRow{padding:16px 16px}
   .emptyTx{padding:10px 14px;color:var(--muted);font-size:13px}
 
-  /* detail slide */
   .center{padding:20px 16px 8px;text-align:center}
   .pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:999px;padding:8px 14px}
   .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
@@ -119,18 +113,23 @@
   .deleteWrap{padding:0 12px 24px}
   .deleteBtn{width:100%;border:0;border-radius:14px;padding:14px 18px;font-weight:900;background:#ff3b30;color:#fff}
 
-  /* slide positions */
   .pos-0 .views{transform:translateX(0%)}          /* Savings */
   .pos-1 .views{transform:translateX(-33.3333%)}   /* Checking */
   .pos-2 .views{transform:translateX(-66.6666%)}   /* Txn details */
 
-  /* Bottom sheets (Sapphire look, dark) */
+  /* Bottom sheets (dark, Sapphire style) */
   .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:60}
   .sheet.active{pointer-events:auto}
   .dim{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity var(--t)}
   .sheet.active .dim{opacity:1}
-  .panel{width:100%;max-width:430px;background:#111;color:#fff;border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform var(--t)}
+  .panel{
+    width:100%;max-width:430px;background:#111;color:#fff;border-radius:20px 20px 0 0;
+    transform:translateY(100%);transition:transform var(--t);
+  }
   .sheet.active .panel{transform:translateY(0)}
+  /* After the open animation, drop the transform so iOS tap targets align (fixes misrouted taps) */
+  .panel.settled{transform:none !important}
+
   .panelHead{display:flex;align-items:center;justify-content:center;padding:12px 14px 0;position:relative}
   .closeX{position:absolute;left:14px;top:8px;width:36px;height:36px;border-radius:10px;border:none;background:#1f1f1f;color:#fff;font-size:20px;font-weight:900;cursor:pointer}
   .title{font-size:24px;font-weight:900;margin:6px 0 0;text-align:center}
@@ -174,7 +173,6 @@
           <button class="btn secondary" id="toTransfer1">Transfer</button>
         </div>
 
-        <!-- jump to checking -->
         <div class="swapTile" id="goChecking" aria-label="Open Checking">
           <div class="swapTop">
             <div>
@@ -185,13 +183,11 @@
           </div>
         </div>
 
-        <!-- details -->
         <div class="section">
           <h3 class="sectionTitle">Account details</h3>
           <div class="list" id="svDetails">
             <div class="row"><div class="key">Account number</div><div class="val">551809124</div></div>
             <div class="row"><div class="key">Routing number</div><div class="val">072000326</div></div>
-
             <div class="moreWrap">
               <div class="row"><div class="key">Available balance</div><div class="val" id="svAvailRow">$783.11</div></div>
               <div class="row"><div class="key">Present balance</div><div class="val" id="svPresentRow">$783.11</div></div>
@@ -199,14 +195,12 @@
               <div class="row"><div class="key">Next interest date</div><div class="val">08/31/2025</div></div>
               <div class="row"><div class="key">Next tax statement date</div><div class="val">08/27/2025</div></div>
             </div>
-
             <div class="moreBtnWrap">
               <button class="moreBtn" id="svMoreBtn" aria-expanded="false">Show more <span class="chev">▾</span></button>
             </div>
           </div>
         </div>
 
-        <!-- transactions -->
         <div class="section">
           <div class="tile" id="svTxTile">
             <div class="kb" style="margin-bottom:8px">Latest Savings Transactions</div>
@@ -241,7 +235,6 @@
           <button class="btn secondary" id="toTransfer2">Transfer</button>
         </div>
 
-        <!-- jump to savings -->
         <div class="swapTile" id="goSavings" aria-label="Open Savings">
           <div class="swapTop">
             <div>
@@ -257,21 +250,18 @@
           <div class="list" id="ckDetails">
             <div class="row"><div class="key">Account number</div><div class="val">375282431</div></div>
             <div class="row"><div class="key">Routing number</div><div class="val">072000326</div></div>
-
             <div class="moreWrap">
               <div class="row"><div class="key">Available balance</div><div class="val" id="ckAvailRow">$414.00</div></div>
               <div class="row"><div class="key">Present balance</div><div class="val" id="ckPresentRow">$414.00</div></div>
               <div class="row"><div class="key">Interest rate</div><div class="val">0.00%</div></div>
               <div class="row"><div class="key">Interest in 2025</div><div class="val">$0.00</div></div>
             </div>
-
             <div class="moreBtnWrap">
               <button class="moreBtn" id="ckMoreBtn" aria-expanded="false">Show more <span class="chev">▾</span></button>
             </div>
           </div>
         </div>
 
-        <!-- transactions -->
         <div class="section">
           <div class="tile" id="ckTxTile">
             <div class="kb" style="margin-bottom:8px">Latest Checking Transactions</div>
@@ -281,7 +271,7 @@
       </div>
     </section>
 
-    <!-- ===== TXN DETAILS (shared) ===== -->
+    <!-- ===== TXN DETAILS ===== -->
     <section class="view" id="txnView">
       <div class="nav">
         <button class="pill" id="backTxn">Back</button>
@@ -303,7 +293,7 @@
   </div>
 </div>
 
-<!-- ===== Manage (quick launcher) ===== -->
+<!-- Manage -->
 <div class="sheet" id="manageSheet" aria-hidden="true">
   <div class="dim" id="mgDim"></div>
   <div class="panel">
@@ -319,7 +309,7 @@
   </div>
 </div>
 
-<!-- ===== Add Transaction sheet ===== -->
+<!-- Add Transaction -->
 <div class="sheet" id="addTxnSheet" aria-hidden="true">
   <div class="dim" id="addDim"></div>
   <div class="panel">
@@ -350,7 +340,7 @@
   </div>
 </div>
 
-<!-- ===== Confirm sheet (instant) ===== -->
+<!-- Confirm -->
 <div class="sheet" id="confirmSheet" aria-hidden="true">
   <div class="dim" id="cfDim"></div>
   <div class="panel">
@@ -364,7 +354,7 @@
   </div>
 </div>
 
-<!-- ===== Change Balance sheet ===== -->
+<!-- Change Balance -->
 <div class="sheet" id="balSheet" aria-hidden="true">
   <div class="dim" id="balDim"></div>
   <div class="panel">
@@ -385,6 +375,28 @@
 (() => {
   const app = document.getElementById('app');
 
+  /* ===== Helpers to OPEN/CLOSE sheets with iOS tap fix ===== */
+  function settleAfterOpen(sheet){
+    const panel = sheet.querySelector('.panel');
+    panel.classList.remove('settled');
+    // When the slide-in transition ends, drop the transform so taps line up
+    const onEnd = (e)=>{
+      if (e.propertyName !== 'transform') return;
+      panel.removeEventListener('transitionend', onEnd);
+      panel.classList.add('settled');
+    };
+    panel.addEventListener('transitionend', onEnd);
+  }
+  function openSheet(sheet){
+    sheet.classList.add('active');
+    settleAfterOpen(sheet);
+  }
+  function closeSheet(sheet){
+    const panel = sheet.querySelector('.panel');
+    panel.classList.remove('settled'); // re-enable transform for the slide-out
+    sheet.classList.remove('active');
+  }
+
   /* balances */
   const DEFAULTS = { ver: 3, sv: 783.11, ck: 414.00 };
   const ver = Number(localStorage.getItem('acct_ver') || '0');
@@ -402,7 +414,6 @@
   let sv = Number(localStorage.getItem('sv_bal') || DEFAULTS.sv);
   let ck = Number(localStorage.getItem('ck_bal') || DEFAULTS.ck);
 
-  /* elements */
   const svAvail = document.getElementById('svAvail');
   const svPresent = document.getElementById('svPresent');
   const svMini = document.getElementById('svMini');
@@ -430,10 +441,9 @@
   }
   renderBalances();
 
-  /* nav slide */
+  /* nav */
   document.getElementById('goChecking').addEventListener('click', () => app.className = 'app pos-1');
   document.getElementById('goSavings').addEventListener('click',  () => app.className = 'app pos-0');
-  document.getElementById('backTxn').addEventListener('click',   () => app.className = (currentCtx==='savings'?'app pos-0':'app pos-1'));
 
   /* show more */
   function setupMore(listId, btnId){
@@ -449,9 +459,7 @@
   setupMore('ckDetails','ckMoreBtn');
 
   /* transactions store/load */
-  const loadTxns = key => {
-    try { const t = JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(t)?t:[]; } catch(e){ return []; }
-  };
+  const loadTxns = key => { try{const t=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(t)?t:[]}catch(e){return []} };
   const saveTxns = (key, arr) => localStorage.setItem(key, JSON.stringify(arr));
 
   let svTx = loadTxns('sv_txns');
@@ -484,7 +492,7 @@
   function renderAllTx(){ renderTxnList('savings'); renderTxnList('checking'); }
   renderAllTx();
 
-  /* open txn details */
+  /* details */
   let currentCtx='savings', currentTxnId=null;
   function openTxn(ctx,id){
     currentCtx=ctx; currentTxnId=id;
@@ -492,21 +500,20 @@
     const last4 = ctx==='savings' ? '9124' : '2431';
     document.getElementById('dAmount').textContent = signMoney(t.amount, t.type);
     document.getElementById('dMerchant').textContent = t.merchant || '';
-    document.getElementById('dDate').textContent = new Date(t.iso).toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'}) + ', ' +
-        new Date(t.iso).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+    const d = new Date(t.iso);
+    document.getElementById('dDate').textContent = d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'}) + ', ' + d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
     document.getElementById('dStatus').innerHTML = `<strong>Status: ${t.status||'Complete'}</strong>`;
     document.getElementById('dAcctLabel').textContent = (ctx==='savings'?'Savings':'Checking') + ' (...' + last4 + ')';
     document.getElementById('dTotal').textContent = signMoney(t.amount, t.type);
     app.className='app pos-2';
   }
+  document.getElementById('backTxn').addEventListener('click',   () => app.className = (currentCtx==='savings'?'app pos-0':'app pos-1'));
 
-  /* delete txn (revert balance) */
   document.getElementById('deleteTxnBtn').addEventListener('click', ()=>{
     const arr = currentCtx==='savings'?svTx:ckTx;
     const i = arr.findIndex(t=>t.id===currentTxnId);
     if(i>-1){
       const t = arr[i];
-      // revert balance
       if(currentCtx==='savings'){
         sv += (t.type==='credit' ? -t.amount : +t.amount);
         localStorage.setItem('sv_bal', String(sv));
@@ -521,17 +528,17 @@
     }
   });
 
-  /* ===== Manage / Add / Confirm / Balance sheets (instant) ===== */
+  /* Manage */
   const manageSheet = document.getElementById('manageSheet');
-  const mgOpen = (ctx)=>{ currentCtx=ctx; manageSheet.classList.add('active'); };
-  const mgClose = ()=> manageSheet.classList.remove('active');
+  const mgOpen = (ctx)=>{ currentCtx=ctx; openSheet(manageSheet); };
+  const mgClose = ()=> closeSheet(manageSheet);
   document.getElementById('svMore').addEventListener('click', ()=>mgOpen('savings'));
   document.getElementById('ckMore').addEventListener('click', ()=>mgOpen('checking'));
   document.getElementById('mgDim').addEventListener('click', mgClose);
   document.getElementById('mgClose').addEventListener('click', mgClose);
   document.getElementById('mgCancel').addEventListener('click', mgClose);
 
-  /* open add / change from manage instantly */
+  /* Add / Confirm / Balance */
   const addSheet = document.getElementById('addTxnSheet');
   const confirmSheet = document.getElementById('confirmSheet');
   const balSheet = document.getElementById('balSheet');
@@ -539,7 +546,6 @@
   document.getElementById('launchAdd').addEventListener('click', ()=>{ mgClose(); openAdd(); });
   document.getElementById('launchChange').addEventListener('click', ()=>{ mgClose(); openChange(); });
 
-  /* Add sheet */
   const txMerchant = document.getElementById('txMerchant');
   const txAmount   = document.getElementById('txAmount');
   const txWhen     = document.getElementById('txWhen');
@@ -551,31 +557,30 @@
     txMerchant.value=''; txAmount.value=''; txType.value='debit'; txStatus.value='Complete';
     const now = new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
     txWhen.value = now;
-    addSheet.classList.add('active'); // instant open
+    openSheet(addSheet);
   }
-  function closeAdd(){ addSheet.classList.remove('active'); }
+  function closeAdd(){ closeSheet(addSheet); }
   document.getElementById('addDim').addEventListener('click', closeAdd);
   document.getElementById('addClose').addEventListener('click', closeAdd);
   document.getElementById('txCancel').addEventListener('click', closeAdd);
 
-  /* Confirm sheet */
   const cfSummary = document.getElementById('cfSummary');
+  let pendingTxn=null;
   function openConfirm(summaryHtml){
     cfSummary.innerHTML = summaryHtml;
-    confirmSheet.classList.add('active');  // instant, no timeout
+    openSheet(confirmSheet);
   }
-  function closeConfirm(){ confirmSheet.classList.remove('active'); }
+  function closeConfirm(){ closeSheet(confirmSheet); }
   document.getElementById('cfDim').addEventListener('click', closeConfirm);
   document.getElementById('cfClose').addEventListener('click', closeConfirm);
   document.getElementById('cfBack').addEventListener('click', ()=>{ closeConfirm(); openAdd(); });
 
-  /* Balance sheet */
   const editBalance = document.getElementById('editBalance');
   function openChange(){
     editBalance.value = (currentCtx==='savings'?sv:ck).toFixed(2);
-    balSheet.classList.add('active');
+    openSheet(balSheet);
   }
-  function closeChange(){ balSheet.classList.remove('active'); }
+  function closeChange(){ closeSheet(balSheet); }
   document.getElementById('balDim').addEventListener('click', closeChange);
   document.getElementById('balClose').addEventListener('click', closeChange);
   document.getElementById('balCancel').addEventListener('click', closeChange);
@@ -587,7 +592,6 @@
     renderBalances(); closeChange();
   });
 
-  /* Continue → Confirm (instant) */
   txContinue.addEventListener('click', ()=>{
     const m=(txMerchant.value||'').trim();
     const a=parseFloat(txAmount.value);
@@ -603,21 +607,17 @@
       <p><b>Status:</b> ${s}</p>
       <p><b>Date &amp; Time:</b> ${w.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'})}, ${w.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}</p>
     `;
-    closeAdd();                   // close first…
-    openConfirm(html);            // …then immediately open confirm (no delay)
-    // stash pending
+    closeAdd();
+    openConfirm(html);            // instant open
     pendingTxn = { merchant:m, amount:+a.toFixed(2), iso:w.toISOString(), status:s, type:t };
   });
 
-  /* Add confirmed */
-  let pendingTxn=null;
   document.getElementById('cfAdd').addEventListener('click', ()=>{
     if(!pendingTxn) return;
     const arr = (currentCtx==='savings') ? svTx : ckTx;
     const id='t_'+Math.random().toString(36).slice(2,9);
     const t = { id, ...pendingTxn };
     arr.push(t);
-    // adjust balances
     if(currentCtx==='savings'){
       sv += (t.type==='credit' ? t.amount : -t.amount);
       localStorage.setItem('sv_bal', String(sv));
@@ -631,7 +631,6 @@
     pendingTxn=null;
     closeConfirm();
   });
-
 })();
 </script>
 </body>
