@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -28,7 +28,8 @@
     -webkit-tap-highlight-color: transparent;
   }
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
-  .views{display:flex;width:200%;height:100%;transition:transform var(--t)}
+  /* 3 views now: savings, checking, txn details */
+  .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
   .view{width:100%;height:100%;overflow:auto;background:linear-gradient(#0b0b0b,#0a0a0a 60%,#090909)}
   .view::-webkit-scrollbar{width:0;height:0}
 
@@ -100,8 +101,10 @@
   .moreWrap{display:none}
   .list.open .moreWrap{display:block}
 
+  /* slide positions */
   .pos-0 .views{transform:translateX(0%)}        /* Savings */
-  .pos-1 .views{transform:translateX(-50%)}      /* Checking */
+  .pos-1 .views{transform:translateX(-33.3333%)} /* Checking */
+  .pos-2 .views{transform:translateX(-66.6666%)} /* Txn details */
 
   .btn:active,.swapTile:active{transform:scale(.98);transition:transform var(--t)}
 
@@ -134,6 +137,37 @@
 
   .subviews{display:flex;width:300%;transition:transform var(--t);will-change:transform}
   .page{width:100%}
+
+  /* ===== Sapphire-style transactions (no icons) ===== */
+  .tile{background:var(--tile);border:1px solid var(--tileBorder);border-radius:8px;padding:14px 16px;position:relative}
+  .kb{font-size:13px;color:var(--muted);margin:0 0 6px}
+  .txnRow{display:flex;align-items:flex-start;gap:12px;background:transparent;border:0;border-radius:12px;padding:14px 0;cursor:pointer;position:relative}
+  .txnRow + .txnRow{margin-top:0}
+  .txnMain{flex:1}
+  .txnTitle{font-weight:800}
+  .txnSub{color:var(--muted);font-size:12px;margin-top:2px}
+  .txnAmt{font-weight:600}
+  .txnRight{display:flex;align-items:flex-start;gap:8px}
+  .chevArrow{opacity:.55;font-size:20px;line-height:1;margin-top:1px}
+  .txnStack{border:1px solid rgba(255,255,255,.10);border-radius:6px;overflow:hidden;background:rgba(255,255,255,.035);padding:0 16px}
+  .txnStack .txnRow{padding:16px 0}
+  .txnStack .txnRow + .txnRow::before{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:rgba(255,255,255,.08)}
+  .emptyTx{padding:14px 10px;color:var(--muted);font-size:13px}
+
+  /* Txn details page (matches card) */
+  .pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:999px;padding:8px 14px}
+  .center{padding:20px 16px 8px;text-align:center}
+  .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
+  .txnMerchant{color:var(--muted);font-size:22px;font-weight:700;margin-top:6px}
+  .txnDate{color:var(--muted);font-size:16px;margin-top:4px}
+  .trow{margin:14px 12px;display:flex;justify-content:space-between;align-items:center;
+        padding:16px;background:var(--tile);border:1px solid var(--tileBorder);border-radius:8px}
+  .trow h3{margin:0;font-size:18px}
+  .right{font-weight:900;font-size:18px}
+  .statusLine{font-size:18px;margin-bottom:4px}
+  .deleteWrap{padding:0 12px 24px}
+  .deleteBtn{width:100%;border:0;border-radius:14px;padding:14px 18px;font-weight:900;background:#ff3b30;color:#fff}
+
 </style>
 </head>
 <body>
@@ -198,6 +232,14 @@
           </div>
         </div>
 
+        <!-- Latest Transactions (Sapphire-style, no icons) -->
+        <div class="section">
+          <div class="tile" id="svTxnsTile">
+            <div class="kb" style="margin-bottom:8px">Latest Transactions</div>
+            <div id="svTxnList"><div class="emptyTx">No transactions yet</div></div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -256,7 +298,33 @@
           </div>
         </div>
 
+        <!-- Latest Transactions (Sapphire-style, no icons) -->
+        <div class="section">
+          <div class="tile" id="ckTxnsTile">
+            <div class="kb" style="margin-bottom:8px">Latest Transactions</div>
+            <div id="ckTxnList"><div class="emptyTx">No transactions yet</div></div>
+          </div>
+        </div>
+
       </div>
+    </section>
+
+    <!-- ===== TRANSACTION DETAILS (shared) ===== -->
+    <section class="view" id="txnView">
+      <div class="nav">
+        <button class="pill" id="backTxn">Back</button>
+      </div>
+      <div class="center">
+        <div class="txnAmount" id="dAmount">$0.00</div>
+        <div class="txnMerchant" id="dMerchant">Merchant</div>
+        <div class="txnDate" id="dDate">MM/DD/YY, 0:00 PM</div>
+      </div>
+      <div class="tile" style="margin:14px 12px">
+        <div class="statusLine" id="dStatus"><strong>Status: Complete</strong></div>
+        <div class="kb" id="dCard">SAVINGS (...9124)</div>
+      </div>
+      <div class="trow"><h3>Total</h3><div class="right" id="dTotal">$0.00</div></div>
+      <div class="deleteWrap"><button class="deleteBtn" id="deleteTxnBtn">Delete Transaction</button></div>
     </section>
 
   </div>
@@ -357,7 +425,7 @@
   const ckAvailRow = document.getElementById('ckAvailRow');
   const ckPresentRow = document.getElementById('ckPresentRow');
 
-  function render(){
+  function renderBalances(){
     svAvail.textContent = money(sv);
     if (svPresent) svPresent.textContent = money(sv);
     if (svMini) svMini.textContent = money(sv);
@@ -370,9 +438,9 @@
     if (ckAvailRow) ckAvailRow.textContent = money(ck);
     if (ckPresentRow) ckPresentRow.textContent = money(ck);
   }
-  render();
+  renderBalances();
 
-  // smooth slide nav
+  // smooth slide nav (between accounts)
   document.getElementById('goChecking').addEventListener('click', () => { app.className = 'app pos-1'; });
   document.getElementById('goSavings').addEventListener('click',  () => { app.className = 'app pos-0'; });
 
@@ -391,7 +459,7 @@
   document.getElementById('toTransfer1').addEventListener('click', () => {});
   document.getElementById('toTransfer2').addEventListener('click', () => {});
 
-  // ===== Fast-tap helper to remove mobile click delay =====
+  // ===== Fast-tap helper =====
   let lastTouchTs = 0;
   function quickTap(el, handler){
     if (!el) return;
@@ -401,7 +469,6 @@
       handler(e);
     }, {passive:false});
     el.addEventListener('click', (e)=>{
-      // ignore ghost click if it follows a touch
       if (Date.now() - lastTouchTs < 400) return;
       handler(e);
     });
@@ -442,19 +509,17 @@
   quickTap(document.getElementById('balBack'), ()=> gotoPage(0));
   quickTap(document.getElementById('txnBack'), ()=> gotoPage(0));
 
-  // ===== Change balance (decimal typing FIXED) =====
+  // ===== Change balance (decimal typing) =====
   const balAmt = document.getElementById('balAmt');
   const balSave = document.getElementById('balSave');
 
   function sanitizeTyping(val){
-    // Allow digits and a single decimal separator (either '.' or ',') and limit to 2 decimals
     let s = String(val || '').replace(/[^\d.,]/g,'');
     const firstSep = s.search(/[.,]/);
     if (firstSep !== -1){
-      const sep = s[firstSep];                 // keep whichever user typed
       const head = s.slice(0, firstSep + 1);
-      let tail = s.slice(firstSep + 1).replace(/[.,]/g,''); // drop extra separators
-      tail = tail.slice(0,2);                  // 2 decimal places while typing
+      let tail = s.slice(firstSep + 1).replace(/[.,]/g,'');
+      tail = tail.slice(0,2);
       s = head + tail;
     }
     return s;
@@ -472,7 +537,6 @@
     const v = parseMoney(balAmt.value);
     balSave.disabled = !(isFinite(v) && v>=0);
   });
-
   balAmt.addEventListener('blur', ()=>{
     const v = parseMoney(balAmt.value);
     if (isFinite(v)) balAmt.value = v.toLocaleString(undefined,{style:'currency',currency:'USD'});
@@ -486,23 +550,16 @@
     } else {
       ck = v; localStorage.setItem('ck_bal', String(v));
     }
-    render();
+    renderBalances();
     closeSettings();
   });
 
-  // ===== Add transaction (unchanged) =====
+  // ===== Add transaction (settings popup) =====
   const txMerchant = document.getElementById('txMerchant');
   const txAmount   = document.getElementById('txAmount');
   const txWhen     = document.getElementById('txWhen');
   const txStatus   = document.getElementById('txStatus');
   const txAdd      = document.getElementById('txAdd');
-
-  txAmount.addEventListener('input', ()=>{
-    const n = parseMoney(txAmount.value);
-    if (!isNaN(n)) txAmount.value = n.toLocaleString(undefined,{style:'currency',currency:'USD'});
-    validateTxn();
-  });
-  [txMerchant, txWhen, txStatus].forEach(el=> el.addEventListener('input', validateTxn));
 
   function validateTxn(){
     const ok = txMerchant.value.trim() &&
@@ -511,6 +568,8 @@
                (txStatus.value==='Complete' || txStatus.value==='Refunded');
     txAdd.disabled = !ok;
   }
+  txAmount.addEventListener('input', validateTxn);
+  [txMerchant, txWhen, txStatus].forEach(el=> el.addEventListener('input', validateTxn));
 
   quickTap(txAdd, ()=>{
     const amt = parseMoney(txAmount.value);
@@ -526,7 +585,107 @@
     });
     localStorage.setItem(key, JSON.stringify(list));
     closeSettings();
+    // refresh lists so new txn appears
+    svTxns = loadTxns('sv_txns');
+    ckTxns = loadTxns('ck_txns');
+    renderTxnLists();
   });
+
+  // ===== Transactions (Sapphire-style list + details) =====
+  const SV_LAST4 = '9124';
+  const CK_LAST4 = '2431';
+
+  function loadTxns(key){
+    try{
+      const raw = localStorage.getItem(key);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    }catch(e){ return []; }
+  }
+  let svTxns = loadTxns('sv_txns');
+  let ckTxns = loadTxns('ck_txns');
+
+  const svTxnListEl = document.getElementById('svTxnList');
+  const ckTxnListEl = document.getElementById('ckTxnList');
+
+  function shortDate(iso){const d=new Date(iso);return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'})}
+  function fullDateTime(iso){const d=new Date(iso);return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'})+', '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}
+
+  function renderList(targetEl, arr, which){
+    if (!arr.length){
+      targetEl.innerHTML = '<div class="emptyTx">No transactions yet</div>';
+      return;
+    }
+    const rows = arr
+      .slice()
+      .sort((a,b)=> new Date(b.iso) - new Date(a.iso))
+      .map(t=>`
+        <div class="txnRow" data-id="${t.id}" data-which="${which}">
+          <div class="txnMain">
+            <div class="txnTitle">${t.merchant}${t.status?` <span style="opacity:.6">• ${t.status}</span>`:''}</div>
+            <div class="txnSub">${shortDate(t.iso)}</div>
+          </div>
+          <div class="txnRight">
+            <div class="txnAmt">${money(Number(t.amount)||0)}</div>
+            <div class="chevArrow">›</div>
+          </div>
+        </div>
+      `).join('');
+    targetEl.innerHTML = `<div class="txnStack">${rows}</div>`;
+    targetEl.querySelectorAll('.txnRow').forEach(r=>{
+      r.addEventListener('click',()=> openTxn(r.dataset.which, r.dataset.id));
+    });
+  }
+
+  function renderTxnLists(){
+    renderList(svTxnListEl, svTxns, 'savings');
+    renderList(ckTxnListEl, ckTxns, 'checking');
+  }
+  renderTxnLists();
+
+  // Details view
+  const dAmount   = document.getElementById('dAmount');
+  const dMerchant = document.getElementById('dMerchant');
+  const dDate     = document.getElementById('dDate');
+  const dStatus   = document.getElementById('dStatus');
+  const dCard     = document.getElementById('dCard');
+  const dTotal    = document.getElementById('dTotal');
+  const backTxn   = document.getElementById('backTxn');
+  const delBtn    = document.getElementById('deleteTxnBtn');
+  let openCtx = null; // { which:'savings'|'checking', id:string }
+
+  function openTxn(which,id){
+    const list = which==='savings' ? svTxns : ckTxns;
+    const t = list.find(x=>x.id===id);
+    if(!t) return;
+    dAmount.textContent   = money(Number(t.amount)||0);
+    dMerchant.textContent = t.merchant || '';
+    dDate.textContent     = fullDateTime(t.iso);
+    dStatus.innerHTML     = `<strong>Status: ${t.status || 'Complete'}</strong>`;
+    dCard.textContent     = which==='savings' ? `SAVINGS (...${SV_LAST4})` : `CHECKING (...${CK_LAST4})`;
+    dTotal.textContent    = money(Number(t.amount)||0);
+    openCtx = {which,id};
+    app.className = 'app pos-2';
+  }
+
+  backTxn.addEventListener('click', ()=>{
+    if(!openCtx) { app.className='app pos-0'; return; }
+    app.className = (openCtx.which==='checking') ? 'app pos-1' : 'app pos-0';
+  });
+
+  delBtn.addEventListener('click', ()=>{
+    if(!openCtx) return;
+    if(openCtx.which==='savings'){
+      const i = svTxns.findIndex(x=>x.id===openCtx.id);
+      if(i>-1){ svTxns.splice(i,1); localStorage.setItem('sv_txns', JSON.stringify(svTxns)); }
+    }else{
+      const i = ckTxns.findIndex(x=>x.id===openCtx.id);
+      if(i>-1){ ckTxns.splice(i,1); localStorage.setItem('ck_txns', JSON.stringify(ckTxns)); }
+    }
+    renderTxnLists();
+    backTxn.click();
+  });
+
 })();
 </script>
 </body>
