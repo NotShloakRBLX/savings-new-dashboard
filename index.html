@@ -28,7 +28,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
-  /* 3 views now: savings, checking, txn details */
+  /* 3 views: savings, checking, txn details */
   .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
   .view{width:100%;height:100%;overflow:auto;background:linear-gradient(#0b0b0b,#0a0a0a 60%,#090909)}
   .view::-webkit-scrollbar{width:0;height:0}
@@ -46,7 +46,7 @@
   }
   .bankTab .dot{width:8px;height:8px;border-radius:50%;background:#6db1ff;opacity:.9}
 
-  /* small settings icon at top-right */
+  /* settings icon at top-right */
   .settingsBtn{
     position:absolute; right:12px; top:12px;
     width:22px; height:22px; opacity:.95;
@@ -154,7 +154,7 @@
   .txnStack .txnRow + .txnRow::before{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:rgba(255,255,255,.08)}
   .emptyTx{padding:14px 10px;color:var(--muted);font-size:13px}
 
-  /* Txn details page (matches card) */
+  /* Txn details page */
   .pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:999px;padding:8px 14px}
   .center{padding:20px 16px 8px;text-align:center}
   .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
@@ -571,10 +571,23 @@
   txAmount.addEventListener('input', validateTxn);
   [txMerchant, txWhen, txStatus].forEach(el=> el.addEventListener('input', validateTxn));
 
+  function adjustBalance(which, amt, status){
+    const delta = (status === 'Refunded') ? +amt : -amt; // refund adds back, complete subtracts
+    if (which === 'savings'){
+      sv = Math.round((sv + delta)*100)/100;
+      localStorage.setItem('sv_bal', String(sv));
+    } else {
+      ck = Math.round((ck + delta)*100)/100;
+      localStorage.setItem('ck_bal', String(ck));
+    }
+    renderBalances();
+  }
+
   quickTap(txAdd, ()=>{
     const amt = parseMoney(txAmount.value);
     if (txAdd.disabled || !isFinite(amt)) return;
-    const key = settingsCtx === 'savings' ? 'sv_txns' : 'ck_txns';
+    const which = settingsCtx === 'savings' ? 'savings' : 'checking';
+    const key = which === 'savings' ? 'sv_txns' : 'ck_txns';
     const list = JSON.parse(localStorage.getItem(key) || '[]');
     list.push({
       id:'t_'+Math.random().toString(36).slice(2,9),
@@ -584,6 +597,8 @@
       status: txStatus.value
     });
     localStorage.setItem(key, JSON.stringify(list));
+    // auto-update balances based on the new transaction
+    adjustBalance(which, amt, txStatus.value);
     closeSettings();
     // refresh lists so new txn appears
     svTxns = loadTxns('sv_txns');
@@ -591,17 +606,27 @@
     renderTxnLists();
   });
 
-  // ===== Transactions (Sapphire-style list + details) =====
+  // ===== Transactions (lists + details) =====
   const SV_LAST4 = '9124';
   const CK_LAST4 = '2431';
 
-  function loadTxns(key){
+  // Remove all "undefined" / blank-merchant txns on load (both accounts)
+  function cleanTxns(key){
     try{
       const raw = localStorage.getItem(key);
       const arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr : [];
+      const filtered = (Array.isArray(arr) ? arr : []).filter(t=>{
+        const m = (t && typeof t.merchant !== 'undefined') ? String(t.merchant).trim() : '';
+        return m && m.toLowerCase() !== 'undefined' && m.toLowerCase() !== 'null';
+      });
+      if (filtered.length !== (Array.isArray(arr)?arr.length:0)){
+        localStorage.setItem(key, JSON.stringify(filtered));
+      }
+      return filtered;
     }catch(e){ return []; }
   }
+
+  function loadTxns(key){ return cleanTxns(key); }
   let svTxns = loadTxns('sv_txns');
   let ckTxns = loadTxns('ck_txns');
 
