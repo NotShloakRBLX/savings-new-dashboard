@@ -6,25 +6,19 @@
 <title>Bank • Savings & Checking</title>
 <style>
   :root{
-    --bg:#0b0b0b;
-    --panel:#141414;
-    --panel2:#101010;
-    --text:#eaeaea;
-    --muted:#a9a9a9;
-    --border:rgba(255,255,255,.12);
-    --tile:rgba(255,255,255,.05);
-    --tileBorder:rgba(255,255,255,.10);
-    --blue:#0f2b4d;
-    --t:.30s cubic-bezier(.2,.8,.2,1);
+    --bg:#0b0b0b; --panel:#141414; --panel2:#101010;
+    --text:#eaeaea; --muted:#a9a9a9;
+    --border:rgba(255,255,255,.12); --tile:rgba(255,255,255,.05); --tileBorder:rgba(255,255,255,.10);
+    --blue:#0f2b4d; --t:.30s cubic-bezier(.2,.8,.2,1);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
     margin:0;background:#000;color:var(--text);
     font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    font-weight:500;-webkit-font-smoothing:auto;text-rendering:optimizeSpeed;
-    -webkit-tap-highlight-color:transparent;
+    font-weight:500; -webkit-font-smoothing:auto; text-rendering:optimizeSpeed; -webkit-tap-highlight-color:transparent;
   }
+
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
   .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
   .view{width:100%;height:100%;overflow:auto;background:linear-gradient(#0b0b0b,#0a0a0a 60%,#090909)}
@@ -32,18 +26,16 @@
 
   .nav{
     position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
-    padding:12px 12px 8px;
-    background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(10,10,10,.62) 50%,transparent);
+    padding:12px 12px 8px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(10,10,10,.62) 50%,transparent);
     -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
   }
   .bankTab{
-    display:inline-flex;align-items:center;gap:8px;
-    background:var(--blue);border:1px solid rgba(255,255,255,.18);
-    color:#fff;padding:10px 12px;border-radius:10px;letter-spacing:.2px;
+    display:inline-flex;align-items:center;gap:8px;background:var(--blue);
+    border:1px solid rgba(255,255,255,.18);color:#fff;padding:10px 12px;border-radius:10px;letter-spacing:.2px;
   }
   .bankTab .dot{width:8px;height:8px;border-radius:50%;background:#6db1ff;opacity:.9}
 
-  /* icon buttons like Sapphire */
+  /* header icon buttons (separate add/change) */
   .iconrow{display:flex;gap:8px}
   .iconbtn{
     width:34px;height:34px;border-radius:999px;background:rgba(255,255,255,.06);
@@ -53,14 +45,15 @@
 
   .content{padding:12px 12px 28px}
 
+  /* top balance card */
   .balHead{
-    display:flex;justify-content:space-between;align-items:flex-end;
-    gap:12px;padding:14px;border-radius:12px;background:var(--panel);border:1px solid var(--border)
+    display:flex;justify-content:space-between;align-items:flex-end;gap:12px;
+    padding:14px;border-radius:12px;background:var(--panel);border:1px solid var(--border)
   }
   .bhCol{min-width:0}
   .label{color:var(--muted);font-size:12px}
   .amt{font-size:30px;line-height:1.05}
-  .presentCol{display:none} /* upper card only shows Available */
+  .presentCol{display:none} /* hide present on upper card */
 
   .apy{display:inline-block;margin-top:10px;padding:6px 10px;border-radius:999px;background:var(--tile);border:1px solid var(--tileBorder);font-size:12px}
 
@@ -81,6 +74,7 @@
   .row + .row{border-top:1px solid var(--tileBorder)}
   .key{color:var(--muted)}
   .val{color:#fff}
+
   .moreBtnWrap{display:flex;justify-content:center;padding:12px}
   .moreBtn{border-radius:999px;border:1px solid var(--tileBorder);background:transparent;color:#dcdcdc;padding:10px 14px;font:inherit;cursor:pointer}
   .chev{display:inline-block;margin-left:8px;transition:transform var(--t)}
@@ -88,21 +82,21 @@
   .moreWrap{display:none}
   .list.open .moreWrap{display:block}
 
-  /* transactions (card look, no icons) */
+  /* transactions (card style; no icons) */
   .tile{background:var(--tile);border:1px solid var(--tileBorder);border-radius:8px;padding:14px 16px;position:relative}
-  .kb{font-size:13px;color:var(--muted);margin:0 0 6px}
-  .txnRow{display:flex;gap:12px;align-items:flex-start;background:transparent;border:0;border-radius:12px;padding:16px 0;cursor:pointer;position:relative}
-  .txnRow + .txnRow::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:rgba(255,255,255,.08)}
+  .kb{font-size:13px;color:var(--muted);margin:0 0 8px}
+  .txnStack{border:1px solid rgba(255,255,255,.10);border-radius:6px;background:rgba(255,255,255,.035);padding:0}
+  .txnRow{display:flex;gap:12px;align-items:flex-start;padding:16px;background:transparent;cursor:pointer;position:relative}
+  .txnRow + .txnRow::before{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:rgba(255,255,255,.08)}
   .txnMain{flex:1}
   .txnTitle{font-weight:800}
   .txnSub{color:var(--muted);font-size:12px;margin-top:2px}
   .txnRight{display:flex;align-items:flex-start;gap:8px}
-  .txnAmt{font-weight:700}
+  .txnAmt{font-weight:800}
   .chevArrow{opacity:.55;font-size:20px;line-height:1;margin-top:1px}
-  .txnStack{border:1px solid rgba(255,255,255,.10);border-radius:6px;background:rgba(255,255,255,.035);padding:0 0}
-  .txnStack .txnRow{padding:16px 16px}
-  .emptyTx{padding:10px 14px;color:var(--muted);font-size:13px}
+  .emptyTx{padding:12px 14px;color:var(--muted);font-size:13px}
 
+  /* details view */
   .center{padding:20px 16px 8px;text-align:center}
   .pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:999px;padding:8px 14px}
   .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
@@ -115,20 +109,22 @@
   .deleteWrap{padding:0 12px 24px}
   .deleteBtn{width:100%;border:0;border-radius:14px;padding:14px 18px;font-weight:900;background:#ff3b30;color:#fff}
 
+  /* slide positions */
   .pos-0 .views{transform:translateX(0%)}          /* Savings */
   .pos-1 .views{transform:translateX(-33.3333%)}   /* Checking */
   .pos-2 .views{transform:translateX(-66.6666%)}   /* Txn details */
 
-  /* Bottom sheets (dark) */
-  .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:60}
+  /* bottom sheets (robust) */
+  .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9999}
   .sheet.active{pointer-events:auto}
   .dim{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity var(--t)}
   .sheet.active .dim{opacity:1}
-  .panel{width:100%;max-width:430px;background:#111;color:#fff;border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform var(--t)}
+  .panel{
+    width:100%;max-width:430px;background:#111;color:#fff;border-radius:20px 20px 0 0;
+    transform:translateY(100%);transition:transform var(--t);
+    position:relative;z-index:1; /* ensure above dim */
+  }
   .sheet.active .panel{transform:translateY(0)}
-  .panel.settled{transform:none !important}
-  .sheet.noanim .panel, .sheet.noanim .dim{transition:none !important}
-
   .panelHead{display:flex;align-items:center;justify-content:center;padding:12px 14px 0;position:relative}
   .closeX{position:absolute;left:14px;top:8px;width:36px;height:36px;border-radius:10px;border:none;background:#1f1f1f;color:#fff;font-size:20px;font-weight:900;cursor:pointer}
   .title{font-size:24px;font-weight:900;margin:6px 0 0;text-align:center}
@@ -150,11 +146,9 @@
       <div class="nav">
         <div class="bankTab"><span class="dot"></span>Bank Accounts</div>
         <div class="iconrow">
-          <!-- Add Transaction (plus) -->
           <div class="iconbtn" id="svAdd" aria-label="Add Transaction">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z"/></svg>
           </div>
-          <!-- Change Balance ($) -->
           <div class="iconbtn" id="svBal" aria-label="Change Balance">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M12 3a1 1 0 011 1v1.06a4.5 4.5 0 013.5 4.39c0 1.98-1.2 3.33-3.53 3.98l-.97.28c-1.72.49-2.5 1.1-2.5 2.17 0 1.17 1.03 2.02 2.5 2.02 1.56 0 2.58-.77 2.86-2h2.04c-.3 2.24-1.98 3.67-4.36 3.94V20a1 1 0 01-2 0v-1.07c-2.4-.3-4.04-1.84-4.04-3.99 0-2.02 1.34-3.21 3.92-3.94l1.1-.31c1.53-.43 2.02-.9 2.02-1.9 0-1.02-.95-1.82-2.37-1.82-1.43 0-2.38.72-2.6 2H6.04c.24-2.13 1.86-3.55 4-3.86V4a1 1 0 011-1z"/></svg>
           </div>
@@ -209,7 +203,7 @@
 
         <div class="section">
           <div class="tile" id="svTxTile">
-            <div class="kb" style="margin-bottom:8px">Latest Savings Transactions</div>
+            <div class="kb">Latest Savings Transactions</div>
             <div id="svTxnList" class="txnStack"></div>
           </div>
         </div>
@@ -275,7 +269,7 @@
 
         <div class="section">
           <div class="tile" id="ckTxTile">
-            <div class="kb" style="margin-bottom:8px">Latest Checking Transactions</div>
+            <div class="kb">Latest Checking Transactions</div>
             <div id="ckTxnList" class="txnStack"></div>
           </div>
         </div>
@@ -305,10 +299,10 @@
 </div>
 
 <!-- Add Transaction -->
-<div class="sheet" id="addTxnSheet" aria-hidden="true">
-  <div class="dim" id="addDim"></div>
+<div class="sheet" id="addTxnSheet" aria-hidden="true" data-open-ts="0">
+  <div class="dim"></div>
   <div class="panel">
-    <div class="panelHead"><button class="closeX" id="addClose">×</button></div>
+    <div class="panelHead"><button class="closeX" data-close>×</button></div>
     <div class="title">Add Transaction</div>
     <div class="form">
       <label for="txMerchant">Merchant</label>
@@ -328,18 +322,16 @@
         <option value="Refunded">Refunded</option>
       </select>
     </div>
-    <div class="actions">
-      <button class="btn darkPrimary" id="txContinue">Continue</button>
-    </div>
+    <div class="actions"><button class="btn darkPrimary" id="txContinue">Continue</button></div>
     <div class="other" id="txCancel">Cancel</div>
   </div>
 </div>
 
 <!-- Confirm -->
-<div class="sheet" id="confirmSheet" aria-hidden="true">
-  <div class="dim" id="cfDim"></div>
+<div class="sheet" id="confirmSheet" aria-hidden="true" data-open-ts="0">
+  <div class="dim"></div>
   <div class="panel">
-    <div class="panelHead"><button class="closeX" id="cfClose">×</button></div>
+    <div class="panelHead"><button class="closeX" data-close>×</button></div>
     <div class="title">Confirm Transaction</div>
     <div class="form" id="cfSummary"></div>
     <div class="actions">
@@ -350,10 +342,10 @@
 </div>
 
 <!-- Change Balance -->
-<div class="sheet" id="balSheet" aria-hidden="true">
-  <div class="dim" id="balDim"></div>
+<div class="sheet" id="balSheet" aria-hidden="true" data-open-ts="0">
+  <div class="dim"></div>
   <div class="panel">
-    <div class="panelHead"><button class="closeX" id="balClose">×</button></div>
+    <div class="panelHead"><button class="closeX" data-close>×</button></div>
     <div class="title">Change balance</div>
     <div class="form">
       <label for="editBalance">New balance</label>
@@ -370,40 +362,45 @@
 (() => {
   const app = document.getElementById('app');
 
-  /* ===== general helpers ===== */
+  /* ===== money helpers ===== */
   const money = n => (Number(n)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
   const signMoney = (amt, type) => (type==='credit' ? '+ ' : '− ') + money(Math.abs(amt));
   const nowLocalISO = () => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
 
-  /* ===== sheet utilities (instant + guarded) ===== */
-  function stopInsideClicks(sheet){
+  /* ===== robust sheet controller (no accidental closes) ===== */
+  function wireSheet(sheet){
+    const dim = sheet.querySelector('.dim');
     const panel = sheet.querySelector('.panel');
-    ['click','mousedown','mouseup','pointerdown','pointerup','touchstart','touchend']
-      .forEach(ev => panel.addEventListener(ev, e => e.stopPropagation(), {passive:false}));
-  }
-  function openSheet(sheet,{instant=false}={}){
-    stopInsideClicks(sheet);
-    const panel = sheet.querySelector('.panel');
-    if(instant){
-      sheet.classList.add('noanim'); sheet.classList.add('active');
-      requestAnimationFrame(()=>{ panel.classList.add('settled'); sheet.classList.remove('noanim'); });
-    }else{
-      sheet.classList.add('active');
-      panel.addEventListener('transitionend', function onEnd(e){
-        if(e.propertyName!=='transform') return;
-        panel.removeEventListener('transitionend', onEnd);
-        panel.classList.add('settled');
-      });
+    const closeBtns = sheet.querySelectorAll('[data-close]');
+
+    // guard against open->immediate close
+    function markOpened(){ sheet.dataset.openTs = String(performance.now()); }
+    function canClose(){
+      const opened = Number(sheet.dataset.openTs||'0');
+      return performance.now() - opened > 220; // ignore taps within 220ms of opening
     }
+
+    // only dim closes
+    dim.addEventListener('pointerdown', (e)=>{ if(!canClose()) return; closeSheet(sheet); });
+    // clicks inside panel never bubble to dim
+    ['pointerdown','pointerup','click'].forEach(ev=>{
+      panel.addEventListener(ev, (e)=> e.stopPropagation(), {passive:false});
+    });
+    // explicit close buttons
+    closeBtns.forEach(b=> b.addEventListener('click', ()=> closeSheet(sheet)));
+
+    sheet._open = ()=>{ sheet.classList.add('active'); markOpened(); };
+    sheet._close = ()=>{ sheet.classList.remove('active'); };
   }
-  function closeSheet(sheet){
-    const panel = sheet.querySelector('.panel');
-    panel.classList.remove('settled');
-    sheet.classList.remove('active');
-  }
+  function openSheet(sheet){ sheet._open(); }
+  function closeSheet(sheet){ sheet._close(); }
+
+  const addSheet = document.getElementById('addTxnSheet');  wireSheet(addSheet);
+  const confirmSheet = document.getElementById('confirmSheet'); wireSheet(confirmSheet);
+  const balSheet = document.getElementById('balSheet');     wireSheet(balSheet);
 
   /* ===== balances init ===== */
-  const DEFAULTS = { ver: 5, sv: 783.11, ck: 414.00 };
+  const DEFAULTS = { ver: 6, sv: 783.11, ck: 414.00 };
   const ver = Number(localStorage.getItem('acct_ver') || '0');
   if (ver !== DEFAULTS.ver) {
     localStorage.setItem('sv_bal', String(DEFAULTS.sv));
@@ -443,7 +440,7 @@
   }
   renderBalances();
 
-  /* ===== nav ===== */
+  /* ===== nav between accounts/details ===== */
   document.getElementById('goChecking').addEventListener('click', () => app.className = 'app pos-1');
   document.getElementById('goSavings').addEventListener('click',  () => app.className = 'app pos-0');
 
@@ -467,21 +464,22 @@
   let svTx = loadTxns('sv_txns');
   let ckTx = loadTxns('ck_txns');
 
-  const fmtShortDate = iso => {
+  const shortDate = iso => {
     const d=new Date(iso); return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'});
   };
 
+  function cleanTx(t){ return t && typeof t.merchant==='string' && t.merchant.trim() && isFinite(+t.amount) && t.amount>0; }
+
   function renderTxnList(which){
     const listEl = which==='savings' ? document.getElementById('svTxnList') : document.getElementById('ckTxnList');
-    const txns = (which==='savings'? svTx : ckTx)
-                  .filter(t=>t && typeof t.merchant==='string' && isFinite(+t.amount))
-                  .slice().sort((a,b)=>new Date(b.iso)-new Date(a.iso));
+    const src = which==='savings' ? svTx : ckTx;
+    const txns = src.filter(cleanTx).slice().sort((a,b)=>new Date(b.iso)-new Date(a.iso));
     if (!txns.length){ listEl.innerHTML = '<div class="emptyTx">No transactions yet</div>'; return; }
     listEl.innerHTML = txns.map(t=>`
       <div class="txnRow" data-id="${t.id}" data-ctx="${which}">
         <div class="txnMain">
           <div class="txnTitle">${t.merchant}${t.status?` <span style="opacity:.6">• ${t.status}</span>`:''}</div>
-          <div class="txnSub">${fmtShortDate(t.iso)}</div>
+          <div class="txnSub">${shortDate(t.iso)}</div>
         </div>
         <div class="txnRight">
           <div class="txnAmt">${signMoney(t.amount, t.type)}</div>
@@ -496,7 +494,7 @@
   function renderAllTx(){ renderTxnList('savings'); renderTxnList('checking'); }
   renderAllTx();
 
-  /* ===== details ===== */
+  /* ===== details view ===== */
   let currentCtx='savings', currentTxnId=null;
   function openTxn(ctx,id){
     currentCtx=ctx; currentTxnId=id;
@@ -519,7 +517,8 @@
     if(i>-1){
       const t = arr[i];
       if(currentCtx==='savings'){
-        sv += (t.type==='credit' ? -t.amount : +t.amount); // reverse effect
+        // reverse its effect on balance
+        sv += (t.type==='credit' ? -t.amount : +t.amount);
         localStorage.setItem('sv_bal', String(sv));
       }else{
         ck += (t.type==='credit' ? -t.amount : +t.amount);
@@ -532,47 +531,36 @@
     }
   });
 
-  /* ===== Add / Confirm / Balance sheets ===== */
-  const addSheet=document.getElementById('addTxnSheet');
-  const confirmSheet=document.getElementById('confirmSheet');
-  const balSheet=document.getElementById('balSheet');
-
-  // Icon hooks
-  document.getElementById('svAdd').addEventListener('click', ()=> openAdd('savings'));
-  document.getElementById('ckAdd').addEventListener('click', ()=> openAdd('checking'));
-  document.getElementById('svBal').addEventListener('click', ()=> openChange('savings'));
-  document.getElementById('ckBal').addEventListener('click', ()=> openChange('checking'));
-
-  // Close handlers (dim and X)
-  document.getElementById('addDim').addEventListener('click', ()=> closeSheet(addSheet));
-  document.getElementById('addClose').addEventListener('click', ()=> closeSheet(addSheet));
-  document.getElementById('txCancel').addEventListener('click', ()=> closeSheet(addSheet));
-  document.getElementById('cfDim').addEventListener('click', ()=> closeSheet(confirmSheet));
-  document.getElementById('cfClose').addEventListener('click', ()=> closeSheet(confirmSheet));
-  document.getElementById('cfBack').addEventListener('click', ()=>{ closeSheet(confirmSheet); openSheet(addSheet,{instant:true}); });
-  document.getElementById('balDim').addEventListener('click', ()=> closeSheet(balSheet));
-  document.getElementById('balClose').addEventListener('click', ()=> closeSheet(balSheet));
-  document.getElementById('balCancel').addEventListener('click', ()=> closeSheet(balSheet));
-
+  /* ===== Add / Confirm / Balance flows ===== */
   const txMerchant=document.getElementById('txMerchant');
   const txAmount=document.getElementById('txAmount');
   const txWhen=document.getElementById('txWhen');
   const txType=document.getElementById('txType');
   const txStatus=document.getElementById('txStatus');
-  const txContinue=document.getElementById('txContinue');
-
-  function openAdd(ctx){
-    currentCtx = ctx;
-    txMerchant.value=''; txAmount.value=''; txType.value='debit'; txStatus.value='Complete';
-    txWhen.value = nowLocalISO();
-    openSheet(addSheet,{instant:true});
-  }
 
   const cfSummary=document.getElementById('cfSummary');
   let pendingTxn=null;
 
-  txContinue.addEventListener('click',(e)=>{
-    e.stopPropagation();
+  // openers
+  document.getElementById('svAdd').addEventListener('click', ()=> openAdd('savings'));
+  document.getElementById('ckAdd').addEventListener('click', ()=> openAdd('checking'));
+  document.getElementById('svBal').addEventListener('click', ()=> openChange('savings'));
+  document.getElementById('ckBal').addEventListener('click', ()=> openChange('checking'));
+
+  function openAdd(ctx){
+    currentCtx = ctx;
+    txMerchant.value='';
+    txAmount.value='';
+    txWhen.value = nowLocalISO();
+    txType.value='debit';
+    txStatus.value='Complete';
+    openSheet(addSheet);
+  }
+
+  document.getElementById('txCancel').addEventListener('click', ()=> closeSheet(addSheet));
+  document.querySelector('#addTxnSheet .dim').addEventListener('click', ()=> closeSheet(addSheet));
+
+  document.getElementById('txContinue').addEventListener('click', ()=>{
     const m=(txMerchant.value||'').trim();
     const a=parseFloat(txAmount.value);
     const w=txWhen.value?new Date(txWhen.value):new Date();
@@ -580,26 +568,32 @@
     const s=txStatus.value||'Complete';
     if(!m || !isFinite(a) || a<=0) return;
 
-    const html = `
+    pendingTxn = { merchant:m, amount:+a.toFixed(2), iso:w.toISOString(), status:s, type:t };
+
+    cfSummary.innerHTML = `
       <p><b>Merchant:</b> ${m}</p>
       <p><b>Amount:</b> ${t==='credit'?'+ ':'− '}${money(a)}</p>
       <p><b>Type:</b> ${t==='credit'?'Credit (+)':'Debit (−)'}</p>
       <p><b>Status:</b> ${s}</p>
       <p><b>Date &amp; Time:</b> ${w.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'})}, ${w.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}</p>
     `;
-    cfSummary.innerHTML = html;
-    openSheet(confirmSheet,{instant:true});  // open instantly
-    requestAnimationFrame(()=> closeSheet(addSheet)); // then close add
-    pendingTxn = { merchant:m, amount:+a.toFixed(2), iso:w.toISOString(), status:s, type:t };
+    openSheet(confirmSheet);
+    closeSheet(addSheet);
   });
 
-  document.getElementById('cfAdd').addEventListener('click',(e)=>{
-    e.stopPropagation();
+  document.getElementById('cfBack').addEventListener('click', ()=>{
+    closeSheet(confirmSheet);
+    openSheet(addSheet);
+  });
+  document.querySelector('#confirmSheet .dim').addEventListener('click', ()=> closeSheet(confirmSheet));
+
+  document.getElementById('cfAdd').addEventListener('click', ()=>{
     if(!pendingTxn) return;
-    const arr = (currentCtx==='savings') ? svTx : ckTx;
     const id='t_'+Math.random().toString(36).slice(2,9);
+    const arr = (currentCtx==='savings') ? svTx : ckTx;
     const t = { id, ...pendingTxn };
     arr.push(t);
+
     if(currentCtx==='savings'){
       sv += (t.type==='credit' ? t.amount : -t.amount);
       localStorage.setItem('sv_bal', String(sv));
@@ -610,7 +604,8 @@
       saveTxns('ck_txns', arr); ckTx = arr;
     }
     renderBalances(); renderAllTx();
-    pendingTxn=null; closeSheet(confirmSheet);
+    pendingTxn=null;
+    closeSheet(confirmSheet);
   });
 
   // Change balance
@@ -618,8 +613,10 @@
   function openChange(ctx){
     currentCtx = ctx;
     editBalance.value = (currentCtx==='savings'?sv:ck).toFixed(2);
-    openSheet(balSheet,{instant:true});
+    openSheet(balSheet);
   }
+  document.getElementById('balCancel').addEventListener('click', ()=> closeSheet(balSheet));
+  document.querySelector('#balSheet .dim').addEventListener('click', ()=> closeSheet(balSheet));
   document.getElementById('balSave').addEventListener('click', ()=>{
     const v = parseFloat(editBalance.value);
     if(!isFinite(v)) return;
@@ -627,6 +624,11 @@
     else{ ck = +v.toFixed(2); localStorage.setItem('ck_bal',String(ck)); }
     renderBalances(); closeSheet(balSheet);
   });
+
+  /* prevent undefined rows ever appearing */
+  svTx = svTx.filter(cleanTx); saveTxns('sv_txns', svTx);
+  ckTx = ckTx.filter(cleanTx); saveTxns('ck_txns', ckTx);
+  renderAllTx();
 })();
 </script>
 </body>
