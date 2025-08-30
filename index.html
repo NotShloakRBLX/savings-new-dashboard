@@ -126,10 +126,10 @@
     transform:translateY(100%);transition:transform var(--t);
   }
   .sheet.active .panel{transform:translateY(0)}
-  /* After open, drop transform so iOS taps align */
+  /* prevent stray taps during entry + allow instant open */
   .panel.settled{transform:none !important}
-  /* While settling, ignore overlay taps so it can’t close instantly */
   .sheet[data-settling="1"] .dim{pointer-events:none}
+  .sheet.noanim .panel, .sheet.noanim .dim{transition:none !important}
 
   .panelHead{display:flex;align-items:center;justify-content:center;padding:12px 14px 0;position:relative}
   .closeX{position:absolute;left:14px;top:8px;width:36px;height:36px;border-radius:10px;border:none;background:#1f1f1f;color:#fff;font-size:20px;font-weight:900;cursor:pointer}
@@ -376,7 +376,11 @@
 (() => {
   const app = document.getElementById('app');
 
-  /* ===== Sheet open/close with tap guards ===== */
+  /* ===== general helpers ===== */
+  const money = n => (Number(n)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
+  const signMoney = (amt, type) => (type==='credit' ? '+ ' : '− ') + money(Math.abs(amt));
+
+  /* ===== sheet utilities (instant + guarded) ===== */
   function stopInsideClicks(sheet){
     const panel = sheet.querySelector('.panel');
     ['click','mousedown','mouseup','pointerdown','pointerup','touchstart','touchend']
@@ -384,34 +388,44 @@
   }
   document.querySelectorAll('.sheet').forEach(stopInsideClicks);
 
-  function settleAfterOpen(sheet){
+  function settleAfterOpen(sheet, instant=false){
     const panel = sheet.querySelector('.panel');
     sheet.dataset.settling = '1';
     panel.classList.remove('settled');
-    const clearSettle = () => { sheet.dataset.settling='0'; };
+
+    if (instant){
+      sheet.classList.add('noanim');
+      sheet.classList.add('active');
+      // next frame: mark settled and restore animations
+      requestAnimationFrame(()=>{
+        panel.classList.add('settled');
+        sheet.dataset.settling='0';
+        sheet.classList.remove('noanim');
+      });
+      return;
+    }
+
     const onEnd = (e)=>{
       if (e.propertyName !== 'transform') return;
       panel.removeEventListener('transitionend', onEnd);
       panel.classList.add('settled');
-      clearSettle();
+      sheet.dataset.settling='0';
     };
     panel.addEventListener('transitionend', onEnd);
-    // Fallback: ensure we clear settling even if no transitionend (older browsers)
-    setTimeout(()=>{ if(sheet.dataset.settling==='1'){ panel.classList.add('settled'); clearSettle(); } }, 450);
   }
-  function openSheet(sheet){
-    sheet.classList.add('active');
-    settleAfterOpen(sheet);
+  function openSheet(sheet, {instant=false}={}){
+    if (!instant) sheet.classList.add('active');
+    settleAfterOpen(sheet, instant);
   }
   function closeSheet(sheet){
     const panel = sheet.querySelector('.panel');
-    panel.classList.remove('settled'); // re-enable transform for slide-out
+    panel.classList.remove('settled');
     sheet.classList.remove('active');
     sheet.dataset.settling='0';
   }
 
-  /* balances */
-  const DEFAULTS = { ver: 3, sv: 783.11, ck: 414.00 };
+  /* ===== balances init ===== */
+  const DEFAULTS = { ver: 4, sv: 783.11, ck: 414.00 };
   const ver = Number(localStorage.getItem('acct_ver') || '0');
   if (ver !== DEFAULTS.ver) {
     localStorage.setItem('sv_bal', String(DEFAULTS.sv));
@@ -420,9 +434,6 @@
     localStorage.setItem('sv_txns','[]');
     localStorage.setItem('ck_txns','[]');
   }
-
-  const money = n => (Number(n)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
-  const signMoney = (amt, type) => (type==='credit' ? '+ ' : '− ') + money(Math.abs(amt));
 
   let sv = Number(localStorage.getItem('sv_bal') || DEFAULTS.sv);
   let ck = Number(localStorage.getItem('ck_bal') || DEFAULTS.ck);
@@ -454,11 +465,11 @@
   }
   renderBalances();
 
-  /* nav */
+  /* ===== nav ===== */
   document.getElementById('goChecking').addEventListener('click', () => app.className = 'app pos-1');
   document.getElementById('goSavings').addEventListener('click',  () => app.className = 'app pos-0');
 
-  /* show more */
+  /* ===== show more toggles ===== */
   function setupMore(listId, btnId){
     const list = document.getElementById(listId);
     const btn  = document.getElementById(btnId);
@@ -471,7 +482,7 @@
   setupMore('svDetails','svMoreBtn');
   setupMore('ckDetails','ckMoreBtn');
 
-  /* transactions */
+  /* ===== transactions ===== */
   const loadTxns = key => { try{const t=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(t)?t:[]}catch(e){return []} };
   const saveTxns = (key, arr) => localStorage.setItem(key, JSON.stringify(arr));
 
@@ -505,7 +516,7 @@
   function renderAllTx(){ renderTxnList('savings'); renderTxnList('checking'); }
   renderAllTx();
 
-  /* details */
+  /* ===== details ===== */
   let currentCtx='savings', currentTxnId=null;
   function openTxn(ctx,id){
     currentCtx=ctx; currentTxnId=id;
@@ -541,7 +552,7 @@
     }
   });
 
-  /* Manage */
+  /* ===== Manage / Add / Confirm / Balance sheets ===== */
   const manageSheet = document.getElementById('manageSheet');
   const mgOpen = (ctx)=>{ currentCtx=ctx; openSheet(manageSheet); };
   const mgClose = ()=> closeSheet(manageSheet);
@@ -551,20 +562,19 @@
   document.getElementById('mgClose').addEventListener('click', mgClose);
   document.getElementById('mgCancel').addEventListener('click', mgClose);
 
-  /* Add / Confirm / Balance */
-  const addSheet = document.getElementById('addTxnSheet');
-  const confirmSheet = document.getElementById('confirmSheet');
-  const balSheet = document.getElementById('balSheet');
+  const addSheet=document.getElementById('addTxnSheet');
+  const confirmSheet=document.getElementById('confirmSheet');
+  const balSheet=document.getElementById('balSheet');
 
   document.getElementById('launchAdd').addEventListener('click', ()=>{ mgClose(); openAdd(); });
   document.getElementById('launchChange').addEventListener('click', ()=>{ mgClose(); openChange(); });
 
-  const txMerchant = document.getElementById('txMerchant');
-  const txAmount   = document.getElementById('txAmount');
-  const txWhen     = document.getElementById('txWhen');
-  const txType     = document.getElementById('txType');
-  const txStatus   = document.getElementById('txStatus');
-  const txContinue = document.getElementById('txContinue');
+  const txMerchant=document.getElementById('txMerchant');
+  const txAmount=document.getElementById('txAmount');
+  const txWhen=document.getElementById('txWhen');
+  const txType=document.getElementById('txType');
+  const txStatus=document.getElementById('txStatus');
+  const txContinue=document.getElementById('txContinue');
 
   function openAdd(){
     txMerchant.value=''; txAmount.value=''; txType.value='debit'; txStatus.value='Complete';
@@ -577,11 +587,12 @@
   document.getElementById('addClose').addEventListener('click', closeAdd);
   document.getElementById('txCancel').addEventListener('click', closeAdd);
 
-  const cfSummary = document.getElementById('cfSummary');
+  const cfSummary=document.getElementById('cfSummary');
   let pendingTxn=null;
   function openConfirm(summaryHtml){
     cfSummary.innerHTML = summaryHtml;
-    openSheet(confirmSheet);
+    // open instantly to avoid any perceived lag
+    openSheet(confirmSheet, {instant:true});
   }
   function closeConfirm(){ closeSheet(confirmSheet); }
   document.getElementById('cfDim').addEventListener('click', ()=>{ if(confirmSheet.dataset.settling!=='1') closeConfirm(); });
@@ -605,7 +616,9 @@
     renderBalances(); closeChange();
   });
 
-  txContinue.addEventListener('click', ()=>{
+  // Continue -> show confirm instantly; then hide Add in next frame so the click can't fall through.
+  txContinue.addEventListener('click', (e)=>{
+    e.stopPropagation();
     const m=(txMerchant.value||'').trim();
     const a=parseFloat(txAmount.value);
     const w=txWhen.value?new Date(txWhen.value):new Date();
@@ -620,12 +633,13 @@
       <p><b>Status:</b> ${s}</p>
       <p><b>Date &amp; Time:</b> ${w.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'})}, ${w.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}</p>
     `;
-    closeAdd();
-    openConfirm(html);            // instant open
+    openConfirm(html);                 // instant open
+    requestAnimationFrame(()=> closeAdd()); // close add after new sheet is visible
     pendingTxn = { merchant:m, amount:+a.toFixed(2), iso:w.toISOString(), status:s, type:t };
   });
 
-  document.getElementById('cfAdd').addEventListener('click', ()=>{
+  document.getElementById('cfAdd').addEventListener('click', (e)=>{
+    e.stopPropagation();
     if(!pendingTxn) return;
     const arr = (currentCtx==='savings') ? svTx : ckTx;
     const id='t_'+Math.random().toString(36).slice(2,9);
@@ -641,8 +655,7 @@
       saveTxns('ck_txns', arr); ckTx = arr;
     }
     renderBalances(); renderAllTx();
-    pendingTxn=null;
-    closeConfirm();
+    pendingTxn=null; closeConfirm();
   });
 })();
 </script>
