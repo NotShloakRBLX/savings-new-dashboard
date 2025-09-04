@@ -422,8 +422,8 @@
         renderBalances();
       }
       if(data.transactions){
-        if(Array.isArray(data.transactions.savings)) { svTx = data.transactions.savings.slice(); saveTxns('sv_txns', svTx); }
-        if(Array.isArray(data.transactions.checking)) { ckTx = data.transactions.checking.slice(); saveTxns('ck_txns', ckTx); }
+        if(Array.isArray(data.transactions.savings)) { svTx = data.transactions.savings.slice(); saveTxns('sv_txns', svTx, /*silent=*/true); }
+        if(Array.isArray(data.transactions.checking)) { ckTx = data.transactions.checking.slice(); saveTxns('ck_txns', ckTx, /*silent=*/true); }
         renderAllTx();
       }
     }else{
@@ -544,7 +544,10 @@
 
   /* ===== transactions ===== */
   const loadTxns = key => { try{const t=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(t)?t:[]}catch(e){return []} };
-  const saveTxns = (key, arr) => { localStorage.setItem(key, JSON.stringify(arr)); cloudSaveDebounced(); };
+  const saveTxns = (key, arr, silent=false) => {
+    localStorage.setItem(key, JSON.stringify(arr));
+    if (!silent) cloudSaveDebounced();
+  };
 
   let svTx = loadTxns('sv_txns');
   let ckTx = loadTxns('ck_txns');
