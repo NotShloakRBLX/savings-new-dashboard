@@ -717,8 +717,9 @@
   });
 
   /* prevent undefined rows ever appearing */
-  svTx = svTx.filter(cleanTx); saveTxns('sv_txns', svTx);
-  ckTx = ckTx.filter(cleanTx); saveTxns('ck_txns', ckTx);
+  svTx = svTx.filter(cleanTx); saveTxns('sv_txns', svTx, /*silent=*/true);
+ckTx = ckTx.filter(cleanTx); saveTxns('ck_txns', ckTx, /*silent=*/true);
+
   renderAllTx();
 
   /* ===== Start Firebase sync (loads cloud over local if present) ===== */
