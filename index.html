@@ -388,6 +388,10 @@
   /* ===================== Firebase helpers (added) ===================== */
   let cloudSaveDebounced = ()=>{}; // becomes real after init
 
+  // NEW: dirty flag to ensure we only write after real user actions
+  let DIRTY = false;
+  const markDirty = () => { DIRTY = true; };
+
   async function fbInit(){
     try{
       if(!window.firebaseConfig || !firebase?.initializeApp) return null;
@@ -408,34 +412,45 @@
     window.CLOUD_BANK_PATH = `bank/${id}`;
     return window.db.doc(window.CLOUD_BANK_PATH);
   }
+
+  // REPLACED: live listener; no writes during load
   async function cloudLoad(){
     const ref = await cloudDocRef(); if(!ref) return;
-    const snap = await ref.get();
-    if(snap.exists){
+
+    return ref.onSnapshot((snap)=>{
+      if(!snap.exists){
+        // seed once if document missing
+        ref.set({
+          settings: { sv, ck, ver: Number(localStorage.getItem('acct_ver')||'0') },
+          transactions: { savings: svTx, checking: ckTx },
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+        return;
+      }
+
       const data = snap.data() || {};
+
+      // pull settings down (local only)
       if(data.settings){
-        // overwrite local balances
         if(typeof data.settings.sv === 'number') sv = data.settings.sv;
         if(typeof data.settings.ck === 'number') ck = data.settings.ck;
         localStorage.setItem('sv_bal', String(sv));
         localStorage.setItem('ck_bal', String(ck));
         renderBalances();
       }
+      // pull transactions down (local only)
       if(data.transactions){
-        if(Array.isArray(data.transactions.savings)) { svTx = data.transactions.savings.slice(); saveTxns('sv_txns', svTx, /*silent=*/true); }
-        if(Array.isArray(data.transactions.checking)) { ckTx = data.transactions.checking.slice(); saveTxns('ck_txns', ckTx, /*silent=*/true); }
+        if(Array.isArray(data.transactions.savings)) { svTx = data.transactions.savings.slice(); saveTxns('sv_txns', svTx); }
+        if(Array.isArray(data.transactions.checking)) { ckTx = data.transactions.checking.slice(); saveTxns('ck_txns', ckTx); }
         renderAllTx();
       }
-    }else{
-      // first run: push current local data to cloud
-      await ref.set({
-        settings: { sv, ck, ver: Number(localStorage.getItem('acct_ver')||'0') },
-        transactions: { savings: svTx, checking: ckTx },
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
+    }, (err)=>{ /* ignore */ });
   }
+
+  // GUARDED: only write if user actually changed something
   async function cloudSave(){
+    if (!DIRTY) return;
+    DIRTY = false;
     try{
       const ref = await cloudDocRef(); if(!ref) return;
       await ref.set({
@@ -544,9 +559,10 @@
 
   /* ===== transactions ===== */
   const loadTxns = key => { try{const t=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(t)?t:[]}catch(e){return []} };
-  const saveTxns = (key, arr, silent=false) => {
+
+  // LOCAL-ONLY: cloud writes are triggered separately via DIRTY flag
+  const saveTxns = (key, arr) => {
     localStorage.setItem(key, JSON.stringify(arr));
-    if (!silent) cloudSaveDebounced();
   };
 
   let svTx = loadTxns('sv_txns');
@@ -615,6 +631,8 @@
       arr.splice(i,1);
       saveTxns(currentCtx==='savings'?'sv_txns':'ck_txns', arr);
       renderBalances(); renderAllTx();
+      // mark & write to cloud
+      markDirty(); cloudSaveDebounced();
       app.className = currentCtx==='savings'?'app pos-0':'app pos-1';
       cloudSaveDebounced();
     }
@@ -695,6 +713,8 @@
     renderBalances(); renderAllTx();
     pendingTxn=null;
     closeSheet(confirmSheet);
+    // mark & write to cloud
+    markDirty(); cloudSaveDebounced();
     cloudSaveDebounced();
   });
 
@@ -712,14 +732,16 @@
     if(!isFinite(v)) return;
     if(currentCtx==='savings'){ sv = +v.toFixed(2); localStorage.setItem('sv_bal',String(sv)); }
     else{ ck = +v.toFixed(2); localStorage.setItem('ck_bal',String(ck)); }
-    renderBalances(); closeSheet(balSheet);
+    renderBalances();
+    // mark & write to cloud
+    markDirty(); cloudSaveDebounced();
+    closeSheet(balSheet);
     cloudSaveDebounced();
   });
 
   /* prevent undefined rows ever appearing */
-  svTx = svTx.filter(cleanTx); saveTxns('sv_txns', svTx, /*silent=*/true);
-ckTx = ckTx.filter(cleanTx); saveTxns('ck_txns', ckTx, /*silent=*/true);
-
+  svTx = svTx.filter(cleanTx); saveTxns('sv_txns', svTx);
+  ckTx = ckTx.filter(cleanTx); saveTxns('ck_txns', ckTx);
   renderAllTx();
 
   /* ===== Start Firebase sync (loads cloud over local if present) ===== */
